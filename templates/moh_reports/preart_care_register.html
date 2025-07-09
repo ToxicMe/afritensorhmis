@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block content %}
+
+
+<section class="bg-gray-50 py-10">
+    <div class="max-w-8xl mx-auto bg-white p-6 rounded shadow">
+      <h1 class="text-2xl font-bold text-center text-blue-600 mb-6">MOH 257 – Pre-ART Care Register</h1>
+  
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-300 text-sm text-left">
+          <thead class="bg-blue-600 text-gray-100">
+            <tr>
+              <th class="px-4 py-2">#</th>
+              <th class="px-4 py-2">Pre-ART No.</th>
+              <th class="px-4 py-2">CCC No.</th>
+              <th class="px-4 py-2">Enroll Date</th>
+              <th class="px-4 py-2">Name</th>
+              <th class="px-4 py-2">Sex</th>
+              <th class="px-4 py-2">Age</th>
+              <th class="px-4 py-2">DOB</th>
+              <th class="px-4 py-2">Marital Status</th>
+              <th class="px-4 py-2">Residence</th>
+              <th class="px-4 py-2">Phone</th>
+              <th class="px-4 py-2">Entry Point</th>
+              <th class="px-4 py-2">WHO Stage</th>
+              <th class="px-4 py-2">Functional Status</th>
+              <th class="px-4 py-2">CD4 Count</th>
+              <th class="px-4 py-2">TB Status</th>
+              <th class="px-4 py-2">Partner Tested</th>
+              <th class="px-4 py-2">Linked to Care</th>
+              <th class="px-4 py-2">IPT Status</th>
+              <th class="px-4 py-2">Reason Not on ART</th>
+              <th class="px-4 py-2">Transfer Out Date</th>
+              <th class="px-4 py-2">Outcome</th>
+              <th class="px-4 py-2">Remarks</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <!-- Example Entry -->
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-2">1</td>
+              <td class="px-4 py-2">PRE12345</td>
+              <td class="px-4 py-2">CCC09876</td>
+              <td class="px-4 py-2">2025-06-01</td>
+              <td class="px-4 py-2">Jane Mwikali</td>
+              <td class="px-4 py-2">F</td>
+              <td class="px-4 py-2">32</td>
+              <td class="px-4 py-2">1993-02-20</td>
+              <td class="px-4 py-2">Married</td>
+              <td class="px-4 py-2">Machakos</td>
+              <td class="px-4 py-2">0712345678</td>
+              <td class="px-4 py-2">PMTCT</td>
+              <td class="px-4 py-2">Stage II</td>
+              <td class="px-4 py-2">W</td>
+              <td class="px-4 py-2">450</td>
+              <td class="px-4 py-2">Negative</td>
+              <td class="px-4 py-2">Yes</td>
+              <td class="px-4 py-2">Yes</td>
+              <td class="px-4 py-2">On IPT</td>
+              <td class="px-4 py-2">Stable</td>
+              <td class="px-4 py-2">-</td>
+              <td class="px-4 py-2">Still in care</td>
+              <td class="px-4 py-2">To start ART soon</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+  
+      <div class="mt-6 text-right">
+        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          Save Entry
+        </button>
+      </div>
+    </div>
+  </section>
+  
+  
+
+
+{% endblock %}

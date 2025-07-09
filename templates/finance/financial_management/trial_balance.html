@@ -1,0 +1,2187 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-7xl mt-12 mx-auto bg-white shadow-md rounded-lg p-6 space-y-8">
+
+    <!-- Header -->
+    <div class="text-center">
+      <h1 class="text-3xl font-bold text-gray-800">Trial Balance</h1>
+      <p class="text-sm text-gray-500 mt-1">Listing of accounts with debit and credit balances</p>
+    </div>
+
+    <!-- Trial Balance Table -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full border text-sm text-gray-800">
+        <thead class="bg-blue-600 text-left">
+          <tr>
+            <th class="py-2 px-3 border text-gray-100">No</th>
+            <th class="py-2 px-3 border text-gray-100">Name</th>
+            <th class="py-2 px-3 border text-gray-100">Debit</th>
+            <th class="py-2 px-3 border text-gray-100">Credit</th>
+            <th class="py-2 px-3 border text-gray-100">Action</th>
+          </tr>
+        </thead>
+        <tbody id="trialBalanceBody">
+          <!-- Data rows injected by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-6 text-center">
+      <a href="{% url 'accounting' %}">
+        <button
+          class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold cursor-pointer border-2 border-black-700 outline-none bg-transparent hover:bg-black-700 text-black-700 hover:text-white transition-all duration-300">
+          Back
+        </button>
+      </a>
+    </div>
+
+  </div>
+
+  <script>
+    const trialBalanceData = [
+ 
+  {
+    "Trial Balance": 100001,
+    "__EMPTY": "  INTANGIBLE ASSETS"
+  },
+  {
+    "Trial Balance": 100002,
+    "__EMPTY": "  ACCUMULATED AMMORTISATION-Intangible assets"
+  },
+  {
+    "Trial Balance": 100099,
+    "__EMPTY": "Intangible assets -Total"
+  },
+  {
+    "Trial Balance": 100200,
+    "__EMPTY": "Property plant and equipment"
+  },
+  {
+    "Trial Balance": 100201,
+    "__EMPTY": "  BUILDINGS"
+  },
+  {
+    "Trial Balance": 100202,
+    "__EMPTY": "  LEASEHOLD IMPROVEMENTS"
+  },
+  {
+    "Trial Balance": 100203,
+    "__EMPTY": "  MEDICAL EQUIPMENT"
+  },
+  {
+    "Trial Balance": 100204,
+    "__EMPTY": "  FURNITURE FITTINGS AND OTHER EQUIPMENT"
+  },
+  {
+    "Trial Balance": 100205,
+    "__EMPTY": "  COMPUTERS"
+  },
+  {
+    "Trial Balance": 100206,
+    "__EMPTY": "  MOTOR VEHICLES"
+  },
+  {
+    "Trial Balance": 100207,
+    "__EMPTY": "  CAPITAL WORK IN PROGRESS"
+  },
+  {
+    "Trial Balance": 100208,
+    "__EMPTY": "  ACC. DEPR- BUILDINGS"
+  },
+  {
+    "Trial Balance": 100209,
+    "__EMPTY": "  ACC. DEPR- LEASEHOLD IMPROVEME"
+  },
+  {
+    "Trial Balance": 100210,
+    "__EMPTY": "  ACC. DEPR- MEDICAL EQUIPMENT"
+  },
+  {
+    "Trial Balance": 100211,
+    "__EMPTY": "  ACC. DEPR- FURNITURE FITTINGS"
+  },
+  {
+    "Trial Balance": 100212,
+    "__EMPTY": "  ACC. DEPR- COMPUTERS"
+  },
+  {
+    "Trial Balance": 100213,
+    "__EMPTY": "  ACC. DEPR- MOTOR VEHICLES"
+  },
+  {
+    "Trial Balance": 100214,
+    "__EMPTY": "  RIGHT OF USE ASSET"
+  },
+  {
+    "Trial Balance": 100215,
+    "__EMPTY": "  ACC DEPRCN RIGHT OF USE ASSET"
+  },
+  {
+    "Trial Balance": 100220,
+    "__EMPTY": "  THIRD PARTY PROJECTS WORK IN PROGRESS"
+  },
+  {
+    "Trial Balance": 100299,
+    "__EMPTY": "Property plant and equipment total"
+  },
+  {
+    "Trial Balance": 100300,
+    "__EMPTY": "Inventories"
+  },
+  {
+    "Trial Balance": 100301,
+    "__EMPTY": "  Pharmacy  Stocks"
+  },
+  {
+    "Trial Balance": 100302,
+    "__EMPTY": "  Surgical Consumables"
+  },
+  {
+    "Trial Balance": 100303,
+    "__EMPTY": "  Surgical Equipment"
+  },
+  {
+    "Trial Balance": 100304,
+    "__EMPTY": "  Theatre Implants"
+  },
+  {
+    "Trial Balance": 100305,
+    "__EMPTY": "  Laboratory Stocks"
+  },
+  {
+    "Trial Balance": 100306,
+    "__EMPTY": "  Cath Lab Stock"
+  },
+  {
+    "Trial Balance": 100307,
+    "__EMPTY": "  Catering Stocks"
+  },
+  {
+    "Trial Balance": 100308,
+    "__EMPTY": "  General Stocks"
+  },
+  {
+    "Trial Balance": 100309,
+    "__EMPTY": "  Maintenance stock"
+  },
+  {
+    "Trial Balance": 100310,
+    "__EMPTY": "  Radiology stocks"
+  },
+  {
+    "Trial Balance": 100311,
+    "__EMPTY": "  Renal Stocks"
+  },
+  {
+    "Trial Balance": 100312,
+    "__EMPTY": "  Physical Medicine Stock"
+  },
+  {
+    "Trial Balance": 100313,
+    "__EMPTY": "  Inventory - WIP"
+  },
+  {
+    "Trial Balance": 100314,
+    "__EMPTY": "  CSSD Stocks"
+  },
+  {
+    "Trial Balance": 100399,
+    "__EMPTY": "Inventory Total"
+  },
+  {
+    "Trial Balance": 100400,
+    "__EMPTY": "FIXED DEPOSITS"
+  },
+  {
+    "Trial Balance": 100401,
+    "__EMPTY": "  FIXED DEPOSIT-CBA BANK"
+  },
+  {
+    "Trial Balance": 100402,
+    "__EMPTY": "  FIXED DEPOSIT-HFCK"
+  },
+  {
+    "Trial Balance": 100403,
+    "__EMPTY": "  FIXED DEPOSIT-CFC BANK"
+  },
+  {
+    "Trial Balance": 100404,
+    "__EMPTY": "  NIC BANK- (NCBA)"
+  },
+  {
+    "Trial Balance": 100406,
+    "__EMPTY": "  FIXED DEPOSIT-KCB"
+  },
+  {
+    "Trial Balance": 100407,
+    "__EMPTY": "  FIXED DEPOSIT-CO-OPERATIVE BANK"
+  },
+  {
+    "Trial Balance": 100408,
+    "__EMPTY": "  FIXED DEPOSIT-BRITAM"
+  },
+  {
+    "Trial Balance": 100409,
+    "__EMPTY": "  FIXED DEPOSIT-IMPERIAL BANK (KCB)"
+  },
+  {
+    "Trial Balance": 100410,
+    "__EMPTY": "  FIXED DEPOSIT-I&M BANK"
+  },
+  {
+    "Trial Balance": 100411,
+    "__EMPTY": "  FIXED DEPOSIT-EQUITY BANK"
+  },
+  {
+    "Trial Balance": 100412,
+    "__EMPTY": "  FIXED DEPOSIT-BARCLAYS BANK"
+  },
+  {
+    "Trial Balance": 100413,
+    "__EMPTY": "  NATIONAL BANK OF KENYA"
+  },
+  {
+    "Trial Balance": 100414,
+    "__EMPTY": "  CALL DEPOSIT - BARCLAYS BANK"
+  },
+  {
+    "Trial Balance": 100415,
+    "__EMPTY": "  TREASURY BILLS/BONDS"
+  },
+  {
+    "Trial Balance": 100416,
+    "__EMPTY": "  NCBA BANK CALL DEPOSIT ACCOUNT (KES)"
+  },
+  {
+    "Trial Balance": 100417,
+    "__EMPTY": "  NCBA BANK CALL DEPOSIT ACCOUNT (USD)"
+  },
+  {
+    "Trial Balance": 100418,
+    "__EMPTY": "  EQUITY CALL DEPOSIT ACCOUNT"
+  },
+  {
+    "Trial Balance": 100419,
+    "__EMPTY": "  CO-OPERATIVE BANK CALL DEPOSIT ACCOUNT"
+  },
+  {
+    "Trial Balance": 100420,
+    "__EMPTY": "  TREASURY BONDS PREMIUM"
+  },
+  {
+    "Trial Balance": 100421,
+    "__EMPTY": "  CALL DEPOSIT-KCB"
+  },
+  {
+    "Trial Balance": 100422,
+    "__EMPTY": "  CO-OPERATIVE BANK MORTGAGE BACKUP "
+  },
+  {
+    "Trial Balance": 100499,
+    "__EMPTY": "Fixed deposits Total"
+  },
+  {
+    "Trial Balance": 100500,
+    "__EMPTY": "Cash and Bank"
+  },
+  {
+    "Trial Balance": 100501,
+    "__EMPTY": "  CBA KSHS ACCOUNT"
+  },
+  {
+    "Trial Balance": 100502,
+    "__EMPTY": "  CBA USD ACCOUNT"
+  },
+  {
+    "Trial Balance": 100503,
+    "__EMPTY": "  CBA EURO ACCOUNT"
+  },
+  {
+    "Trial Balance": 100504,
+    "__EMPTY": "  CBA GBP ACCOUNT"
+  },
+  {
+    "Trial Balance": 100505,
+    "__EMPTY": "  BARCLAYS BANK KSHS ACCOUNT"
+  },
+  {
+    "Trial Balance": 100506,
+    "__EMPTY": "  STANDARD CHARTERED BANK"
+  },
+  {
+    "Trial Balance": 100507,
+    "__EMPTY": "  STANBIC BANK KSHS ACCOUNT"
+  },
+  {
+    "Trial Balance": 100508,
+    "__EMPTY": "  PETTY CASH BALANCE"
+  },
+  {
+    "Trial Balance": 100509,
+    "__EMPTY": "  CREDIT CARD COLLECTION ACCOUNT"
+  },
+  {
+    "Trial Balance": 100510,
+    "__EMPTY": "  MPESA COLLECTION"
+  },
+  {
+    "Trial Balance": 100511,
+    "__EMPTY": "  NIC BANK"
+  },
+  {
+    "Trial Balance": 100512,
+    "__EMPTY": "  CBA COLLECTION ACCOUNT"
+  },
+  {
+    "Trial Balance": 100513,
+    "__EMPTY": "  CASH BOOK"
+  },
+  {
+    "Trial Balance": 100514,
+    "__EMPTY": "  DEPARTMENTAL FLOATS"
+  },
+  {
+    "Trial Balance": 100515,
+    "__EMPTY": "  GUARANTEES HELD WITH BANKS"
+  },
+  {
+    "Trial Balance": 100516,
+    "__EMPTY": "  BARCLAYS BANK USD"
+  },
+  {
+    "Trial Balance": 100520,
+    "__EMPTY": "  CAFETERIA COLLECTIONS"
+  },
+  {
+    "Trial Balance": 100521,
+    "__EMPTY": "  STANDARD CHARTERED BANK (KHA MEMBERS)"
+  },
+  {
+    "Trial Balance": 100522,
+    "__EMPTY": "  EQUITY BANK"
+  },
+  {
+    "Trial Balance": 100523,
+    "__EMPTY": "  CO-OPERATIVE BANK"
+  },
+  {
+    "Trial Balance": 100524,
+    "__EMPTY": "  BANK RECONCILING ITEMS"
+  },
+  {
+    "Trial Balance": 100525,
+    "__EMPTY": "  NATIONAL BANK"
+  },
+  {
+    "Trial Balance": 100526,
+    "__EMPTY": "  INTERNAL ACCOUNTS  RECEIPTS CONTROL"
+  },
+  {
+    "Trial Balance": 100527,
+    "__EMPTY": "  KCB KES ACCOUNT"
+  },
+  {
+    "Trial Balance": 100599,
+    "__EMPTY": "Cash and bank Total"
+  },
+  {
+    "Trial Balance": 100600,
+    "__EMPTY": "Trade and other receivables"
+  },
+  {
+    "Trial Balance": 100601,
+    "__EMPTY": "Trade debtors"
+  },
+  {
+    "Trial Balance": 100602,
+    "__EMPTY": "  TRADE DEBTORS - CORPORATE COMPANIES"
+  },
+  {
+    "Trial Balance": 100603,
+    "__EMPTY": "  TRADE DEBTORS - INDIVIDUAL PATIENTS"
+  },
+  {
+    "Trial Balance": 100604,
+    "__EMPTY": "  TRADE DEBTORS - INSURANCE COMPANIES"
+  },
+  {
+    "Trial Balance": 100605,
+    "__EMPTY": "  TRADE DEBTORS - NHIF SCHEMES"
+  },
+  {
+    "Trial Balance": 100606,
+    "__EMPTY": "  TRADE DEBTORS - SOCIAL HEALTHCARE AUTHORITY(SHA)"
+  },
+  {
+    "Trial Balance": 100607,
+    "__EMPTY": "  TRADE DEBTORS - STATE CORPORATION"
+  },
+  {
+    "Trial Balance": 100609,
+    "__EMPTY": "  CASH CUSTOMER"
+  },
+  {
+    "Trial Balance": 100610,
+    "__EMPTY": "  TRADE DEBTORS - PRIVATE PATIENTS - INDIVIDUALS"
+  },
+  {
+    "Trial Balance": 100611,
+    "__EMPTY": "  TRADE DEBTORS - INTERNATIONAL COMPANIES"
+  },
+  {
+    "Trial Balance": 100612,
+    "__EMPTY": "  DEBTORS FOR WRITE OFF"
+  },
+  {
+    "Trial Balance": 100613,
+    "__EMPTY": "  Debtors Revenue Work in Progress"
+  },
+  {
+    "Trial Balance": 100619,
+    "__EMPTY": "Trade debtors Total"
+  },
+  {
+    "Trial Balance": 100620,
+    "__EMPTY": "Other receivables"
+  },
+  {
+    "Trial Balance": 100621,
+    "__EMPTY": "  CHARITIES"
+  },
+  {
+    "Trial Balance": 100622,
+    "__EMPTY": "  INTERNAL ACCOUNTS"
+  },
+  {
+    "Trial Balance": 100623,
+    "__EMPTY": "  RENTAL ACCOUNTS"
+  },
+  {
+    "Trial Balance": 100624,
+    "__EMPTY": "  SCHOOL OF NURSING"
+  },
+  {
+    "Trial Balance": 100625,
+    "__EMPTY": "  STAFF DEBTORS"
+  },
+  {
+    "Trial Balance": 100626,
+    "__EMPTY": "  SUNDRY DEBTORS"
+  },
+  {
+    "Trial Balance": 100627,
+    "__EMPTY": "  BAD DEBTORS RECOVERED"
+  },
+  {
+    "Trial Balance": 100628,
+    "__EMPTY": "  Cash Debtors Receivables"
+  },
+  {
+    "Trial Balance": 100629,
+    "__EMPTY": "  UTILITIES DEPOSITS"
+  },
+  {
+    "Trial Balance": 100630,
+    "__EMPTY": "  OTHER DEPOSITS"
+  },
+  {
+    "Trial Balance": 100631,
+    "__EMPTY": "  Convention Centre"
+  },
+  {
+    "Trial Balance": 100632,
+    "__EMPTY": "  Salary Advances"
+  },
+  {
+    "Trial Balance": 100633,
+    "__EMPTY": "  UNRECEIPTED BANK CREDITS"
+  },
+  {
+    "Trial Balance": 100634,
+    "__EMPTY": "  Staff Debtors Household Scheme"
+  },
+  {
+    "Trial Balance": 100635,
+    "__EMPTY": "  STAFF MORTGAGE LOANS (CO-OPERATIVE BANK)"
+  },
+  {
+    "Trial Balance": 100639,
+    "__EMPTY": "Other receivables-Total"
+  },
+  {
+    "Trial Balance": 100640,
+    "__EMPTY": "Prepayments"
+  },
+  {
+    "Trial Balance": 100641,
+    "__EMPTY": "  PREPAYMENT - INSURANCE"
+  },
+  {
+    "Trial Balance": 100642,
+    "__EMPTY": "  PREPAYMENT - LICENSES"
+  },
+  {
+    "Trial Balance": 100643,
+    "__EMPTY": "  PREPAYMENT - SERVICE CONTRACTS MEDICAL EQUIPMENT"
+  },
+  {
+    "Trial Balance": 100644,
+    "__EMPTY": "  PREPAYMENT - SERVICE CONTRACTS OTHER EQUIPMENT"
+  },
+  {
+    "Trial Balance": 100645,
+    "__EMPTY": "  PREPAYMENT - RENT, RATES & PERMITS"
+  },
+  {
+    "Trial Balance": 100646,
+    "__EMPTY": "  PREPAYMENT - GENERAL"
+  },
+  {
+    "Trial Balance": 100647,
+    "__EMPTY": "  PREPAYMENT - Doctors Fees"
+  },
+  {
+    "Trial Balance": 100649,
+    "__EMPTY": "Prepayments Total"
+  },
+  {
+    "Trial Balance": 100699,
+    "__EMPTY": "Trade and other receivables Totals"
+  },
+  {
+    "Trial Balance": 300000,
+    "__EMPTY": "Non current liabilities"
+  },
+  {
+    "Trial Balance": 300001,
+    "__EMPTY": "  SHORT TERM LOANS"
+  },
+  {
+    "Trial Balance": 300002,
+    "__EMPTY": "  LEASE LIABILITIES"
+  },
+  {
+    "Trial Balance": 300010,
+    "__EMPTY": "Non Current Liabilities Total"
+  },
+  {
+    "Trial Balance": 300100,
+    "__EMPTY": "Current Liabilities"
+  },
+  {
+    "Trial Balance": 300101,
+    "__EMPTY": "Trade payables"
+  },
+  {
+    "Trial Balance": 300102,
+    "__EMPTY": "  TRADE PAYABLES - OPERATIONS"
+  },
+  {
+    "Trial Balance": 300103,
+    "__EMPTY": "  TRADE PAYABLES - OVERSEAS CREDITORS - USD"
+  },
+  {
+    "Trial Balance": 300104,
+    "__EMPTY": "  TRADE PAYABLES - OVERSEAS CREDITORS - EURO"
+  },
+  {
+    "Trial Balance": 300105,
+    "__EMPTY": "  TRADE PAYABLES - OVERSEAS CREDITORS - POUNDS"
+  },
+  {
+    "Trial Balance": 300106,
+    "__EMPTY": "  TRADE PAYABLES - OVERSEAS CREDITORS - RAND"
+  },
+  {
+    "Trial Balance": 300107,
+    "__EMPTY": "  TRADE PAYABLES - SUNDRY CREDITORS (LOCAL)"
+  },
+  {
+    "Trial Balance": 300108,
+    "__EMPTY": "  TRADE PAYABLES - SUNDRY CREDITORS (OVERSEAS)"
+  },
+  {
+    "Trial Balance": 300109,
+    "__EMPTY": "  TRADE PAYABLES - DOCTORS FEES CREDITOR"
+  },
+  {
+    "Trial Balance": 300110,
+    "__EMPTY": "  TRADE PAYABLES- CONTRACTOR"
+  },
+  {
+    "Trial Balance": 300111,
+    "__EMPTY": "  TRADE PAYABLES - CONTRACTOR (USD)"
+  },
+  {
+    "Trial Balance": 300112,
+    "__EMPTY": "  TRADE PAYABLES- CONTRACTOR (EURO)"
+  },
+  {
+    "Trial Balance": 300113,
+    "__EMPTY": "TRADE PAYABLES CONSULTANTS"
+  },
+  {
+    "Trial Balance": 300114,
+    "__EMPTY": "TRADE PAYABLE CAPEX"
+  },
+  {
+    "Trial Balance": 300119,
+    "__EMPTY": "Trade payables-Total"
+  },
+  {
+    "Trial Balance": 300120,
+    "__EMPTY": "Other Payables"
+  },
+  {
+    "Trial Balance": 300121,
+    "__EMPTY": "  SALARIES CONTROL"
+  },
+  {
+    "Trial Balance": 300122,
+    "__EMPTY": "  WAGES CONTROL"
+  },
+  {
+    "Trial Balance": 300123,
+    "__EMPTY": "  GROUP LIFE & PA COVER"
+  },
+  {
+    "Trial Balance": 300124,
+    "__EMPTY": "  DEFERRED INCOME - RENT"
+  },
+  {
+    "Trial Balance": 300125,
+    "__EMPTY": "  DEFERRED INCOME - SCHOOL FEES"
+  },
+  {
+    "Trial Balance": 300126,
+    "__EMPTY": "  MAC SYMPOSIUMS"
+  },
+  {
+    "Trial Balance": 300127,
+    "__EMPTY": "  SCHOOL OF NURSING - EXAMINATION AND OTHER FEES"
+  },
+  {
+    "Trial Balance": 300128,
+    "__EMPTY": "  STALE CHEQUE ACCOUNT"
+  },
+  {
+    "Trial Balance": 300129,
+    "__EMPTY": "  Deffered Income UNTNH Covid Centre"
+  },
+  {
+    "Trial Balance": 300139,
+    "__EMPTY": "Other Payables total"
+  },
+  {
+    "Trial Balance": 300145,
+    "__EMPTY": "RESEARCH,GRANTS & SYMPOSIUMS"
+  },
+  {
+    "Trial Balance": 300150,
+    "__EMPTY": "  RESEARCH,GRANTS & SYMPOSIUMS"
+  },
+  {
+    "Trial Balance": 300151,
+    "__EMPTY": "  Critical Care Registry-Pfizer"
+  },
+  {
+    "Trial Balance": 300152,
+    "__EMPTY": "  ISERC (NACOSTI)"
+  },
+  {
+    "Trial Balance": 300153,
+    "__EMPTY": "  Reproductive Health Symposium-Gyne"
+  },
+  {
+    "Trial Balance": 300154,
+    "__EMPTY": "  Critical Care Symposium"
+  },
+  {
+    "Trial Balance": 300160,
+    "__EMPTY": "RESEARCH,GRANTS & SYMPOSIUMS"
+  },
+  {
+    "Trial Balance": 300200,
+    "__EMPTY": "Payroll Liabilities"
+  },
+  {
+    "Trial Balance": 300201,
+    "__EMPTY": "  PAYE"
+  },
+  {
+    "Trial Balance": 300202,
+    "__EMPTY": "  NSSF"
+  },
+  {
+    "Trial Balance": 300203,
+    "__EMPTY": "  NHIF"
+  },
+  {
+    "Trial Balance": 300204,
+    "__EMPTY": "  HELB"
+  },
+  {
+    "Trial Balance": 300205,
+    "__EMPTY": "  PENSIONS"
+  },
+  {
+    "Trial Balance": 300206,
+    "__EMPTY": "  SACCO"
+  },
+  {
+    "Trial Balance": 300207,
+    "__EMPTY": "  OTHER STAFF DEDUCTIONS"
+  },
+  {
+    "Trial Balance": 300208,
+    "__EMPTY": "  TNH Benevolent Fund"
+  },
+  {
+    "Trial Balance": 300209,
+    "__EMPTY": "  Affordable Housing Levy Liability"
+  },
+  {
+    "Trial Balance": 300219,
+    "__EMPTY": "Payroll liabilities total"
+  },
+  {
+    "Trial Balance": 300300,
+    "__EMPTY": "Accruals"
+  },
+  {
+    "Trial Balance": 300301,
+    "__EMPTY": "  ACCRUED EXPENSES - SERVICE CONTRACTS MEDICAL EQUIP"
+  },
+  {
+    "Trial Balance": 300302,
+    "__EMPTY": "  ACCRUED EXPENSES - SERVICE CONTRACTS OTHER EQUIP"
+  },
+  {
+    "Trial Balance": 300303,
+    "__EMPTY": "  ACCRUED EXPENSES - CAPITAL PROJECTS"
+  },
+  {
+    "Trial Balance": 300304,
+    "__EMPTY": "  ACCRUED EXPENSES - OTHERS"
+  },
+  {
+    "Trial Balance": 300305,
+    "__EMPTY": "  GRNI (Goods Received Not Invoiced)"
+  },
+  {
+    "Trial Balance": 300306,
+    "__EMPTY": "  ACCRUED EXPENSES-DOCTORS' FEES"
+  },
+  {
+    "Trial Balance": 300307,
+    "__EMPTY": "  Accrued Expenses-Payroll"
+  },
+  {
+    "Trial Balance": 300399,
+    "__EMPTY": "Accruals Total"
+  },
+  {
+    "Trial Balance": 300400,
+    "__EMPTY": "Provisions"
+  },
+  {
+    "Trial Balance": 300401,
+    "__EMPTY": "  PROVISION FOR BAD DEBTORS"
+  },
+  {
+    "Trial Balance": 300402,
+    "__EMPTY": "  PROVISION FOR CORPORATE DISCOUNTS"
+  },
+  {
+    "Trial Balance": 300403,
+    "__EMPTY": "  PROVISION FOR STAFF BONUS"
+  },
+  {
+    "Trial Balance": 300404,
+    "__EMPTY": "  PROVISIONS-GENERAL"
+  },
+  {
+    "Trial Balance": 300405,
+    "__EMPTY": "  PROVISION FOR IMPAIRMENT OF FIXED DEPOSITS"
+  },
+  {
+    "Trial Balance": 300406,
+    "__EMPTY": "  PROVISION FOR DOCTORS' PREPAYMENTS "
+  },
+  {
+    "Trial Balance": 300407,
+    "__EMPTY": "  Provision for Treasury Bond Impairments"
+  },
+  {
+    "Trial Balance": 300408,
+    "__EMPTY": "  PROVISION FOR BANK BALANCES IMPAIRMENT"
+  },
+  {
+    "Trial Balance": 300409,
+    "__EMPTY": "  PROVISION FOR BOND PREMIUM AMORTIZATION"
+  },
+  {
+    "Trial Balance": 300499,
+    "__EMPTY": "Provisions Total"
+  },
+  {
+    "Trial Balance": 300500,
+    "__EMPTY": "Statutory Payables"
+  },
+  {
+    "Trial Balance": 300501,
+    "__EMPTY": "  VAT CONTROL ACCOUNT"
+  },
+  {
+    "Trial Balance": 300502,
+    "__EMPTY": "  WITHHOLDING TAX CONTROL ACCOUNT"
+  },
+  {
+    "Trial Balance": 300503,
+    "__EMPTY": "  WITHHOLDING VAT TAX CONTROL ACCOUNT"
+  },
+  {
+    "Trial Balance": 300504,
+    "__EMPTY": "  WITHHOLDING RENT CONTROL ACCOUNT"
+  },
+  {
+    "Trial Balance": 300505,
+    "__EMPTY": "  SALES VAT CONTROL"
+  },
+  {
+    "Trial Balance": 300506,
+    "__EMPTY": "  REVERSE VAT"
+  },
+  {
+    "Trial Balance": 300599,
+    "__EMPTY": "Statutory payables total"
+  },
+  {
+    "Trial Balance": 300600,
+    "__EMPTY": "Corporate Deposits"
+  },
+  {
+    "Trial Balance": 300601,
+    "__EMPTY": "  CORPORATE DEPOSITS"
+  },
+  {
+    "Trial Balance": 300602,
+    "__EMPTY": "  RENTAL DEPOSITS - CONSULTANT ROOMS"
+  },
+  {
+    "Trial Balance": 300603,
+    "__EMPTY": "  CAUTION MONEY - SCHOOL of NURSING"
+  },
+  {
+    "Trial Balance": 300604,
+    "__EMPTY": "  PATIENT DEPOSITS"
+  },
+  {
+    "Trial Balance": 300699,
+    "__EMPTY": "Corporate Deposits Total"
+  },
+  {
+    "Trial Balance": 300700,
+    "__EMPTY": "Charities"
+  },
+  {
+    "Trial Balance": 300701,
+    "__EMPTY": "  GOLF TOURNAMENT"
+  },
+  {
+    "Trial Balance": 300702,
+    "__EMPTY": "  CHILDRENS HEART LINK ACCOUNT"
+  },
+  {
+    "Trial Balance": 300703,
+    "__EMPTY": "  LEAGUE OF FRIENDS"
+  },
+  {
+    "Trial Balance": 300799,
+    "__EMPTY": "Charities Total"
+  },
+  {
+    "Trial Balance": 400000,
+    "__EMPTY": "FUND BALANCES"
+  },
+  {
+    "Trial Balance": 400001,
+    "__EMPTY": "  FUNDS INVESTED IN FIXED ASSETS"
+  },
+  {
+    "Trial Balance": 400002,
+    "__EMPTY": "  OPERATING FUNDS"
+  },
+  {
+    "Trial Balance": 400099,
+    "__EMPTY": "FUND BALANCES TOTALS"
+  },
+  {
+    "Trial Balance": 500000,
+    "__EMPTY": "Income Accounts"
+  },
+  {
+    "Trial Balance": 500001,
+    "__EMPTY": "  Pharmacy Sales"
+  },
+  {
+    "Trial Balance": 500002,
+    "__EMPTY": "  Surgical Income"
+  },
+  {
+    "Trial Balance": 500003,
+    "__EMPTY": "  Theatre Items/Instruments sales"
+  },
+  {
+    "Trial Balance": 500004,
+    "__EMPTY": "  Lab Tests"
+  },
+  {
+    "Trial Balance": 500005,
+    "__EMPTY": "  Radiology Sales"
+  },
+  {
+    "Trial Balance": 500006,
+    "__EMPTY": "  Physical medicine Sales"
+  },
+  {
+    "Trial Balance": 500007,
+    "__EMPTY": "  Oncology Sales"
+  },
+  {
+    "Trial Balance": 500008,
+    "__EMPTY": "  Renal Sales"
+  },
+  {
+    "Trial Balance": 500009,
+    "__EMPTY": "  Endoscopy Income"
+  },
+  {
+    "Trial Balance": 500010,
+    "__EMPTY": "  Consultation Income"
+  },
+  {
+    "Trial Balance": 500011,
+    "__EMPTY": "  Nursing Fees"
+  },
+  {
+    "Trial Balance": 500012,
+    "__EMPTY": "  Inpatient Registrars Income"
+  },
+  {
+    "Trial Balance": 500013,
+    "__EMPTY": "  Medical Gases Income"
+  },
+  {
+    "Trial Balance": 500014,
+    "__EMPTY": "  CSSD Income"
+  },
+  {
+    "Trial Balance": 500015,
+    "__EMPTY": "  Ambulance Fees"
+  },
+  {
+    "Trial Balance": 500016,
+    "__EMPTY": "  Cathlab Sales"
+  },
+  {
+    "Trial Balance": 500017,
+    "__EMPTY": "  Revenue Work In Progress"
+  },
+  {
+    "Trial Balance": 500018,
+    "__EMPTY": "  Consignment Sales"
+  },
+  {
+    "Trial Balance": 500019,
+    "__EMPTY": "  Dental Services"
+  },
+  {
+    "Trial Balance": 500020,
+    "__EMPTY": "  Theatre time"
+  },
+  {
+    "Trial Balance": 500090,
+    "__EMPTY": "Income"
+  },
+  {
+    "Trial Balance": 500100,
+    "__EMPTY": "Bed fees"
+  },
+  {
+    "Trial Balance": 500101,
+    "__EMPTY": "  BED FEES General WARD"
+  },
+  {
+    "Trial Balance": 500102,
+    "__EMPTY": "  BED FEES PRIVATE ROOM"
+  },
+  {
+    "Trial Balance": 500103,
+    "__EMPTY": "  BED FEES  ENSUITE"
+  },
+  {
+    "Trial Balance": 500104,
+    "__EMPTY": "  BED FEES DELUXE"
+  },
+  {
+    "Trial Balance": 500105,
+    "__EMPTY": "  LODGER FEES"
+  },
+  {
+    "Trial Balance": 500106,
+    "__EMPTY": "  BED FEES Critical Care Units (ICU,NICU)"
+  },
+  {
+    "Trial Balance": 500107,
+    "__EMPTY": "  BED FEES SHORT STAY WARD"
+  },
+  {
+    "Trial Balance": 500108,
+    "__EMPTY": "  NORTHWING - Presidential Suite"
+  },
+  {
+    "Trial Balance": 500109,
+    "__EMPTY": "  NORTHWING - Premier Suite"
+  },
+  {
+    "Trial Balance": 500110,
+    "__EMPTY": "  NORTHWING - Deluxe Suite"
+  },
+  {
+    "Trial Balance": 500111,
+    "__EMPTY": "  Bed Fees Critical Care HDU"
+  },
+  {
+    "Trial Balance": 500112,
+    "__EMPTY": "  BED FEES DUPLEX"
+  },
+  {
+    "Trial Balance": 500113,
+    "__EMPTY": "  Bed Fees Neonatal ICU"
+  },
+  {
+    "Trial Balance": 500114,
+    "__EMPTY": "  Bed Fees Neonatal HDU"
+  },
+  {
+    "Trial Balance": 500115,
+    "__EMPTY": "  Bed Fees Paedriatic ICU"
+  },
+  {
+    "Trial Balance": 500116,
+    "__EMPTY": "  Bed Fees Paedriatic HDU"
+  },
+  {
+    "Trial Balance": 500199,
+    "__EMPTY": "Bed fees total"
+  },
+  {
+    "Trial Balance": 500200,
+    "__EMPTY": "Patient Discounts"
+  },
+  {
+    "Trial Balance": 500201,
+    "__EMPTY": "  Discounts - Almoners Fund"
+  },
+  {
+    "Trial Balance": 500202,
+    "__EMPTY": "  Discounts - Staff Bills"
+  },
+  {
+    "Trial Balance": 500203,
+    "__EMPTY": "  Discounts - KHA Members"
+  },
+  {
+    "Trial Balance": 500204,
+    "__EMPTY": "  Discounts - Patient Bills"
+  },
+  {
+    "Trial Balance": 500205,
+    "__EMPTY": "  Discounts - Charities & CSR"
+  },
+  {
+    "Trial Balance": 500249,
+    "__EMPTY": "Patient Discounts Totals"
+  },
+  {
+    "Trial Balance": 500350,
+    "__EMPTY": "Other Income"
+  },
+  {
+    "Trial Balance": 500399,
+    "__EMPTY": "  Finance Income"
+  },
+  {
+    "Trial Balance": 500400,
+    "__EMPTY": "    Interest on Call Deposits"
+  },
+  {
+    "Trial Balance": 500401,
+    "__EMPTY": "    Interest on Bonds and Bills"
+  },
+  {
+    "Trial Balance": 500402,
+    "__EMPTY": "    Investment Income"
+  },
+  {
+    "Trial Balance": 500403,
+    "__EMPTY": "    Interest Income"
+  },
+  {
+    "Trial Balance": 500404,
+    "__EMPTY": "    Prompt Payment Income"
+  },
+  {
+    "Trial Balance": 500405,
+    "__EMPTY": "    Commission on doctors fees"
+  },
+  {
+    "Trial Balance": 500406,
+    "__EMPTY": "    Doctors - Card Deduction "
+  },
+  {
+    "Trial Balance": 500407,
+    "__EMPTY": "    Realized FX Gain"
+  },
+  {
+    "Trial Balance": 500408,
+    "__EMPTY": "    Unrealized FX Gain"
+  },
+  {
+    "Trial Balance": 500409,
+    "__EMPTY": "    Bad Debts Recovered - Income"
+  },
+  {
+    "Trial Balance": 500410,
+    "__EMPTY": "  Finance Income Total"
+  },
+  {
+    "Trial Balance": 500411,
+    "__EMPTY": "  Rent Income"
+  },
+  {
+    "Trial Balance": 500412,
+    "__EMPTY": "    Rental Income - Consulting rooms"
+  },
+  {
+    "Trial Balance": 500413,
+    "__EMPTY": "    Rental Income - Parking Fees"
+  },
+  {
+    "Trial Balance": 500414,
+    "__EMPTY": "    Rental Income - Utilities"
+  },
+  {
+    "Trial Balance": 500415,
+    "__EMPTY": "    Rental Income - Telephone Charge"
+  },
+  {
+    "Trial Balance": 500416,
+    "__EMPTY": "    Rental Income - Consumables"
+  },
+  {
+    "Trial Balance": 500417,
+    "__EMPTY": "    Mortgage interest income ( Co-operative Bank)"
+  },
+  {
+    "Trial Balance": 500419,
+    "__EMPTY": "  Rent Income Total"
+  },
+  {
+    "Trial Balance": 500420,
+    "__EMPTY": "  Support Services Income"
+  },
+  {
+    "Trial Balance": 500421,
+    "__EMPTY": "    Restaurant Sales"
+  },
+  {
+    "Trial Balance": 500422,
+    "__EMPTY": "    Laundry Income"
+  },
+  {
+    "Trial Balance": 500423,
+    "__EMPTY": "    Convention Centers Income"
+  },
+  {
+    "Trial Balance": 500424,
+    "__EMPTY": "    Parking Income"
+  },
+  {
+    "Trial Balance": 500425,
+    "__EMPTY": "    Disposal Account"
+  },
+  {
+    "Trial Balance": 500426,
+    "__EMPTY": "    Health & Fitness Facility Income"
+  },
+  {
+    "Trial Balance": 500427,
+    "__EMPTY": "    Covid Centre Financing"
+  },
+  {
+    "Trial Balance": 500429,
+    "__EMPTY": "  Support Services Income Total"
+  },
+  {
+    "Trial Balance": 500430,
+    "__EMPTY": "  KHA Subscriptions"
+  },
+  {
+    "Trial Balance": 500431,
+    "__EMPTY": "    KHA Subscriptions"
+  },
+  {
+    "Trial Balance": 500439,
+    "__EMPTY": "  KHA Subscriptions Total"
+  },
+  {
+    "Trial Balance": 500440,
+    "__EMPTY": "  School of nursing Income"
+  },
+  {
+    "Trial Balance": 500441,
+    "__EMPTY": "  Miscellenous Income"
+  },
+  {
+    "Trial Balance": 500442,
+    "__EMPTY": "  School Of Nursing Other Income"
+  },
+  {
+    "Trial Balance": 500443,
+    "__EMPTY": "  School of Nursing Accomodation"
+  },
+  {
+    "Trial Balance": 500499,
+    "__EMPTY": "Other Income Total"
+  },
+  {
+    "Trial Balance": 500500,
+    "__EMPTY": "Post Migration Care Sales"
+  },
+  {
+    "Trial Balance": 600000,
+    "__EMPTY": "Cost of Sales"
+  },
+  {
+    "Trial Balance": 600001,
+    "__EMPTY": "  Cost of Drugs and Medicines"
+  },
+  {
+    "Trial Balance": 600002,
+    "__EMPTY": "  Cost of Surgical Consumables"
+  },
+  {
+    "Trial Balance": 600003,
+    "__EMPTY": "  Cost of Surgical Items"
+  },
+  {
+    "Trial Balance": 600004,
+    "__EMPTY": "  Cost of Theatre Items/ Theatre Instruments"
+  },
+  {
+    "Trial Balance": 600005,
+    "__EMPTY": "  Cost of Laboratory Consumables"
+  },
+  {
+    "Trial Balance": 600006,
+    "__EMPTY": "  Cost of Radiology Materials"
+  },
+  {
+    "Trial Balance": 600007,
+    "__EMPTY": "  Cost of Cath Lab Materials"
+  },
+  {
+    "Trial Balance": 600008,
+    "__EMPTY": "  Cost of ICU Materials"
+  },
+  {
+    "Trial Balance": 600009,
+    "__EMPTY": "  Cost of Renal Materials"
+  },
+  {
+    "Trial Balance": 600010,
+    "__EMPTY": "  Cost of Physical medicine Materials"
+  },
+  {
+    "Trial Balance": 600011,
+    "__EMPTY": "  PACs expense"
+  },
+  {
+    "Trial Balance": 600012,
+    "__EMPTY": "  Service Contract-medical equipment"
+  },
+  {
+    "Trial Balance": 600013,
+    "__EMPTY": "  Service Contract-Other equipment"
+  },
+  {
+    "Trial Balance": 600014,
+    "__EMPTY": "  Outsourced tests-Laboratory"
+  },
+  {
+    "Trial Balance": 600015,
+    "__EMPTY": "  Patient Expenses"
+  },
+  {
+    "Trial Balance": 600016,
+    "__EMPTY": "  Doctors Fee Expenses-Speciality Clinics"
+  },
+  {
+    "Trial Balance": 600017,
+    "__EMPTY": "  Discounts Received"
+  },
+  {
+    "Trial Balance": 600018,
+    "__EMPTY": "  Cost of Sales - WIP"
+  },
+  {
+    "Trial Balance": 600019,
+    "__EMPTY": "  Consignment Cost of sales"
+  },
+  {
+    "Trial Balance": 600020,
+    "__EMPTY": "  Cost of sales-Dental"
+  },
+  {
+    "Trial Balance": 600021,
+    "__EMPTY": "  Cost of sales-CSSD"
+  },
+  {
+    "Trial Balance": 600022,
+    "__EMPTY": "  Doctors fee-IP Packages"
+  },
+  {
+    "Trial Balance": 600023,
+    "__EMPTY": "Outsourced tests - Radiology"
+  },
+  {
+    "Trial Balance": 600024,
+    "__EMPTY": "Outsourced tests - Oncology"
+  },
+  {
+    "Trial Balance": 600025,
+    "__EMPTY": "Outsourced services - CSSD"
+  },
+  {
+    "Trial Balance": 600026,
+    "__EMPTY": "Outsourced services - Dental"
+  },
+  {
+    "Trial Balance": 600049,
+    "__EMPTY": "Cost Of Sales Total"
+  },
+  {
+    "Trial Balance": 600100,
+    "__EMPTY": "Inventory Adjustment"
+  },
+  {
+    "Trial Balance": 600101,
+    "__EMPTY": "  Adjustments - Medicine and Drugs"
+  },
+  {
+    "Trial Balance": 600102,
+    "__EMPTY": "  Adjustments - Surgical Consumables"
+  },
+  {
+    "Trial Balance": 600103,
+    "__EMPTY": "  Adjustment - Surgical Equipment"
+  },
+  {
+    "Trial Balance": 600104,
+    "__EMPTY": "  Adjustments - Theatre Implants"
+  },
+  {
+    "Trial Balance": 600105,
+    "__EMPTY": "  Adjustments - Lab Materials"
+  },
+  {
+    "Trial Balance": 600106,
+    "__EMPTY": "  Adjustments - Radiology Materials"
+  },
+  {
+    "Trial Balance": 600107,
+    "__EMPTY": "  Adjustments - Cathlab Materials"
+  },
+  {
+    "Trial Balance": 600108,
+    "__EMPTY": "  Adjustments - ICU Materials"
+  },
+  {
+    "Trial Balance": 600109,
+    "__EMPTY": "  Adjustments - Renal items"
+  },
+  {
+    "Trial Balance": 600110,
+    "__EMPTY": "  Adjustments - Physical Medicine Materials"
+  },
+  {
+    "Trial Balance": 600111,
+    "__EMPTY": "  Adjustments - General Stocks"
+  },
+  {
+    "Trial Balance": 600112,
+    "__EMPTY": "  Adjustments - Foodstuffs"
+  },
+  {
+    "Trial Balance": 600113,
+    "__EMPTY": "  Adjustments - Maintenance Stocks"
+  },
+  {
+    "Trial Balance": 600114,
+    "__EMPTY": "  Cost of Oncology Materials"
+  },
+  {
+    "Trial Balance": 600115,
+    "__EMPTY": "  Adjustment Oncology Materials"
+  },
+  {
+    "Trial Balance": 600116,
+    "__EMPTY": "  Cost of Endoscopy Materials"
+  },
+  {
+    "Trial Balance": 600117,
+    "__EMPTY": "  Adjustments-Endoscopy Materials"
+  },
+  {
+    "Trial Balance": 600118,
+    "__EMPTY": "  Adjustments-CSSD"
+  },
+  {
+    "Trial Balance": 600199,
+    "__EMPTY": "Inventory Adjustment-Total"
+  },
+  {
+    "Trial Balance": 700000,
+    "__EMPTY": "Adminstration Expenses"
+  },
+  {
+    "Trial Balance": 700001,
+    "__EMPTY": "  Licenses & Permits"
+  },
+  {
+    "Trial Balance": 700002,
+    "__EMPTY": "    License Fees - ICT"
+  },
+  {
+    "Trial Balance": 700003,
+    "__EMPTY": "    Licenses Fees - Others"
+  },
+  {
+    "Trial Balance": 700004,
+    "__EMPTY": "    Subscription Expense"
+  },
+  {
+    "Trial Balance": 700005,
+    "__EMPTY": "    Inspection Fees"
+  },
+  {
+    "Trial Balance": 700006,
+    "__EMPTY": "    Land Rates"
+  },
+  {
+    "Trial Balance": 700007,
+    "__EMPTY": "    Land Rents"
+  },
+  {
+    "Trial Balance": 700008,
+    "__EMPTY": "    Lease Rentals"
+  },
+  {
+    "Trial Balance": 700010,
+    "__EMPTY": "  Licenses & Permits Total"
+  },
+  {
+    "Trial Balance": 700011,
+    "__EMPTY": "  Marketing Expenses"
+  },
+  {
+    "Trial Balance": 700012,
+    "__EMPTY": "    Marketing  & Public Relations Expense"
+  },
+  {
+    "Trial Balance": 700013,
+    "__EMPTY": "    Advertising Expenses"
+  },
+  {
+    "Trial Balance": 700014,
+    "__EMPTY": "    Corporate Social Responsibility"
+  },
+  {
+    "Trial Balance": 700020,
+    "__EMPTY": "  Marketing Expenses Total"
+  },
+  {
+    "Trial Balance": 700021,
+    "__EMPTY": "  Insurance"
+  },
+  {
+    "Trial Balance": 700022,
+    "__EMPTY": "    Professional Indemnity"
+  },
+  {
+    "Trial Balance": 700023,
+    "__EMPTY": "    General Insurance"
+  },
+  {
+    "Trial Balance": 700025,
+    "__EMPTY": "  Insurance Total"
+  },
+  {
+    "Trial Balance": 700026,
+    "__EMPTY": "  Legal & Professional"
+  },
+  {
+    "Trial Balance": 700027,
+    "__EMPTY": "    Legal Expenses"
+  },
+  {
+    "Trial Balance": 700028,
+    "__EMPTY": "    Fines and Penalties"
+  },
+  {
+    "Trial Balance": 700035,
+    "__EMPTY": "  Legal & Professional Total"
+  },
+  {
+    "Trial Balance": 700036,
+    "__EMPTY": "  Other Administration Expenses"
+  },
+  {
+    "Trial Balance": 700037,
+    "__EMPTY": "    Strategy Expenses"
+  },
+  {
+    "Trial Balance": 700038,
+    "__EMPTY": "    Consultancy Services-Locum Doctors"
+  },
+  {
+    "Trial Balance": 700039,
+    "__EMPTY": "    Newspapers & Periodicals"
+  },
+  {
+    "Trial Balance": 700040,
+    "__EMPTY": "    Accreditation Expense"
+  },
+  {
+    "Trial Balance": 700041,
+    "__EMPTY": "    ICT Project Expenses"
+  },
+  {
+    "Trial Balance": 700042,
+    "__EMPTY": "    General Expenses"
+  },
+  {
+    "Trial Balance": 700043,
+    "__EMPTY": "    Directors Remuneration"
+  },
+  {
+    "Trial Balance": 700044,
+    "__EMPTY": "    Consultancy Services-others"
+  },
+  {
+    "Trial Balance": 700045,
+    "__EMPTY": "    Other Directors Expenses"
+  },
+  {
+    "Trial Balance": 700046,
+    "__EMPTY": "    College of Health Sciences-Other Expenses"
+  },
+  {
+    "Trial Balance": 700047,
+    "__EMPTY": "    Joint Commission Inter. Accreditation"
+  },
+  {
+    "Trial Balance": 700050,
+    "__EMPTY": "  Other Administration Expenses Total"
+  },
+  {
+    "Trial Balance": 700099,
+    "__EMPTY": "Adminstration Expenses Total"
+  },
+  {
+    "Trial Balance": 710000,
+    "__EMPTY": "Employment Expenses"
+  },
+  {
+    "Trial Balance": 710001,
+    "__EMPTY": "  Salaries & Wages"
+  },
+  {
+    "Trial Balance": 710002,
+    "__EMPTY": "    Staff Salaries - Management Staff"
+  },
+  {
+    "Trial Balance": 710003,
+    "__EMPTY": "    Staff Salaries - Union Staff"
+  },
+  {
+    "Trial Balance": 710004,
+    "__EMPTY": "    Staff Salaries - Locum Staff"
+  },
+  {
+    "Trial Balance": 710005,
+    "__EMPTY": "    Staff Salaries - Overtime"
+  },
+  {
+    "Trial Balance": 710006,
+    "__EMPTY": "    Staff Bonus"
+  },
+  {
+    "Trial Balance": 710007,
+    "__EMPTY": "    Students Stipend"
+  },
+  {
+    "Trial Balance": 710008,
+    "__EMPTY": "    Salaries-Third Party Contracts"
+  },
+  {
+    "Trial Balance": 710010,
+    "__EMPTY": "  Salaries & Wages Total"
+  },
+  {
+    "Trial Balance": 710011,
+    "__EMPTY": "  Retirement Benefits"
+  },
+  {
+    "Trial Balance": 710012,
+    "__EMPTY": "    Staff Provident Fund"
+  },
+  {
+    "Trial Balance": 710013,
+    "__EMPTY": "    NSSF"
+  },
+  {
+    "Trial Balance": 710014,
+    "__EMPTY": "    Affordable Housing Levy"
+  },
+  {
+    "Trial Balance": 710015,
+    "__EMPTY": "    Staff Gratuity"
+  },
+  {
+    "Trial Balance": 710020,
+    "__EMPTY": "  Retirement Benefits Totals"
+  },
+  {
+    "Trial Balance": 710021,
+    "__EMPTY": "  Staff Training"
+  },
+  {
+    "Trial Balance": 710022,
+    "__EMPTY": "    Staff Training - Local"
+  },
+  {
+    "Trial Balance": 710023,
+    "__EMPTY": "    Staff Training - International"
+  },
+  {
+    "Trial Balance": 710024,
+    "__EMPTY": "    Staff Training - In-House "
+  },
+  {
+    "Trial Balance": 710025,
+    "__EMPTY": "    NITA Levy"
+  },
+  {
+    "Trial Balance": 710029,
+    "__EMPTY": "  Staff Training Expense Total"
+  },
+  {
+    "Trial Balance": 710030,
+    "__EMPTY": "  Staff Medical Cost"
+  },
+  {
+    "Trial Balance": 710031,
+    "__EMPTY": "    Staff Medical Costs - Management Staff"
+  },
+  {
+    "Trial Balance": 710032,
+    "__EMPTY": "    Staff Medical Costs - Union Staff"
+  },
+  {
+    "Trial Balance": 710033,
+    "__EMPTY": "    Staff Medical Insurance"
+  },
+  {
+    "Trial Balance": 710034,
+    "__EMPTY": "    Staff Medical Costs – Locum "
+  },
+  {
+    "Trial Balance": 710039,
+    "__EMPTY": "  Staff Medical Cost Total"
+  },
+  {
+    "Trial Balance": 710040,
+    "__EMPTY": "  Staff Uniform Cost"
+  },
+  {
+    "Trial Balance": 710041,
+    "__EMPTY": "    Staff Uniform Costs - Management Staff"
+  },
+  {
+    "Trial Balance": 710042,
+    "__EMPTY": "    Staff Uniform Costs - Union Staff"
+  },
+  {
+    "Trial Balance": 710049,
+    "__EMPTY": "  Staff Uniform Cost Total"
+  },
+  {
+    "Trial Balance": 710050,
+    "__EMPTY": "  Staff Recruitment Cost"
+  },
+  {
+    "Trial Balance": 710051,
+    "__EMPTY": "    Recruitment - Interview Costs"
+  },
+  {
+    "Trial Balance": 710052,
+    "__EMPTY": "    Recruitment - Medical Examinations"
+  },
+  {
+    "Trial Balance": 710053,
+    "__EMPTY": "    Recruitment - Consultancy Services"
+  },
+  {
+    "Trial Balance": 710054,
+    "__EMPTY": "    Recruitment - Advertising Services"
+  },
+  {
+    "Trial Balance": 710059,
+    "__EMPTY": "  Staff Recruitment Cost"
+  },
+  {
+    "Trial Balance": 710060,
+    "__EMPTY": "  Other Staff Cost"
+  },
+  {
+    "Trial Balance": 710061,
+    "__EMPTY": "    Staff  Welfare "
+  },
+  {
+    "Trial Balance": 710062,
+    "__EMPTY": "    Group Life and PA Cover Expense"
+  },
+  {
+    "Trial Balance": 710063,
+    "__EMPTY": "    Culture and Transformation"
+  },
+  {
+    "Trial Balance": 710069,
+    "__EMPTY": "  Other Staff Costs Totals"
+  },
+  {
+    "Trial Balance": 710099,
+    "__EMPTY": "Employment Expenses Total"
+  },
+  {
+    "Trial Balance": 720000,
+    "__EMPTY": "Repairs and Renewals"
+  },
+  {
+    "Trial Balance": 720001,
+    "__EMPTY": "  Repairs & Renewals - Medical Equipment"
+  },
+  {
+    "Trial Balance": 720002,
+    "__EMPTY": "  Repairs & Renewals - Non Medical Equipment"
+  },
+  {
+    "Trial Balance": 720003,
+    "__EMPTY": "  Repairs & Renewals - Buildings"
+  },
+  {
+    "Trial Balance": 720004,
+    "__EMPTY": "  Repairs & Renewals - IT Hardware"
+  },
+  {
+    "Trial Balance": 720005,
+    "__EMPTY": "  Repairs & Renewals - Catering Equipment"
+  },
+  {
+    "Trial Balance": 720006,
+    "__EMPTY": "  Repairs & Renewals - Laundry Equipment"
+  },
+  {
+    "Trial Balance": 720007,
+    "__EMPTY": "  Repairs & Renewals - T.V's"
+  },
+  {
+    "Trial Balance": 720008,
+    "__EMPTY": "  Service Contract - IT Hardware"
+  },
+  {
+    "Trial Balance": 720009,
+    "__EMPTY": "  Service Contract - IT Software"
+  },
+  {
+    "Trial Balance": 720011,
+    "__EMPTY": "  Grounds Maintenance Expenses"
+  },
+  {
+    "Trial Balance": 720012,
+    "__EMPTY": "  Inhouse Contamination Tests"
+  },
+  {
+    "Trial Balance": 720013,
+    "__EMPTY": "  Security Services"
+  },
+  {
+    "Trial Balance": 720014,
+    "__EMPTY": "  Rent & rates - Outreach Centres"
+  },
+  {
+    "Trial Balance": 720015,
+    "__EMPTY": "  Electricity Expense"
+  },
+  {
+    "Trial Balance": 720016,
+    "__EMPTY": "  Water Expense"
+  },
+  {
+    "Trial Balance": 720017,
+    "__EMPTY": "  Fuel Expense - Furnace Oil"
+  },
+  {
+    "Trial Balance": 720018,
+    "__EMPTY": "  Medical Gases Expense"
+  },
+  {
+    "Trial Balance": 720019,
+    "__EMPTY": "  LPG Gas Expense"
+  },
+  {
+    "Trial Balance": 720020,
+    "__EMPTY": "  Interest on Lease Liability Expenses"
+  },
+  {
+    "Trial Balance": 720029,
+    "__EMPTY": "Establishment Expenses + Repairs and Mainte Totals"
+  },
+  {
+    "Trial Balance": 720030,
+    "__EMPTY": "Catering Costs"
+  },
+  {
+    "Trial Balance": 720031,
+    "__EMPTY": "  Food Stuffs Costs"
+  },
+  {
+    "Trial Balance": 720032,
+    "__EMPTY": "  Cutlery & Crockery Costs"
+  },
+  {
+    "Trial Balance": 720033,
+    "__EMPTY": "  Outsourced Catering Services"
+  },
+  {
+    "Trial Balance": 720034,
+    "__EMPTY": "  Charge In Food costs"
+  },
+  {
+    "Trial Balance": 720039,
+    "__EMPTY": "Catering Costs Totals"
+  },
+  {
+    "Trial Balance": 720040,
+    "__EMPTY": "Laundry Expenses"
+  },
+  {
+    "Trial Balance": 720041,
+    "__EMPTY": "  Linen Costs"
+  },
+  {
+    "Trial Balance": 720042,
+    "__EMPTY": "  Laundry Detergents and Items"
+  },
+  {
+    "Trial Balance": 720043,
+    "__EMPTY": "  Charge In Laundry"
+  },
+  {
+    "Trial Balance": 720049,
+    "__EMPTY": "Laundry Expenses Totals"
+  },
+  {
+    "Trial Balance": 720050,
+    "__EMPTY": "Printing & Stationery"
+  },
+  {
+    "Trial Balance": 720051,
+    "__EMPTY": "  Stationery Expenses"
+  },
+  {
+    "Trial Balance": 720052,
+    "__EMPTY": "  Printing Expenses"
+  },
+  {
+    "Trial Balance": 720053,
+    "__EMPTY": "  General Stocks - Housekeeping"
+  },
+  {
+    "Trial Balance": 720059,
+    "__EMPTY": "Printing & Stationery Totals"
+  },
+  {
+    "Trial Balance": 720060,
+    "__EMPTY": "Transport & Communication Expenses"
+  },
+  {
+    "Trial Balance": 720061,
+    "__EMPTY": "  Courier Services"
+  },
+  {
+    "Trial Balance": 720062,
+    "__EMPTY": "  Telephone Expenses"
+  },
+  {
+    "Trial Balance": 720063,
+    "__EMPTY": "  Postage Expenses"
+  },
+  {
+    "Trial Balance": 720064,
+    "__EMPTY": "  Taxi & Hire Services"
+  },
+  {
+    "Trial Balance": 720065,
+    "__EMPTY": "  Transport Services"
+  },
+  {
+    "Trial Balance": 720066,
+    "__EMPTY": "  Vehicle/Motor cycle maintenance Expense"
+  },
+  {
+    "Trial Balance": 720067,
+    "__EMPTY": "  Vehicle License Fees"
+  },
+  {
+    "Trial Balance": 720068,
+    "__EMPTY": "  Motor Vehicle Insurance"
+  },
+  {
+    "Trial Balance": 720069,
+    "__EMPTY": "  Other Motor Vehicle Costs"
+  },
+  {
+    "Trial Balance": 720070,
+    "__EMPTY": "  Out of office Lunch allowance"
+  },
+  {
+    "Trial Balance": 720071,
+    "__EMPTY": "  Fuel Expense - Vehicles"
+  },
+  {
+    "Trial Balance": 720079,
+    "__EMPTY": "Transport & Communication Expenses Total"
+  },
+  {
+    "Trial Balance": 720080,
+    "__EMPTY": "Cleaning Services"
+  },
+  {
+    "Trial Balance": 720081,
+    "__EMPTY": "  Outsourced Cleaning Services"
+  },
+  {
+    "Trial Balance": 720082,
+    "__EMPTY": "  Cleaning Detergents"
+  },
+  {
+    "Trial Balance": 720083,
+    "__EMPTY": "  Pesticides & Fumigation"
+  },
+  {
+    "Trial Balance": 720084,
+    "__EMPTY": "  Incineration Services"
+  },
+  {
+    "Trial Balance": 720099,
+    "__EMPTY": "Cleaning Services Total"
+  },
+  {
+    "Trial Balance": 730000,
+    "__EMPTY": "Finance Expenses"
+  },
+  {
+    "Trial Balance": 730001,
+    "__EMPTY": "  Depreciation Expense"
+  },
+  {
+    "Trial Balance": 730002,
+    "__EMPTY": "  Amortization Expense - Intangible Assets"
+  },
+  {
+    "Trial Balance": 730003,
+    "__EMPTY": "  Prompt Payment Discounts Expense"
+  },
+  {
+    "Trial Balance": 730004,
+    "__EMPTY": "  Provision for Bad Debts"
+  },
+  {
+    "Trial Balance": 730005,
+    "__EMPTY": "  Loan Interest Expense"
+  },
+  {
+    "Trial Balance": 730006,
+    "__EMPTY": "  Corporate Discounts Expense"
+  },
+  {
+    "Trial Balance": 730007,
+    "__EMPTY": "  Credit Cards Commission Expense"
+  },
+  {
+    "Trial Balance": 730008,
+    "__EMPTY": "  Audit Fees"
+  },
+  {
+    "Trial Balance": 730009,
+    "__EMPTY": "  Bank Charges"
+  },
+  {
+    "Trial Balance": 730010,
+    "__EMPTY": "  Provision for fixed deposit Impairment"
+  },
+  {
+    "Trial Balance": 730012,
+    "__EMPTY": "  Realized FX Loss"
+  },
+  {
+    "Trial Balance": 730013,
+    "__EMPTY": "  Unrealized FX Loss"
+  },
+  {
+    "Trial Balance": 730015,
+    "__EMPTY": "  Debt Recovery Costs"
+  },
+  {
+    "Trial Balance": 730016,
+    "__EMPTY": "  Write-off Expense"
+  },
+  {
+    "Trial Balance": 730017,
+    "__EMPTY": "  Withholding Tax Expense - Fixed Deposits"
+  },
+  {
+    "Trial Balance": 730018,
+    "__EMPTY": "  Depreciation on Right Of Use Asset"
+  },
+  {
+    "Trial Balance": 730019,
+    "__EMPTY": "  Provision for Treasury Bonds Impairment"
+  },
+  {
+    "Trial Balance": 730020,
+    "__EMPTY": "  Provision for Bank balances Impairment"
+  },
+  {
+    "Trial Balance": 730021,
+    "__EMPTY": "  Revaluation Loss/Gain"
+  },
+  {
+    "Trial Balance": 730022,
+    "__EMPTY": "  Amortization Expense-Bonds Premium"
+  },
+  {
+    "Trial Balance": 730050,
+    "__EMPTY": "Finance Expenses Total"
+  },
+  {
+    "Trial Balance": 730100,
+    "__EMPTY": "Doctors Fees"
+  },
+  {
+    "Trial Balance": 800001,
+    "__EMPTY": "  Doctors fees amount"
+  },
+  {
+    "Trial Balance": 800002,
+    "__EMPTY": "  External Doctors Fees - Old Bills"
+  },
+  {
+    "Trial Balance": 800100,
+    "__EMPTY": "Total Doctors Fees"
+  },
+  {
+    "Trial Balance": 899999,
+    "__EMPTY": "Surplus/Deficit"
+  },
+  {
+    "Trial Balance": 900000,
+    "__EMPTY": "System Accounts"
+  },
+  {
+    "Trial Balance": 9001000,
+    "__EMPTY": "  Payment Distributions"
+  },
+  {
+    "Trial Balance": 9002000,
+    "__EMPTY": "  Doctors Fees Accounts"
+  },
+  {
+    "Trial Balance": 9003000,
+    "__EMPTY": "  Dispatch Holding Account"
+  },
+  {
+    "Trial Balance": 9004000,
+    "__EMPTY": "  Rebate Control"
+  },
+  {
+    "Trial Balance": 9005000,
+    "__EMPTY": "  Conversion from USD to KES"
+  },
+  {
+    "Trial Balance": 9006000,
+    "__EMPTY": "  Refund Holding Account-Patients"
+  },
+  {
+    "Trial Balance": 9006001,
+    "__EMPTY": "  Refund Holding Account-Students"
+  },
+  {
+    "Trial Balance": 900999,
+    "__EMPTY": "System Accounts"
+  },
+  {
+    "Trial Balance": 999999,
+    "__EMPTY": "Holding Account"
+  },
+  {
+    "Trial Balance": "TRADE PAYABLES CAPEX",
+    "__EMPTY": ""
+  }
+      // Add additional entries as needed
+    ];
+
+    const tbody = document.getElementById("trialBalanceBody");
+
+    trialBalanceData.forEach(item => {
+      const row = document.createElement("tr");
+
+      const no = document.createElement("td");
+      no.className = "border px-3 py-2";
+      no.textContent = item["Trial Balance"];
+
+      const name = document.createElement("td");
+      name.className = "border px-3 py-2";
+      name.textContent = item["__EMPTY"]?.trim() || "—";
+
+      const debit = document.createElement("td");
+      debit.className = "border px-3 py-2 text-right text-gray-500";
+      debit.textContent = "—"; // Placeholder, update with real values if available
+
+      const credit = document.createElement("td");
+      credit.className = "border px-3 py-2 text-right text-gray-500";
+      credit.textContent = "—"; // Placeholder, update with real values if available
+
+      row.append(no, name, debit, credit);
+      tbody.appendChild(row);
+    });
+  </script>
+
+
+{% endblock %}

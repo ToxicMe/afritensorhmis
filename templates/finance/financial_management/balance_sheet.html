@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+
+<div class="max-w-7xl mt-12 mb-12 mx-auto bg-white shadow-md rounded-lg p-6 space-y-10">
+  
+  <!-- Header -->
+  <div class="text-center">
+    <h1 class="text-3xl font-bold text-gray-800">Balance Sheet Summary</h1>
+  </div>
+
+  
+
+  <!-- Assets Section -->
+  <section>
+    <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Assets</h2>
+    
+   
+
+    <div class="mb-4 text-gray-600 font-medium">Current Assets</div>
+    <table class="min-w-full border text-sm text-gray-600 mb-6">
+      <thead class="bg-blue-600 text-left">
+        <tr>
+          <th class="py-2 px-3 border text-gray-100">Name</th>
+          <th class="py-2 px-3 border text-gray-100">Amount (KES)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="border px-3 py-2">Cash</td>
+          <td class="border px-3 py-2">KES 500,000</td>
+        </tr>
+        <tr>
+          <td class="border px-3 py-2">Accounts Receivable</td>
+          <td class="border px-3 py-2">KES 300,000</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="mb-4 text-gray-600 font-medium">Non-Current Assets</div>
+    <table class="min-w-full border text-sm text-gray-600">
+      <thead class="bg-blue-600 text-left">
+        <tr>
+          <th class="py-2 px-3 border text-gray-100">Name</th>
+          <th class="py-2 px-3 border text-gray-100">Amount (KES)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="border px-3 py-2">Building</td>
+          <td class="border px-3 py-2">KES 2,000,000</td>
+        </tr>
+        <tr>
+          <td class="border px-3 py-2">Equipment</td>
+          <td class="border px-3 py-2">KES 1,000,000</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Liabilities Section -->
+  <section>
+    <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Liabilities</h2>
+
+    <div class="mb-4 text-gray-600 font-medium">Current Liabilities</div>
+    <table class="min-w-full border text-sm text-gray-600 mb-6">
+      <thead class="bg-blue-600 text-left">
+        <tr>
+          <th class="py-2 px-3 border text-gray-100">Name</th>
+          <th class="py-2 px-3 border text-gray-100">Amount (KES)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="border px-3 py-2">Accounts Payable</td>
+          <td class="border px-3 py-2">KES 400,000</td>
+        </tr>
+        <tr>
+          <td class="border px-3 py-2">Short-Term Loans</td>
+          <td class="border px-3 py-2">KES 200,000</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="mb-4 text-gray-600 font-medium">Non-Current Liabilities</div>
+    <table class="min-w-full border text-sm text-gray-600">
+      <thead class="bg-blue-600 text-left">
+        <tr>
+          <th class="py-2 px-3 border text-gray-100">Name</th>
+          <th class="py-2 px-3 border text-gray-100">Amount (KES)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="border px-3 py-2">Long-Term Loan</td>
+          <td class="border px-3 py-2">KES 1,000,000</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Equity Section -->
+  <section>
+    <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Equity</h2>
+    <table class="min-w-full border text-sm text-gray-600">
+      <thead class="bg-blue-600 text-left">
+        <tr>
+          <th class="py-2 px-3 border text-gray-100">Name</th>
+          <th class="py-2 px-3 border text-gray-100">Amount (KES)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="border px-3 py-2">Retained Earnings</td>
+          <td class="border px-3 py-2">KES 1,200,000</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Totals -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10 text-sm text-gray-700">
+    <div class="bg-gray-50 p-4 border rounded">
+      <strong>Total Assets</strong><br><br> KES 3,800,000
+    </div>
+    <div class="bg-gray-50 p-4 border rounded">
+      <strong>Total Liabilities</strong><br><br> KES 1,600,000
+    </div>
+    <div class="bg-gray-50 p-4 border rounded">
+      <strong>Total Equity</strong><br><br> KES 2,200,000
+    </div>
+  </div>
+
+  <!-- Back Button -->
+  <div class="mt-6 text-center">
+    <span class="text-black-600 font-bold">
+        
+        <div class="space-x-4 space-y-4 text-center">
+            <a href="{% url 'accounting'%}">
+            <button type="button"
+              class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold cursor-pointer border-2 border-black-700 outline-none bg-transparent hover:bg-black-700 text-black-700 hover:text-white transition-all duration-300">Back</button>
+                </a>
+            </div>      
+    </span>
+  </div>
+
+</div>
+
+{% endblock %}

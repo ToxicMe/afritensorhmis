@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<section class="bg-gray-50 py-10">
+    <div class="max-w-8xl mx-auto bg-white p-8 rounded shadow">
+      <h1 class="text-2xl font-bold text-center text-blue-600 mb-6">MOH 362 – HTC Lab Register</h1>
+  
+     
+      <!-- HTC Register Table -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-300 text-sm text-left">
+          <thead class="bg-blue-600 text-gray-100">
+            <tr>
+              <th class="px-4 py-2">#</th>
+              <th class="px-4 py-2">Date</th>
+              <th class="px-4 py-2">Patient ID</th>
+              <th class="px-4 py-2">Age</th>
+              <th class="px-4 py-2">Sex</th>
+              <th class="px-4 py-2">Counselor Name</th>
+              <th class="px-4 py-2">Entry Point</th>
+              <th class="px-4 py-2">Testing Strategy</th>
+              <th class="px-4 py-2">Test 1 Result</th>
+              <th class="px-4 py-2">Test 2 Result</th>
+              <th class="px-4 py-2">Final Result</th>
+              <th class="px-4 py-2">Couple Testing</th>
+              <th class="px-4 py-2">Partner Result</th>
+              <th class="px-4 py-2">Referral to Care</th>
+              <th class="px-4 py-2">Remarks</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <!-- Example Entry -->
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-2">1</td>
+              <td class="px-4 py-2">2025-06-20</td>
+              <td class="px-4 py-2">OP123456</td>
+              <td class="px-4 py-2">29</td>
+              <td class="px-4 py-2">F</td>
+              <td class="px-4 py-2">Amina Njeri</td>
+              <td class="px-4 py-2">VCT</td>
+              <td class="px-4 py-2">Provider-Initiated</td>
+              <td class="px-4 py-2">Positive</td>
+              <td class="px-4 py-2">Positive</td>
+              <td class="px-4 py-2 text-red-600 font-semibold">Positive</td>
+              <td class="px-4 py-2">Yes</td>
+              <td class="px-4 py-2">Negative</td>
+              <td class="px-4 py-2">Yes</td>
+              <td class="px-4 py-2">Referred to CCC</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+  
+      
+    </div>
+  </section>
+  
+  
+
+
+{% endblock %}

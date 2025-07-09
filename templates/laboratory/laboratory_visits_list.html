@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="overflow-x-auto mt-6">
+  {% if error %}
+    <div class="bg-red-100 text-red-700 p-4 mb-4 rounded">{{ error }}</div>
+  {% endif %}
+  
+  <table class="min-w-full bg-white border border-gray-300">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="py-2 px-4 border-b text-left">Tracking Code</th>
+        <th class="py-2 px-4 border-b text-left">Patient Name</th>
+        <th class="py-2 px-4 border-b text-left">Hospital</th>
+        <th class="py-2 px-4 border-b text-left">Date of Visit</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for visit in visits %}
+      <tr class="hover:bg-gray-50">
+        <td class="py-2 px-4 border-b">{{ visit.tracking_code }}</td>
+        <td class="py-2 px-4 border-b">{{ visit.patient.get_full_name|default:visit.patient.username }}
+</td>
+        <td class="py-2 px-4 border-b">{{ visit.hospital.name }}</td>
+        <td class="py-2 px-4 border-b">{{ visit.date_time|date:"Y-m-d H:i" }}</td>
+        <td class="py-2 px-4 border-b">
+          <a href="{% url 'view_doctor_note' visit.id %}"
+             class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold cursor-pointer border-2 border-blue-700 outline-none bg-transparent hover:bg-blue-700 text-blue-700 hover:text-white transition-all duration-300">
+             View Note
+          </a>
+        </td>
+        
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="4" class="text-center py-4 text-gray-500">No visits found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-8xl mx-auto mt-6">
+  <h2 class="text-2xl font-bold mb-4">Pending Prescription</h2>
+
+  {% if error %}
+    <p class="text-red-600">{{ error }}</p>
+  {% endif %}
+
+  <table class="min-w-full bg-white border border-gray-300">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="py-2 px-4 border-b text-left">Tracking Code</th>
+        <th class="py-2 px-4 border-b text-left">Patient Name</th>
+        <th class="py-2 px-4 border-b text-left">Hospital</th>
+        <th class="py-2 px-4 border-b text-left">Date of Visit</th>
+        <th class="py-2 px-4 border-b text-left">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for visit in visits %}
+      <tr class="hover:bg-gray-50">
+        <td class="py-2 px-4 border-b">{{ visit.tracking_code }}</td>
+        <td class="py-2 px-4 border-b">{{ visit.patient.get_full_name|default:visit.patient.username }}</td>
+        <td class="py-2 px-4 border-b">{{ visit.hospital.name }}</td>
+        <td class="py-2 px-4 border-b">{{ visit.date_time|date:"Y-m-d H:i" }}</td>
+        <td class="py-2 px-4 border-b">
+          <a href="{% url 'view_prescription_tests' visit.tracking_code %}" class="bg-blue-500 hover:bg-blue-700 text-white text-sm py-1 px-3 rounded">
+            View
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" class="text-center py-4 text-gray-500">No visits available for prescription.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

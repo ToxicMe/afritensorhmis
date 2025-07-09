@@ -1,0 +1,220 @@
+
+{% extends "base.html" %}
+{% block content %}
+
+{% if messages %}
+  <div class="my-4">
+    {% for message in messages %}
+      <div class="text-sm p-2 mb-2 rounded 
+                  {% if message.tags == 'error' %}bg-red-100 text-red-700
+                  {% elif message.tags == 'success' %}bg-green-100 text-green-700
+                  {% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-700
+                  {% else %}bg-blue-100 text-blue-700{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let tabs = document.querySelectorAll('.tab');
+        let contents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(function (tab) {
+          tab.addEventListener('click', function (e) {
+            let targetId = tab.id.replace('Tab', 'Content');
+
+            // Hide all content divs
+            contents.forEach(function (content) {
+              content.classList.add('hidden');
+            });
+
+            // Remove active class from all tabs
+            tabs.forEach(function (tab) {
+              tab.classList.remove('text-blue-600', 'bg-white', 'border-blue-600');
+              tab.classList.add('border-gray-100', 'text-slate-600');
+            });
+
+            // Show the target content
+            document.getElementById(targetId).classList.remove('hidden');
+
+            // Add active class to the clicked tab
+            tab.classList.add('text-blue-600', 'bg-white', 'border-blue-600');
+            tab.classList.remove('border-gray-100', 'text-slate-600');
+          });
+        });
+      });
+</script>
+
+
+
+
+<div class="p-4">
+    <ul class="flex max-lg:flex-col max-lg:space-y-4 bg-gray-100">
+        <li id="homeTab"
+            class="tab text-slate-600  hover:text-blue-600 font-semibold text-[15px] py-3.5 px-7 border-t-[3px] border-gray-100 cursor-pointer">
+            Financial Management</li>
+        <li id="settingTab"
+            class="tab text-blue-600 hover:text-blue-600 font-semibold text-[15px] bg-white py-3.5 px-7 border-t-[3px] border-blue-600 cursor-pointer">
+            Requisition management</li>
+        <li id="overviewTab"
+            class="tab text-slate-600  hover:text-blue-600 font-semibold text-[15px] py-3.5 px-7 border-t-[3px] border-gray-100 cursor-pointer">
+            Cash Office</li>
+        <li id="clickedTab"
+            class="tab text-slate-600  hover:text-blue-600 font-semibold text-[15px] py-3.5 px-7 border-t-[3px] border-gray-100 cursor-pointer">
+            Purchasing</li>
+        <li id="reportsTab"
+            class="tab text-slate-600  hover:text-blue-600 font-semibold text-[15px] py-3.5 px-7 border-t-[3px] border-gray-100 cursor-pointer">
+            Warehousing</li>
+        <li id="viewsTab"
+            class="tab text-slate-600  hover:text-blue-600 font-semibold text-[15px] py-3.5 px-7 border-t-[3px] border-gray-100 cursor-pointer">
+            Adminstration</li>
+       
+    </ul>
+
+    <div id="homeContent" class="tab-content max-w-2xl hidden mt-8">
+        <h4 class="text-base font-semibold text-slate-600">Financial Management</h4>
+        <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+
+            <div class="space-x-4 space-y-4 text-center">
+                  <a href="{% url 'general_ledger' %}">
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">General Ledger</button>
+                  </a>
+                 
+                  <a href="{% url 'cash_management' %}">
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Cash Management</button>
+                  </a>
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Cost Accounting</button>
+                  <a href="{% url 'cash_flow' %}">
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Cash Flow</button>
+                  </a>
+                  <a href="{% url 'receivables' %}">
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Receivables</button>
+                  </a>
+                  <a href="{% url 'payables' %}">
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Payables</button>
+                  </a>
+                  <a href="{% url 'balance_sheet' %}">
+                    <button type="button"
+                    class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Balance Sheet</button>            
+                    </a>
+                    
+                    <a href="{% url 'fixed_assets' %}">
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Fixed Assets</button>
+                  </a>
+                  <a href="{% url 'fixed_assets' %}">
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Inventory</button>
+                  </a>
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Periodic Activities</button>
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Setup</button>
+                  <a href="{% url 'trial_balance' %}">
+                    <button type="button"
+                    class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Trial Balance</button>
+                    </a>
+              </div>
+        </p>
+    </div>
+    <div id="settingContent" class="tab-content max-w-2xl block mt-8">
+        <h4 class="text-base font-semibold text-slate-600">Requisition management</h4>
+        <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+
+            <div class="space-x-4 space-y-4 text-center">
+
+              <a href="{% url 'requisition_list' %}">
+                <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Requisitions</button>
+                </a>
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Processing</button>
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Reports</button>
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Setup</button>
+                 
+              </div>
+        </p>
+    </div>
+    <div id="overviewContent" class="tab-content max-w-2xl hidden mt-8">
+        <h4 class="text-base font-semibold text-slate-600">Cash Office</h4>
+        <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+
+            <div class="space-x-4 space-y-4 text-center">
+      
+                <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Petty Cash</button>
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Payments</button>
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Point of Sale</button>
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Setup</button>
+                  
+              </div>
+        </p>
+    </div>
+    <div id="clickedContent" class="tab-content max-w-2xl hidden mt-8">
+        <h4 class="text-base font-semibold text-slate-600">Purchasing</h4>
+        <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+
+            <div class="space-x-4 space-y-4 text-center">
+      
+                <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Planning</button>
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">order Procesing</button>
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Inventory & Costing</button>
+                 
+              </div>
+        </p>
+    </div>
+    <div id="reportsContent" class="tab-content max-w-2xl hidden mt-8">
+        <h4 class="text-base font-semibold text-slate-600">Warehousing</h4>
+        <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+
+            <div class="space-x-4 space-y-4 text-center">
+      
+                <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Orders & Contacts</button>
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Planning & Execution</button>
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Goods Handling</button>
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Inventory</button>
+                  <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Assembly</button>
+                 
+              </div>
+        </p>
+    </div>
+    <div id="viewsContent" class="tab-content max-w-2xl hidden mt-8">
+        <h4 class="text-base font-semibold text-slate-600">Adminstration</h4>
+        <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+
+            <div class="space-x-4 space-y-4 text-center">
+
+                <a href="{% url 'supplier_list' %}">
+                  
+                <button type="button"
+                  class="bg-white py-2.5 min-w-[140px] cursor-pointer shadow-xl shadow-blue-200 text-black text-sm tracking-wider font-medium outline-none border border-blue-600 active:shadow-inner">Suppliers</button>
+                </a>
+              </div>
+        </p>
+    </div>
+
+</div>
+  
+{% endblock %}

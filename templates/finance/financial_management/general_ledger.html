@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-7xl mt-12 mx-auto bg-white shadow-md rounded-lg p-6 space-y-8">
+
+  <!-- Header -->
+  <div class="text-center">
+    <h1 class="text-3xl font-bold text-gray-800">General Ledger</h1>
+    <p class="text-sm text-gray-500 mt-1">A detailed log of all financial transactions</p>
+  </div>
+
+  <!-- Ledger Table -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full border text-sm text-gray-800">
+      <thead class="bg-blue-600 text-left">
+        <tr>
+          <th class="py-2 px-3 border text-gray-100">Date</th>
+          <th class="py-2 px-3 border text-gray-100">Account Number</th>
+          <th class="py-2 px-3 border text-gray-100">Description</th>
+          <th class="py-2 px-3 border text-gray-100">Debit (KES)</th>
+          <th class="py-2 px-3 border text-gray-100">Credit (KES)</th>
+          <th class="py-2 px-3 border text-gray-100">Running Balance (KES)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Example Row -->
+        <tr>
+          <td class="border px-3 py-2">2025-06-01</td>
+          <td class="border px-3 py-2">1001</td>
+          <td class="border px-3 py-2">Sales Revenue</td>
+          <td class="border px-3 py-2">—</td>
+          <td class="border px-3 py-2">KES 15,000</td>
+          <td class="border px-3 py-2">KES 15,000</td>
+        </tr>
+        <tr>
+          <td class="border px-3 py-2">2025-06-03</td>
+          <td class="border px-3 py-2">1002</td>
+          <td class="border px-3 py-2">Office Supplies</td>
+          <td class="border px-3 py-2">KES 2,000</td>
+          <td class="border px-3 py-2">—</td>
+          <td class="border px-3 py-2">KES 13,000</td>
+        </tr>
+        <tr>
+          <td class="border px-3 py-2">2025-06-05</td>
+          <td class="border px-3 py-2">1003</td>
+          <td class="border px-3 py-2">Bank Deposit</td>
+          <td class="border px-3 py-2">KES 5,000</td>
+          <td class="border px-3 py-2">—</td>
+          <td class="border px-3 py-2">KES 18,000</td>
+        </tr>
+        <!-- End Example -->
+      </tbody>
+    </table>
+
+       <!-- Back Button -->
+       <div class="mt-6 text-center">
+        <span class="text-black-600 font-bold">
+            
+            <div class="space-x-4 space-y-4 text-center">
+                <a href="{% url 'accounting'%}">
+                <button type="button"
+                  class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold cursor-pointer border-2 border-black-700 outline-none bg-transparent hover:bg-black-700 text-black-700 hover:text-white transition-all duration-300">Back</button>
+                    </a>
+                </div>      
+        </span>
+      </div>
+    
+  </div>
+
+</div>
+
+{% endblock %}

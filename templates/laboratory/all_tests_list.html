@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-8xl mx-auto mt-6 bg-white p-6 rounded shadow">
+  <h2 class="text-2xl font-bold mb-4">All Available Tests</h2>
+  <table class="min-w-full table-auto border-collapse">
+    <thead>
+      <tr class="bg-gray-100">
+        <th class="border px-4 py-2 text-left">Hospital(s)</th>
+        <th class="border px-4 py-2 text-left">Test Name</th>
+        <th class="border px-4 py-2 text-left">Description</th>
+        <th class="border px-4 py-2 text-left">Price (KES)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for test in tests %}
+      <tr class="hover:bg-gray-50">
+        <td class="border px-4 py-2">
+          {% for hospital in test.hospital_available.all %}
+            {{ hospital.name }}{% if not forloop.last %}, {% endif %}
+          {% empty %}
+            <em>Not assigned</em>
+          {% endfor %}
+        </td>
+        <td class="border px-4 py-2">{{ test.name }}</td>
+        <td class="border px-4 py-2">{{ test.description|default:"—" }}</td>
+        <td class="border px-4 py-2">{{ test.price }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

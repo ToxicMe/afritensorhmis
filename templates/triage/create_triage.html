@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto mt-8 bg-white p-6 shadow rounded">
+  <h2 class="text-2xl font-semibold mb-4">Triage Form for {{ patient.patient_name }}</h2>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block font-semibold">BP (Systolic)</label>
+        <input type="number" name="bp" class="w-full border rounded px-3 py-2" required>
+      </div>
+
+      <div>
+        <label class="block font-semibold">BP Diastolic</label>
+        <input type="number" name="bp_dia" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block font-semibold">Pulse Rate (PR)</label>
+        <input type="number" name="pr" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block font-semibold">SPO2 (%)</label>
+        <input type="number" step="0.1" name="spo2" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block font-semibold">Random Blood Sugar (RBS)</label>
+        <input type="number" step="0.1" name="rbs" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block font-semibold">Temperature (°C)</label>
+        <input type="number" step="0.1" name="temperature" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block font-semibold">Height (cm)</label>
+        <input type="number" step="0.1" name="height" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block font-semibold">Weight (kg)</label>
+        <input type="number" step="0.1" name="weight" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block font-semibold">BMI</label>
+        <input type="number" step="0.1" name="bmi" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block font-semibold">Body Fat (%)</label>
+        <input type="number" step="0.1" name="body_fat" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block font-semibold">Muscle Mass (kg)</label>
+        <input type="number" step="0.1" name="muscle_mass" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block font-semibold">Bone Mass (kg)</label>
+        <input type="number" step="0.1" name="bone_mass" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block font-semibold">Metabolic Age</label>
+        <input type="number" name="metabo_age" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block font-semibold">Calories (kcal)</label>
+        <input type="number" name="calories" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block font-semibold">Visceral Fat</label>
+        <input type="number" name="visce" class="w-full border rounded px-3 py-2">
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+        Submit Triage
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

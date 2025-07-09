@@ -1,0 +1,147 @@
+
+{% extends "base.html" %}
+{% block content %}
+
+{% if messages %}
+  <div class="my-4">
+    {% for message in messages %}
+      <div class="text-sm p-2 mb-2 rounded 
+                  {% if message.tags == 'error' %}bg-red-100 text-red-700
+                  {% elif message.tags == 'success' %}bg-green-100 text-green-700
+                  {% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-700
+                  {% else %}bg-blue-100 text-blue-700{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-8 px-4">
+    <!-- Card 1 -->
+    <div class="bg-white [box-shadow:0_4px_12px_-5px_rgba(0,0,0,0.4)] p-6 w-full rounded-lg overflow-hidden">
+      <div class="inline-block bg-[#edf2f7] rounded-lg py-2 px-3">
+        <!-- SVG icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 511.999 511.999">
+          <path fill="#06d" d="M38.563 418.862L..." />
+          <path fill="#00ad3c" d="M256.293 173.808L..." />
+          <path fill="#00831e" d="M256.293 173.808L..." />
+          <path fill="#0084ff" d="M350.716 338.192L..." />
+          <path fill="#ff4131" d="M431.109 477.919L..." />
+          <path fill="#ffba00" d="M430.756 182.917L..." />
+        </svg>
+      </div>
+  
+      <div class="mt-4">
+        <h3 class="text-xl font-semibold text-slate-900 text-center">Pending Requests</h3>
+        <p class="mt-2 text-sm text-slate-500 text-center"></p>
+      </div>
+  
+      <div class="mt-6">
+        <div class="space-x-4 space-y-4 text-center">
+            <a href="{% url 'laboratory_visits_list' %}">
+            <button type="button"
+              class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold cursor-pointer border-2 border-blue-700 outline-none bg-transparent hover:bg-blue-700 text-blue-700 hover:text-white transition-all duration-300">
+              view
+            </button>
+            </a>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Repeat for Card 2, Card 3, Card 4 -->
+    <div class="bg-white [box-shadow:0_4px_12px_-5px_rgba(0,0,0,0.4)] p-6 w-full rounded-lg overflow-hidden">
+        <div class="inline-block bg-[#edf2f7] rounded-lg py-2 px-3">
+          <!-- SVG icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 511.999 511.999">
+            <path fill="#06d" d="M38.563 418.862L..." />
+            <path fill="#00ad3c" d="M256.293 173.808L..." />
+            <path fill="#00831e" d="M256.293 173.808L..." />
+            <path fill="#0084ff" d="M350.716 338.192L..." />
+            <path fill="#ff4131" d="M431.109 477.919L..." />
+            <path fill="#ffba00" d="M430.756 182.917L..." />
+          </svg>
+        </div>
+    
+        <div class="mt-4">
+          <h3 class="text-xl font-semibold text-slate-900 text-center">Tests Available</h3>
+          <p class="mt-2 text-sm text-slate-500 text-center"></p>
+        </div>
+    
+        <div class="mt-6">
+            <div class="space-x-4 space-y-4 text-center">
+                <a href="{% url 'all_tests_list' %}">
+                <button type="button"
+                  class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold cursor-pointer border-2 border-blue-700 outline-none bg-transparent hover:bg-blue-700 text-blue-700 hover:text-white transition-all duration-300">
+                  view
+                </button>
+                </a>
+            </div>
+          </div>
+      </div>
+    
+  
+      <div class="bg-white [box-shadow:0_4px_12px_-5px_rgba(0,0,0,0.4)] p-6 w-full rounded-lg overflow-hidden">
+        <div class="inline-block bg-[#edf2f7] rounded-lg py-2 px-3">
+          <!-- SVG icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 511.999 511.999">
+            <path fill="#06d" d="M38.563 418.862L..." />
+            <path fill="#00ad3c" d="M256.293 173.808L..." />
+            <path fill="#00831e" d="M256.293 173.808L..." />
+            <path fill="#0084ff" d="M350.716 338.192L..." />
+            <path fill="#ff4131" d="M431.109 477.919L..." />
+            <path fill="#ffba00" d="M430.756 182.917L..." />
+          </svg>
+        </div>
+    
+        <div class="mt-4">
+          <h3 class="text-xl font-semibold text-slate-900 text-center">Notifications</h3>
+          <p class="mt-2 text-sm text-slate-500 text-center"></p>
+        </div>
+
+        <div class="mt-6">
+            <div class="space-x-4 space-y-4 text-center">
+              <a href="{% url 'notification' %}">
+                <button type="button"
+                  class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold cursor-pointer border-2 border-blue-700 outline-none bg-transparent hover:bg-blue-700 text-blue-700 hover:text-white transition-all duration-300">
+                  view
+                </button>
+              </a>
+            </div>
+          </div>
+      </div>
+    
+  
+      <div class="bg-white [box-shadow:0_4px_12px_-5px_rgba(0,0,0,0.4)] p-6 w-full rounded-lg overflow-hidden">
+        <div class="inline-block bg-[#edf2f7] rounded-lg py-2 px-3">
+          <!-- SVG icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 511.999 511.999">
+            <path fill="#06d" d="M38.563 418.862L..." />
+            <path fill="#00ad3c" d="M256.293 173.808L..." />
+            <path fill="#00831e" d="M256.293 173.808L..." />
+            <path fill="#0084ff" d="M350.716 338.192L..." />
+            <path fill="#ff4131" d="M431.109 477.919L..." />
+            <path fill="#ffba00" d="M430.756 182.917L..." />
+          </svg>
+        </div>
+    
+        <div class="mt-4">
+          <h3 class="text-xl font-semibold text-slate-900 text-center">My Profile</h3>
+          <p class="mt-2 text-sm text-slate-500 text-center"></p>
+        </div>
+    
+        <div class="mt-6">
+        <div class="space-x-4 space-y-4 text-center">
+          <a href="{% url 'user_profile' %}">
+            <button type="button"
+              class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold cursor-pointer border-2 border-blue-700 outline-none bg-transparent hover:bg-blue-700 text-blue-700 hover:text-white transition-all duration-300">
+              view
+            </button>
+            </a>
+        </div>
+      </div>
+      </div>
+    
+  </div>
+  
+  
+{% endblock %}

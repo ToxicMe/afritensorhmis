@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Flash Messages -->
+{% if messages %}
+  <div class="my-4">
+    {% for message in messages %}
+      <div class="text-sm p-2 mb-2 rounded 
+                  {% if message.tags == 'error' %}bg-red-100 text-red-700
+                  {% elif message.tags == 'success' %}bg-green-100 text-green-700
+                  {% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-700
+                  {% else %}bg-blue-100 text-blue-700{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- Payables Summary Container -->
+<div class="max-w-6xl mx-auto mt-12 bg-white shadow-lg rounded-lg p-8 space-y-12">
+
+  <!-- Header -->
+  <div class="text-center">
+    <h1 class="text-3xl font-bold text-gray-800">Vendor Payable Summary</h1>
+    <p class="text-gray-500 text-sm mt-2">Detailed breakdown of vendor, invoice, and payment data</p>
+  </div>
+
+  <!-- Vendor Information -->
+  <section>
+    <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Vendor Information</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+      <div><span class="font-medium">Vendor Name:</span> Acme Supplies Ltd.</div>
+      <div><span class="font-medium">Email:</span> billing@acmesupplies.com</div>
+      <div><span class="font-medium">Phone:</span> +254 712 456789</div>
+      <div><span class="font-medium">Address:</span> Industrial Area, Nairobi</div>
+    </div>
+  </section>
+
+  <!-- Invoice Details -->
+  <section>
+    <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Invoice Details</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+      <div><span class="font-medium">Invoice Number:</span> PAY-20250615-001</div>
+      <div><span class="font-medium">Invoice Date:</span> June 15, 2025</div>
+      <div><span class="font-medium">Invoice Amount:</span> KES 25,000</div>
+      <div><span class="font-medium">Due Date:</span> July 15, 2025</div>
+      <div><span class="font-medium">Payment Terms:</span> Net 30</div>
+      <div><span class="font-medium">Balance Due:</span> <span class="text-red-600">KES 25,000</span></div>
+      <div><span class="font-medium">Status:</span> <span class="text-red-600 font-semibold">Open</span></div>
+    </div>
+  </section>
+
+  <!-- Payment Information -->
+  <section>
+    <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Payment Information</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+      <div><span class="font-medium">Payment Date:</span> —</div>
+      <div><span class="font-medium">Payment Amount:</span> —</div>
+    </div>
+  </section>
+
+  <!-- Notes -->
+  <section>
+    <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Notes</h2>
+    <p class="text-sm text-gray-700">Goods delivered. Payment pending approval from Finance.</p>
+  </section>
+
+    <!-- Back Button -->
+    <div class="mt-6 text-center">
+        <span class="text-black-600 font-bold">
+            
+            <div class="space-x-4 space-y-4 text-center">
+                <a href="{% url 'payables'%}">
+                <button type="button"
+                  class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold cursor-pointer border-2 border-black-700 outline-none bg-transparent hover:bg-black-700 text-black-700 hover:text-white transition-all duration-300">Back</button>
+                    </a>
+                </div>      
+        </span>
+      </div>
+    
+
+</div>
+
+{% endblock %}

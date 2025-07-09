@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% block content %}
+
+
+<div class="popup-form">
+    {% if messages %}
+{% for message in messages %}
+<p style="color:red;">{{ message }}</p>
+{% endfor %}
+{% endif %}
+
+</div>
+
+<div x-data="{ open: false }" class="max-w-8xl mx-auto mt-10 bg-white shadow p-6 rounded-lg">
+
+  <!-- Header Row with Title and Button -->
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-2xl font-bold text-blue-600">Pending Requisitions </h2>
+    <button @click="open = true"
+      class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">+ New Requisition</button>
+  </div>
+
+  <!-- Requisition Table -->
+  <table class="min-w-full table-auto border text-sm">
+    <thead class="bg-gray-100 text-blue-600">
+      <tr>
+        <th class="px-4 py-2 border">#</th>
+        <th class="px-4 py-2 border">Date</th>
+        <th class="px-4 py-2 border">User</th>
+        <th class="px-4 py-2 border">Department</th>
+        <th class="px-4 py-2 border">Urgent</th>
+        <th class="px-4 py-2 border">Done By</th>
+        <th class="px-4 py-2 border">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for req in requisitions %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-2 border">{{ forloop.counter }}</td>
+        <td class="px-4 py-2 border">{{ req.date_of_request }}</td>
+        <td class="px-4 py-2 border">{{ req.user.get_full_name }}</td>
+        <td class="px-4 py-2 border">{{ req.department }}</td>
+        <td class="px-4 py-2 border">{{ req.is_urgent|yesno:"Yes,No" }}</td>
+        <td class="px-4 py-2 border">{{ req.done_by.get_full_name }}</td>
+        <td class="px-4 py-2 border">
+          <a href="{% url 'requisition_detail' req.pk %}" class="text-blue-600 hover:underline">View</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Popup Modal -->
+  <div x-show="open" class="fixed inset-0 bg-gray-800 bg-opacity-50 z-50 flex items-center justify-center">
+    <div @click.away="open = false" class="bg-white p-6 rounded-lg w-full max-w-3xl shadow-lg relative overflow-y-auto max-h-screen">
+
+      <h2 class="text-xl font-bold mb-4 text-blue-600">New Requisition</h2>
+
+      <form method="post" action="{% url 'requisition_create' %}" class="space-y-4">
+        {% csrf_token %}
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm font-medium text-gray-700">Date of Request</label>
+            <input type="date" name="date_of_request" required class="mt-1 w-full px-3 py-2 border rounded" />
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-700">Full Name</label>
+            <select name="user" required class="mt-1 w-full px-3 py-2 border rounded">
+              <option value="">Select User</option>
+              {% for user in users %}
+                <option value="{{ user.id }}">{{ user.get_full_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-700">Job Title</label>
+            <input type="text" name="job_title" required class="mt-1 w-full px-3 py-2 border rounded" />
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-700">Department/Division</label>
+            <input type="text" name="department" required class="mt-1 w-full px-3 py-2 border rounded" />
+          </div>
+          <div class="col-span-2">
+            <label class="text-sm font-medium text-gray-700">Email</label>
+            <input type="email" name="email" required class="mt-1 w-full px-3 py-2 border rounded" />
+          </div>
+          <div class="col-span-2">
+            <label class="text-sm font-medium text-gray-700">Is Urgent?</label>
+            <div class="flex gap-4 mt-1">
+              <label class="inline-flex items-center">
+                <input type="radio" name="is_urgent" value="True" required class="form-radio" />
+                <span class="ml-2">Yes</span>
+              </label>
+              <label class="inline-flex items-center">
+                <input type="radio" name="is_urgent" value="False" required class="form-radio" />
+                <span class="ml-2">No</span>
+              </label>
+            </div>
+          </div>
+          <div class="col-span-2">
+            <label class="text-sm font-medium text-gray-700">Done By</label>
+            <input type="text" readonly name="done_by_display" value="{{ request.user.get_full_name }}"
+              class="mt-1 w-full px-3 py-2 border rounded bg-gray-100" />
+          </div>
+        </div>
+
+        <!-- Item List Section -->
+        <div class="mt-6">
+          <h3 class="font-bold text-gray-700 mb-2">Items</h3>
+          <div id="item-container" class="space-y-4">
+            <div class="grid grid-cols-3 gap-4">
+              <input type="text" name="item_description[]" placeholder="Item Description" required
+                class="px-3 py-2 border rounded" />
+              <input type="text" name="unit[]" placeholder="Unit" required class="px-3 py-2 border rounded" />
+              <input type="number" name="quantity[]" placeholder="Quantity" min="1" required
+                class="px-3 py-2 border rounded" />
+            </div>
+          </div>
+          <button type="button" onclick="addItem()" class="mt-2 text-blue-600 text-sm hover:underline">+ Add More Item</button>
+        </div>
+
+        <div class="mt-6 flex justify-end">
+          <button type="button" @click="open = false" class="mr-4 px-4 py-2 border rounded text-gray-600">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Alpine.js for modal -->
+<script src="//unpkg.com/alpinejs" defer></script>
+
+<!-- JS to add more items -->
+<script>
+  function addItem() {
+    const container = document.getElementById("item-container");
+    const newRow = document.createElement("div");
+    newRow.className = "grid grid-cols-3 gap-4 mt-2";
+    newRow.innerHTML = `
+      <input type="text" name="item_description[]" placeholder="Item Description" required class="px-3 py-2 border rounded" />
+      <input type="text" name="unit[]" placeholder="Unit" required class="px-3 py-2 border rounded" />
+      <input type="number" name="quantity[]" placeholder="Quantity" min="1" required class="px-3 py-2 border rounded" />
+    `;
+    container.appendChild(newRow);
+  }
+</script>
+{% endblock %}

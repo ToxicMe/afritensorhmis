@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-7xl mx-auto mt-10 bg-white p-6 rounded shadow border text-sm text-gray-800 mb-12 space-y-6">
+
+    <!-- Header -->
+    <div class="text-center mb-6">
+      <h1 class="text-2xl font-bold text-blue-800 mb-12">Cash Management Statement</h1>
+      <h2 class="text-xl font-semibold text-blue-800"></h2>
+      
+      
+
+  <!-- Top Filter + Summary Cards -->
+  <div class="flex flex-col md:flex-row justify-between gap-6 mb-6">
+
+    
+
+    <!-- 🔎 Horizontal Filter -->
+    <form method="get" action="{% url 'payables' %}" class="flex flex-wrap items-end gap-4 w-full md:w-2/3">
+      <!-- Start Date -->
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Start Date</label>
+        <input type="date" name="start_date" class="border px-3 py-2 rounded text-sm">
+      </div>
+
+      <!-- End Date -->
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">End Date</label>
+        <input type="date" name="end_date" class="border px-3 py-2 rounded text-sm">
+      </div>
+
+      
+
+      <!-- Submit -->
+      <div>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 mt-1">
+          Apply Filter
+        </button>
+      </div>
+     
+    </form>
+
+
+    
+
+   
+
+  </div>
+  <br><br><br>
+
+      
+    </div>
+  
+    <!-- Column Headers -->
+    <div class="grid grid-cols-4 font-semibold text-gray-700 border-b pb-2">
+      <div></div>
+      <div>Current Period</div>
+      <div>Prior Period</div>
+      <div>Increase (Decrease)</div>
+    </div>
+  
+    <!-- Beginning Cash -->
+    <div class="grid grid-cols-4 py-2 border-b font-medium">
+      <div>Beginning Cash on Hand</div>
+      <div>KES 20,000</div>
+      <div>KES 15,000</div>
+      <div>KES 5,000</div>
+    </div>
+  
+    <!-- Cash Receipts -->
+    <h3 class="text-lg font-semibold text-blue-700 mt-6">Cash Receipts</h3>
+    <div class="space-y-2">
+      <div class="grid grid-cols-4">
+        <div>Cash Sales</div>
+        <div>KES 50,000</div>
+        <div>KES 40,000</div>
+        <div>KES 10,000</div>
+      </div>
+      <div class="grid grid-cols-4">
+        <div>Collections from Credit Accounts</div>
+        <div>KES 20,000</div>
+        <div>KES 10,000</div>
+        <div>KES 10,000</div>
+      </div>
+      <div class="grid grid-cols-4">
+        <div>Loan or Cash Injection</div>
+        <div>KES 10,000</div>
+        <div>KES 0</div>
+        <div>KES 10,000</div>
+      </div>
+      <div class="grid grid-cols-4">
+        <div>Interest Income</div>
+        <div>KES 2,000</div>
+        <div>KES 1,500</div>
+        <div>KES 500</div>
+      </div>
+      <div class="grid grid-cols-4">
+        <div>Misc. Cash Receipts</div>
+        <div>KES 1,000</div>
+        <div>KES 500</div>
+        <div>KES 500</div>
+      </div>
+      <div class="grid grid-cols-4 font-semibold border-t pt-2">
+        <div>Total Cash Receipts</div>
+        <div>KES 83,000</div>
+        <div>KES 52,000</div>
+        <div>KES 31,000</div>
+      </div>
+    </div>
+  
+    <!-- Cash Payments: COGS -->
+    <h3 class="text-lg font-semibold text-blue-700 mt-6">Cash Payments</h3>
+    <h4 class="text-gray-700 font-semibold">Cost of Goods Sold</h4>
+    <div class="space-y-1">
+      <div class="grid grid-cols-4">
+        <div>Direct Product/Service Costs</div>
+        <div>KES 30,000</div>
+        <div>KES 20,000</div>
+        <div>KES 10,000</div>
+      </div>
+      <div class="grid grid-cols-4">
+        <div>Salaries - Direct</div>
+        <div>KES 15,000</div>
+        <div>KES 10,000</div>
+        <div>KES 5,000</div>
+      </div>
+      <div class="grid grid-cols-4">
+        <div>Supplies</div>
+        <div>KES 5,000</div>
+        <div>KES 4,000</div>
+        <div>KES 1,000</div>
+      </div>
+      <div class="grid grid-cols-4 font-semibold border-t pt-2">
+        <div>Subtotal - COGS</div>
+        <div>KES 50,000</div>
+        <div>KES 34,000</div>
+        <div>KES 16,000</div>
+      </div>
+    </div>
+  
+    <!-- Operating Expenses -->
+    <h4 class="text-gray-700 font-semibold mt-4">Operating Expenses</h4>
+    <div class="space-y-1">
+      <div class="grid grid-cols-4">
+        <div>Advertising</div>
+        <div>KES 3,000</div>
+        <div>KES 2,500</div>
+        <div>KES 500</div>
+      </div>
+      <div class="grid grid-cols-4">
+        <div>Office Supplies</div>
+        <div>KES 2,000</div>
+        <div>KES 1,500</div>
+        <div>KES 500</div>
+      </div>
+      <div class="grid grid-cols-4">
+        <div>Utilities</div>
+        <div>KES 4,000</div>
+        <div>KES 4,000</div>
+        <div>KES 0</div>
+      </div>
+      <div class="grid grid-cols-4">
+        <div>Salaries - Indirect</div>
+        <div>KES 8,000</div>
+        <div>KES 8,000</div>
+        <div>KES 0</div>
+      </div>
+      <div class="grid grid-cols-4 font-semibold border-t pt-2">
+        <div>Subtotal - Operating Expenses</div>
+        <div>KES 17,000</div>
+        <div>KES 16,000</div>
+        <div>KES 1,000</div>
+      </div>
+    </div>
+  
+    <!-- Other Expenses -->
+    <h4 class="text-gray-700 font-semibold mt-4">Other Expense Payments</h4>
+    <div class="space-y-1">
+      <div class="grid grid-cols-4">
+        <div>Owner Withdrawals</div>
+        <div>KES 5,000</div>
+        <div>KES 3,000</div>
+        <div>KES 2,000</div>
+      </div>
+      <div class="grid grid-cols-4 font-semibold border-t pt-2">
+        <div>Subtotal - Other Expenses</div>
+        <div>KES 5,000</div>
+        <div>KES 3,000</div>
+        <div>KES 2,000</div>
+      </div>
+    </div>
+  
+    <!-- Totals -->
+    <div class="grid grid-cols-4 font-bold border-t pt-4 text-blue-800">
+      <div>Total Cash Payments</div>
+      <div>KES 72,000</div>
+      <div>KES 53,000</div>
+      <div>KES 19,000</div>
+    </div>
+  
+    <div class="grid grid-cols-4 font-bold border-t pt-4 text-black">
+      <div>Net Cash Change</div>
+      <div>KES 11,000</div>
+      <div>-</div>
+      <div>-</div>
+    </div>
+  
+    <div class="grid grid-cols-4 font-bold border-t pt-4 text-black">
+      <div>Ending Cash Position</div>
+      <div>KES 31,000</div>
+      <div>KES 20,000</div>
+      <div>KES 11,000</div>
+    </div>
+
+     <!-- Back Button -->
+     <div class="mt-12 mb-12 text-center">
+        <span class="text-black-600 font-bold">
+            
+            <div class="space-x-4 space-y-4 text-center">
+                <a href="{% url 'accounting'%}">
+                <button type="button"
+                  class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold cursor-pointer border-2 border-black-700 outline-none bg-transparent hover:bg-black-700 text-black-700 hover:text-white transition-all duration-300">Back</button>
+                    </a>
+                </div>      
+        </span>
+      </div>
+  
+  </div>
+  
+  
+  {% endblock content %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load custom_filters %}
+
+<div class="max-w-3xl mx-auto p-6 mt-10  shadow rounded">
+    <h2 class="text-xl font-bold mb-4">Doctor Note for {{ note.patient.get_full_name|default:note.patient.username }}</h2>
+  <p><strong>Doctor:</strong> {{ note.done_by.get_full_name|default:note.done_by.username }}</p>
+  <p><strong>Date:</strong> {{ note.created_at|date:"Y-m-d H:i" }}</p>
+  <p class="mt-4"><strong>Note:</strong></p>
+  <textarea class="px-70 bg-gray-100 rounded" value="">{{ note.doctor_notes }}</textarea>
+
+  <form method="POST" action="{% url 'submit_test_findings' note.id %}" class="mt-6">
+    {% csrf_token %}
+    <h3 class="text-lg font-semibold mb-2">Test Findings</h3>
+    {% for test in tests %}
+    <div class="mb-4">
+      <label class="block font-medium">{{ test.name }}</label>
+      <textarea name="finding_{{ test.id }}" class="w-full  h-64  border rounded p-2" rows="2" placeholder="Enter findings..."></textarea>
+    </div>
+    {% endfor %}
+    <button type="submit"
+      class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Submit Findings</button>
+  </form>
+</div>
+
+
+{% endblock %}

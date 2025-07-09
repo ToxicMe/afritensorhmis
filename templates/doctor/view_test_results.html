@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto mt-6">
+  <h2 class="text-2xl font-semibold mb-4">Test Results for {{ visit.patient.get_full_name|default:visit.patient.username }}</h2>
+
+  <div class="mb-6">
+    <p hidden><strong>Tracking Code:</strong> {{ visit.tracking_code }}</p>
+    <p><strong>Visit Date:</strong> {{ visit.date_time|date:"Y-m-d H:i" }}</p>
+    <p><strong>Hospital:</strong> {{ visit.hospital.name }}</p>
+  </div>
+
+  {% if test_results %}
+    {% for result in test_results %}
+      <div class="mb-6 border p-4 bg-gray-50 rounded">
+        <h3 hidden class="text-lg font-semibold mb-2">Test Results Recorded By: {{ result.done_by.get_full_name|default:result.done_by.username }}</h3>
+        <p class="text-sm text-gray-500 mb-2">Recorded at: {{ result.created_at|date:"Y-m-d H:i" }}</p>
+
+        <table class="min-w-full bg-white border border-gray-200 text-sm">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="py-2 px-3 border-b text-left">Test</th>
+              <th class="py-2 px-3 border-b text-left">Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in result.entries.all %}
+            <tr>
+              <td class="py-2 px-3 border-b">{{ entry.test.name }}</td>
+              <td class="py-2 px-3 border-b">{{ entry.result }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="text-gray-500">No test results available for this visit.</p>
+  {% endif %}
+
+  <form method="POST" action="{% url 'save_prescription_note' visit.tracking_code %}" class="mt-6">
+    {% csrf_token %}
+    <div class="mb-4">
+      <label for="doctor_prescription" class="block font-semibold mb-1">Prescription Note / Findings</label>
+      <textarea name="doctor_prescription" id="doctor_prescription" rows="5" class="w-full border px-3 py-2 rounded" required></textarea>
+    </div>
+    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm">
+      Save Prescription
+    </button>
+  </form>
+</div>
+{% endblock %}

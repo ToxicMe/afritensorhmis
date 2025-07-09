@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<section class="bg-gray-50 py-10">
+    <div class="max-w-8xl mx-auto bg-white p-8 rounded shadow">
+      <h1 class="text-2xl font-bold text-center text-blue-600 mb-6">MOH 257 – Pre-ART Register</h1>
+  
+     
+  
+      <!-- Register Table -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-300 text-sm text-left">
+          <thead class="bg-blue-600 text-gray-100">
+            <tr>
+              <th class="px-4 py-2">#</th>
+              <th class="px-4 py-2">CCC No.</th>
+              <th class="px-4 py-2">Patient Name</th>
+              <th class="px-4 py-2">Sex</th>
+              <th class="px-4 py-2">Age</th>
+              <th class="px-4 py-2">Date Enrolled</th>
+              <th class="px-4 py-2">WHO Stage</th>
+              <th class="px-4 py-2">CD4 Count</th>
+              <th class="px-4 py-2">Clinical Status</th>
+              <th class="px-4 py-2">INH Given</th>
+              <th class="px-4 py-2">Cotrim Given</th>
+              <th class="px-4 py-2">Next Appointment</th>
+              <th class="px-4 py-2">Outcome</th>
+              <th class="px-4 py-2">Date Outcome</th>
+              <th class="px-4 py-2">Remarks</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <!-- Example Row -->
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-2">1</td>
+              <td class="px-4 py-2">123456</td>
+              <td class="px-4 py-2">Jane Achieng</td>
+              <td class="px-4 py-2">F</td>
+              <td class="px-4 py-2">29</td>
+              <td class="px-4 py-2">2025-06-01</td>
+              <td class="px-4 py-2">Stage II</td>
+              <td class="px-4 py-2">315</td>
+              <td class="px-4 py-2">Stable</td>
+              <td class="px-4 py-2">Yes</td>
+              <td class="px-4 py-2">Yes</td>
+              <td class="px-4 py-2">2025-07-01</td>
+              <td class="px-4 py-2">Transferred to ART</td>
+              <td class="px-4 py-2">2025-07-15</td>
+              <td class="px-4 py-2">Initiated ART on visit</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+  
+     
+    </div>
+  </section>
+  
+  
+
+
+{% endblock %}

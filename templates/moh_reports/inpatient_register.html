@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<section class="bg-gray-50 py-10">
+    <div class="max-w-8xl mx-auto bg-white p-8 rounded shadow">
+      <h1 class="text-2xl font-bold text-center text-blue-600 mb-6">MOH Inpatient Register</h1>
+  
+     
+  
+      <!-- Register Table -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-300 text-sm text-left">
+          <thead class="bg-blue-600 text-gray-100">
+            <tr>
+              <th class="px-4 py-2">#</th>
+              <th class="px-4 py-2">Patient Name</th>
+              <th class="px-4 py-2">Sex</th>
+              <th class="px-4 py-2">Age</th>
+              <th class="px-4 py-2">Patient ID</th>
+              <th class="px-4 py-2">Date Admitted</th>
+              <th class="px-4 py-2">Diagnosis</th>
+              <th class="px-4 py-2">Treatment Given</th>
+              <th class="px-4 py-2">Discharge Date</th>
+              <th class="px-4 py-2">Discharge Status</th>
+              <th class="px-4 py-2">Length of Stay</th>
+              <th class="px-4 py-2">Remarks</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <!-- Example row -->
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-2">1</td>
+              <td class="px-4 py-2">John Mwangi</td>
+              <td class="px-4 py-2">M</td>
+              <td class="px-4 py-2">45</td>
+              <td class="px-4 py-2">IP2345</td>
+              <td class="px-4 py-2">2025-06-20</td>
+              <td class="px-4 py-2">Pneumonia</td>
+              <td class="px-4 py-2">Antibiotics, Oxygen</td>
+              <td class="px-4 py-2">2025-06-28</td>
+              <td class="px-4 py-2">Discharged Alive</td>
+              <td class="px-4 py-2">8 Days</td>
+              <td class="px-4 py-2">Stable</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+  
+     
+    </div>
+  </section>
+  
+  
+
+
+{% endblock %}

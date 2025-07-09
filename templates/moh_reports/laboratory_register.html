@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<section class="bg-gray-50 py-10">
+    <div class="max-w-8xl mx-auto bg-white p-8 rounded shadow">
+      <h1 class="text-2xl font-bold text-center text-blue-600 mb-6">MOH 240 – Laboratory Register</h1>
+  
+   
+  
+      <!-- Register Table -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-300 text-sm text-left">
+          <thead class="bg-blue-600 text-gray-100">
+            <tr>
+              <th class="px-4 py-2">#</th>
+              <th class="px-4 py-2">Patient Name</th>
+              <th class="px-4 py-2">Patient ID</th>
+              <th class="px-4 py-2">Age</th>
+              <th class="px-4 py-2">Sex</th>
+              <th class="px-4 py-2">Date of Request</th>
+              <th class="px-4 py-2">Lab Test Requested</th>
+              <th class="px-4 py-2">Specimen Collected</th>
+              <th class="px-4 py-2">Date Collected</th>
+              <th class="px-4 py-2">Test Result</th>
+              <th class="px-4 py-2">Reported By</th>
+              <th class="px-4 py-2">Remarks</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <!-- Example Row -->
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-2">1</td>
+              <td class="px-4 py-2">Mary Achieng</td>
+              <td class="px-4 py-2">OP56789</td>
+              <td class="px-4 py-2">29</td>
+              <td class="px-4 py-2">F</td>
+              <td class="px-4 py-2">2025-07-01</td>
+              <td class="px-4 py-2">Malaria Test</td>
+              <td class="px-4 py-2">Blood</td>
+              <td class="px-4 py-2">2025-07-01</td>
+              <td class="px-4 py-2">Positive</td>
+              <td class="px-4 py-2">Lab Tech A</td>
+              <td class="px-4 py-2">Started ACTs</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+  
+    
+    </div>
+  </section>
+  
+
+
+{% endblock %}

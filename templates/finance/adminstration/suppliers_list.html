@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="bg-gray-100 py-10">
+
+    
+<!-- Add Supplier Button -->
+<div class="flex justify-between items-center mb-4">
+    <h2 class="text-2xl font-bold text-blue-600">Suppliers</h2>
+    <button onclick="document.getElementById('addSupplierModal').classList.remove('hidden')" 
+            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow">
+      Add Supplier
+    </button>
+  </div>
+
+
+  <!-- Modal -->
+<div id="addSupplierModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl">
+      <div class="flex justify-between items-center border-b px-6 py-3">
+        <h3 class="text-xl font-semibold text-gray-800">Add Supplier</h3>
+        <button onclick="document.getElementById('addSupplierModal').classList.add('hidden')" 
+                class="text-gray-600 hover:text-red-600 text-2xl leading-none">&times;</button>
+      </div>
+  
+      <form method="POST" action="{% url 'add_supplier' %}" class="p-6 space-y-4">
+        {% csrf_token %}
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Name</label>
+            <input name="name" type="text" required class="mt-1 w-full px-3 py-2 border rounded" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Contact Person</label>
+            <input name="contact_person" type="text" class="mt-1 w-full px-3 py-2 border rounded" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Phone</label>
+            <input name="phone" type="text" class="mt-1 w-full px-3 py-2 border rounded" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email</label>
+            <input name="email" type="email" class="mt-1 w-full px-3 py-2 border rounded" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Address</label>
+            <input name="address" type="text" class="mt-1 w-full px-3 py-2 border rounded" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Tax ID</label>
+            <input name="tax_id" type="text" class="mt-1 w-full px-3 py-2 border rounded" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Bank Name</label>
+            <input name="bank_name" type="text" class="mt-1 w-full px-3 py-2 border rounded" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Payment Terms</label>
+            <input name="payment_terms" type="text" class="mt-1 w-full px-3 py-2 border rounded" />
+          </div>
+          <div class="col-span-2">
+            <label class="block text-sm font-medium text-gray-700">Done By</label>
+            <p class="mt-1 text-gray-800">{{ request.user.get_full_name|default:request.user.username }}</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow">
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  
+
+    <table class="min-w-full border border-gray-300 text-sm">
+      <thead class="bg-gray-100 text-blue-600">
+        <tr>
+          <th class="px-4 py-2 border">Name</th>
+          <th class="px-4 py-2 border">Contact Person</th>
+          <th class="px-4 py-2 border">Phone</th>
+          <th class="px-4 py-2 border">Email</th>
+          <th class="px-4 py-2 border">Address</th>
+          <th class="px-4 py-2 border">Tax ID</th>
+          <th class="px-4 py-2 border">Bank</th>
+          <th class="px-4 py-2 border">Payment Terms</th>
+          <th class="px-4 py-2 border">Done By</th>
+          <th class="px-4 py-2 border">Created</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100 text-gray-700">
+        {% for supplier in suppliers %}
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-2 border">{{ supplier.name }}</td>
+          <td class="px-4 py-2 border">{{ supplier.contact_person }}</td>
+          <td class="px-4 py-2 border">{{ supplier.phone }}</td>
+          <td class="px-4 py-2 border">{{ supplier.email }}</td>
+          <td class="px-4 py-2 border">{{ supplier.address }}</td>
+          <td class="px-4 py-2 border">{{ supplier.tax_id }}</td>
+          <td class="px-4 py-2 border">{{ supplier.bank_name }}</td>
+          <td class="px-4 py-2 border">{{ supplier.payment_terms }}</td>
+          <td class="px-4 py-2 border">{{ supplier.done_by }}</td>
+          <td class="px-4 py-2 border">{{ supplier.created_at|date:"Y-m-d" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="10" class="text-center px-4 py-4 text-gray-500">No suppliers found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% endblock %}

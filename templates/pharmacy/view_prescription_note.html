@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto mt-8">
+  <h2 class="text-xl font-bold mb-4">Prescription Note</h2>
+
+  <div class="mb-4">
+    <p hidden><strong>Tracking Code:</strong> {{ visit.tracking_code }}</p>
+    <p><strong>Patient:</strong> {{ visit.patient.get_full_name|default:visit.patient.username }}</p>
+    <p><strong>Visit Date:</strong> {{ visit.date_time|date:"Y-m-d H:i" }}</p>
+    <p><strong>Hospital:</strong> {{ visit.hospital.name }}</p>
+  </div>
+
+  {% if prescription %}
+    <div class="bg-white p-4 rounded shadow border">
+      <p hidden class="text-sm text-gray-500 mb-2">Prescribed by: {{ prescription.done_by.get_full_name|default:prescription.done_by.username }}</p>
+      <p class="text-sm text-gray-500 mb-4">Recorded at: {{ prescription.created_at|date:"Y-m-d H:i" }}</p>
+      <p class="whitespace-pre-line text-gray-800">{{ prescription.doctor_prescription }}</p>
+    </div>
+  {% else %}
+    <p class="text-red-500">No prescription note found for this visit.</p>
+  {% endif %}
+</div>
+
+
+
+
+<div class="mt-12 max-w-7xl mx-auto mt-8">
+  <form method="post" action="{% url 'add_sale_from_prescription' visit.tracking_code %}" class="mt-6 bg-gray-50 p-4 rounded">
+    {% csrf_token %}
+    <h3 class="text-lg font-semibold mb-2">Add Products for Sale</h3>
+
+
+    <div class="mb-4">
+      <label class="block mb-1">Product</label>
+      <select name="product_id" id="productSelect" class="w-full border px-2 py-1 rounded" required>
+        {% for product in products %}
+          <option value="{{ product.id }}">{{ product.name }} ({{ product.quantity }} in stock)</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-4">
+      <label class="block mb-1">Quantity</label>
+      <input type="number" name="quantity" min="1" class="w-full border px-2 py-1 rounded" required>
+    </div>
+
+    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">Add to Sale</button>
+  </form>
+</div>
+
+
+
+{% if messages %}
+  <div class="max-w-7xl mx-auto mt-4">
+    {% for message in messages %}
+      <div class="bg-{{ message.tags }}-100 text-{{ message.tags }}-800 p-4 rounded mb-2">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% endblock %}

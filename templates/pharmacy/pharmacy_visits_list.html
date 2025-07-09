@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-8xl mx-auto p-6">
+  <h2 class="text-2xl font-semibold mb-4">Visits in Pharmacy</h2>
+
+  {% if error %}
+    <p class="text-red-500">{{ error }}</p>
+  {% elif visits %}
+    <table class="w-full table-auto border border-gray-300 text-sm">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="border px-4 py-2 text-left">Tracking Code</th>
+          <th class="border px-4 py-2 text-left">Patient Name</th>
+          <th class="border px-4 py-2 text-left">Hospital</th>
+          <th class="border px-4 py-2 text-left">Date of Visit</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for visit in visits %}
+        <tr>
+          <td class="border px-4 py-2">{{ visit.tracking_code }}</td>
+          <td class="border px-4 py-2">{{ visit.patient.get_full_name|default:visit.patient.username }}</td>
+          <td class="border px-4 py-2">{{ visit.hospital.name }}</td>
+          <td class="border px-4 py-2">{{ visit.date_time|date:"Y-m-d H:i" }}</td>
+          <td class="border px-4 py-2">
+            <a href="{% url 'view_prescription_note' visit.tracking_code %}"
+               class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded text-xs">
+              View Prescription
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="text-gray-500">No pharmacy-stage visits found.</p>
+  {% endif %}
+</div>
+{% endblock %}
