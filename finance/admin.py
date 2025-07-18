@@ -4,3 +4,5 @@ from .models import *
 
 admin.site.register(Supplier)
 admin.site.register(Requisition)
+admin.site.register(PurchaseOrderItem)
+admin.site.register(PurchaseOrder)

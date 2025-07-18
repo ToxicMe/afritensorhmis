@@ -5,8 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError
 from django.contrib.auth.models import Group
-from django.contrib.auth import authenticate, login
-
+from django.contrib.auth import authenticate, login, logout
 # Create your views here.
 
 def notification(request):
@@ -18,28 +17,26 @@ def user_profile(request):
     return render(request, 'accounts/user_profile.html', {'user': user})
 
 
-
-
 def login_view(request):
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
 
-        if not email or not password:
-            messages.error(request, "Please provide both email and password.")
-            return render(request, 'accounts/login.html')
-
         user = authenticate(request, email=email, password=password)
-
         if user is not None:
             login(request, user)
-            messages.success(request, "Login successful.")
-            return redirect(staff_list_view)  # Replace 'dashboard' with your desired landing page
+            return redirect(user_profile)  
         else:
-            messages.error(request, "Invalid email or password.")
-            return render(request, 'accounts/login.html')
+            messages.error(request, 'Invalid email or password.')
 
     return render(request, 'accounts/login.html')
+
+def logout_view(request):
+    logout(request)
+    messages.success(request, "You have been logged out.")
+    return redirect(login_view)  
+
+
 
 def staff_list_view(request):
     users = CustomUser.objects.exclude(account_type='patient').select_related('hospital')
@@ -102,7 +99,7 @@ def add_user_view(request):
                 messages.warning(request, "User created, but group not found for assignment.")
 
             messages.success(request, "User created successfully.")
-            return redirect('staff_list_view')
+            return redirect('patient_list')
 
         except IntegrityError:
             messages.error(request, "There was an error creating the user.")

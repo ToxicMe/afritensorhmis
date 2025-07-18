@@ -1,22 +1,91 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="max-w-6xl mx-auto mt-10 bg-white shadow p-6 rounded-lg">
+
+<div class="max-w-7xl mx-auto mt-10 bg-white shadow p-6 rounded-lg">
+
+  {% if messages %}
+    <div class="popup-form">
+      {% for message in messages %}
+        <p style="color:red;">{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div id="rejectionModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+  <div class="bg-white rounded-lg shadow p-6 w-full max-w-md">
+    <h2 class="text-lg font-semibold mb-4 text-blue-600">Reject Requisition</h2>
+    <form method="post" action="">
+      {% csrf_token %}
+      <label class="block mb-1 text-sm font-medium text-gray-700">Reason for Rejection:</label>
+      <textarea name="reason_for_rejection" required rows="4"
+        class="w-full border px-3 py-2 rounded"></textarea>
+      <div class="mt-4 flex justify-end space-x-2">
+        <button type="button" onclick="document.getElementById('rejectionModal').classList.add('hidden')"
+          class="px-4 py-2 border rounded text-sm text-gray-600">Cancel</button>
+        <button type="submit"
+          class="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
+
   <div class="flex justify-between items-center mb-4">
     <h2 class="text-2xl font-bold text-blue-800">Requisition Details</h2>
-    <a href="{% url 'approve_requisition' requisition.pk %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Approve</a>
+    {% if requisition.status == 'pending' %}
+      <form method="post" action="{% url 'approve_requisition' requisition.pk %}" class="mt-2">
+      {% csrf_token %}
+      <label class="text-sm font-medium text-gray-700 mr-2">Update Status:</label>
+      <select name="status" class="border px-2 py-1 rounded text-sm">
+        <option value="pending" {% if requisition.status == 'pending' %}selected{% endif %}>Pending</option>
+        <option value="approved" {% if requisition.status == 'approved' %}selected{% endif %}>Approved</option>
+        <option value="completed" {% if requisition.status == 'completed' %}selected{% endif %}>Completed</option>
+      </select>
+      <button type="submit" class="ml-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+        Update
+      </button>
+    </form>
+    {% endif %}
+
+      <div class="mt-6">
+    <button onclick="document.getElementById('rejectionModal').classList.remove('hidden')"
+  class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+  Reject
+</button>
+</div>
   </div>
 
   <div class="grid grid-cols-2 gap-4 text-sm text-blue-700">
-    <p><strong>Date:</strong> {{ requisition.date_of_request }}</p>
-    <p><strong>Name:</strong> {{ requisition.name }}</p>
+    <p><strong>Date of Request:</strong> {{ requisition.date_of_request }}</p>
+    <p><strong>User:</strong> {{ requisition.user.get_full_name|default:requisition.user.username }}</p>
+    <p><strong>Name (Requested By):</strong> {{ requisition.name }}</p>
     <p><strong>Job Title:</strong> {{ requisition.job_title }}</p>
     <p><strong>Department:</strong> {{ requisition.department }}</p>
     <p><strong>Email:</strong> {{ requisition.email }}</p>
     <p><strong>Urgent:</strong> {{ requisition.is_urgent|yesno:"Yes,No" }}</p>
-    <p><strong>Done By:</strong> {{ requisition.done_by }}</p>
+    <p><strong>Status:</strong> <span class="capitalize">{{ requisition.status }}</span></p>
+    
+    
+    {% if requisition.date_of_approval %}
+      <p><strong>Date Approved:</strong> {{ requisition.date_of_approval }}</p>
+    {% endif %}
+    
+    {% if requisition.date_of_completion %}
+      <p><strong>Date Completed:</strong> {{ requisition.date_of_completion }}</p>
+    {% endif %}
+    
+    {% if requisition.date_of_rejection %}
+      <p><strong>Date Rejected:</strong> {{ requisition.date_of_rejection }}</p>
+    {% endif %}
+
+    {% if requisition.reason_for_rejection %}
+      <p><strong>Reason for Rejection:</strong> {{ requisition.reason_for_rejection }}</p>
+    {% endif %}
+    
+    <p><strong>Total Estimated Cost:</strong> KES {{ requisition.total_cost|floatformat:2 }}</p>
+    <p><strong>Done By:</strong> {{ requisition.done_by.get_full_name|default:requisition.done_by.username }}</p>
   </div>
 
-  <h3 class="mt-6 text-lg font-semibold">Items Requested</h3>
+  <h3 class="mt-6 text-lg font-semibold text-gray-800">Items Requested</h3>
   <table class="min-w-full table-auto text-sm mt-2 border">
     <thead class="bg-gray-100">
       <tr>
@@ -38,7 +107,20 @@
     </tbody>
   </table>
 
-  <h4 class="mt-4 font-semibold">Notes/Comments:</h4>
-  <p class="mt-1 text-blue-600">{{ requisition.notes }}</p>
+  {% if requisition.notes %}
+    <h4 class="mt-4 font-semibold text-gray-800">Notes/Comments:</h4>
+    <p class="mt-1 text-blue-600">{{ requisition.notes }}</p>
+  {% endif %}
+
+  <div class="mt-6">
+    <a href="{% url 'requisition_list' %}">
+      <button class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-gray-100 rounded text-sm font-medium">
+        ← Back to List
+      </button>
+    </a>
 </div>
+</div>
+
+
+
 {% endblock %}

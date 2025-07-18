@@ -73,6 +73,7 @@ def registration_dashboard(request):
 def registration(request):
 
     default_hospital = request.user.hospital
+    
 
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -82,7 +83,7 @@ def registration(request):
 
         if password1 != password2:
             messages.error(request, "Passwords do not match.")
-            return redirect('register_user')
+            return redirect(registration)
 
         try:
             user = CustomUser(
@@ -110,10 +111,10 @@ def registration(request):
             )
             user.save()
             messages.success(request, "Patient registered successfully.")
-            return redirect('login')
+            return redirect('patient_list')
 
         except Exception as e:
             messages.error(request, f"Error occurred: {e}")
-            return redirect(patient_list)
+            return redirect('patient_list')
 
     return render(request, 'registration/add_patient.html', {'default_hospital': default_hospital})

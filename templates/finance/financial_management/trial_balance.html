@@ -3,45 +3,54 @@
 
 <div class="max-w-7xl mt-12 mx-auto bg-white shadow-md rounded-lg p-6 space-y-8">
 
-    <!-- Header -->
-    <div class="text-center">
-      <h1 class="text-3xl font-bold text-gray-800">Trial Balance</h1>
-      <p class="text-sm text-gray-500 mt-1">Listing of accounts with debit and credit balances</p>
-    </div>
-
-    <!-- Trial Balance Table -->
-    <div class="overflow-x-auto">
-      <table class="min-w-full border text-sm text-gray-800">
-        <thead class="bg-blue-600 text-left">
-          <tr>
-            <th class="py-2 px-3 border text-gray-100">No</th>
-            <th class="py-2 px-3 border text-gray-100">Name</th>
-            <th class="py-2 px-3 border text-gray-100">Debit</th>
-            <th class="py-2 px-3 border text-gray-100">Credit</th>
-            <th class="py-2 px-3 border text-gray-100">Action</th>
-          </tr>
-        </thead>
-        <tbody id="trialBalanceBody">
-          <!-- Data rows injected by JS -->
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Back Button -->
-    <div class="mt-6 text-center">
-      <a href="{% url 'accounting' %}">
-        <button
-          class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold cursor-pointer border-2 border-black-700 outline-none bg-transparent hover:bg-black-700 text-black-700 hover:text-white transition-all duration-300">
-          Back
-        </button>
-      </a>
-    </div>
-
+  <!-- Header -->
+  <div class="text-center">
+    <h1 class="text-3xl font-bold text-gray-800">Trial Balance</h1>
+    <p class="text-sm text-gray-500 mt-1">Listing of accounts with debit and credit balances</p>
   </div>
 
-  <script>
-    const trialBalanceData = [
- 
+  <!-- Trial Balance Table -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full border text-sm text-gray-800">
+      <thead class="bg-blue-600 text-left">
+        <tr>
+          <th class="py-2 px-3 border text-gray-100">No</th>
+          <th class="py-2 px-3 border text-gray-100">Name</th>
+          <th class="py-2 px-3 border text-gray-100 text-right">Debit</th>
+          <th class="py-2 px-3 border text-gray-100 text-right">Credit</th>
+          <th class="py-2 px-3 border text-gray-100 text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody id="trialBalanceBody">
+        <!-- Data rows injected by JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Back Button -->
+  <div class="mt-6 text-center">
+    <a href="{% url 'accounting' %}">
+      <button
+        class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold cursor-pointer border-2 border-black-700 outline-none bg-transparent hover:bg-black-700 text-black-700 hover:text-white transition-all duration-300">
+        Back
+      </button>
+    </a>
+  </div>
+</div>
+
+<!-- Trial Balance Script -->
+<script>
+  const trialBalanceData =[
+  {
+    "Trial Balance": "No.",
+    "__EMPTY": "Name",
+    "__EMPTY_1": "Debit",
+    "__EMPTY_2": "Credit"
+  },
+  {
+    "Trial Balance": 100000,
+    "__EMPTY": "INTANGIBLE ASSETS"
+  },
   {
     "Trial Balance": 100001,
     "__EMPTY": "  INTANGIBLE ASSETS"
@@ -356,7 +365,7 @@
   },
   {
     "Trial Balance": 100521,
-    "__EMPTY": "  STANDARD CHARTERED BANK (KHA MEMBERS)"
+    "__EMPTY": "  STANDARD CHARTERED BANK USD"
   },
   {
     "Trial Balance": 100522,
@@ -1092,7 +1101,7 @@
   },
   {
     "Trial Balance": 500203,
-    "__EMPTY": "  Discounts - KHA Members"
+    "__EMPTY": "  Discounts - Members"
   },
   {
     "Trial Balance": 500204,
@@ -1227,32 +1236,8 @@
     "__EMPTY": "  Support Services Income Total"
   },
   {
-    "Trial Balance": 500430,
-    "__EMPTY": "  KHA Subscriptions"
-  },
-  {
-    "Trial Balance": 500431,
-    "__EMPTY": "    KHA Subscriptions"
-  },
-  {
-    "Trial Balance": 500439,
-    "__EMPTY": "  KHA Subscriptions Total"
-  },
-  {
-    "Trial Balance": 500440,
-    "__EMPTY": "  School of nursing Income"
-  },
-  {
     "Trial Balance": 500441,
     "__EMPTY": "  Miscellenous Income"
-  },
-  {
-    "Trial Balance": 500442,
-    "__EMPTY": "  School Of Nursing Other Income"
-  },
-  {
-    "Trial Balance": 500443,
-    "__EMPTY": "  School of Nursing Accomodation"
   },
   {
     "Trial Balance": 500499,
@@ -2154,34 +2139,45 @@
     "Trial Balance": "TRADE PAYABLES CAPEX",
     "__EMPTY": ""
   }
-      // Add additional entries as needed
-    ];
+];
 
-    const tbody = document.getElementById("trialBalanceBody");
+  const tbody = document.getElementById("trialBalanceBody");
 
-    trialBalanceData.forEach(item => {
-      const row = document.createElement("tr");
+  trialBalanceData.forEach((item, index) => {
+    const row = document.createElement("tr");
 
-      const no = document.createElement("td");
-      no.className = "border px-3 py-2";
-      no.textContent = item["Trial Balance"];
+    // Account Code
+    const noCell = document.createElement("td");
+    noCell.className = "border px-3 py-2";
+    noCell.textContent = item["Trial Balance"] || "—";
 
-      const name = document.createElement("td");
-      name.className = "border px-3 py-2";
-      name.textContent = item["__EMPTY"]?.trim() || "—";
+    // Account Name
+    const nameCell = document.createElement("td");
+    nameCell.className = "border px-3 py-2";
+    nameCell.textContent = item["__EMPTY"]?.trim() || "—";
 
-      const debit = document.createElement("td");
-      debit.className = "border px-3 py-2 text-right text-gray-500";
-      debit.textContent = "—"; // Placeholder, update with real values if available
+    // Debit
+    const debitCell = document.createElement("td");
+    debitCell.className = "border px-3 py-2 text-right text-gray-500";
+    debitCell.textContent = "—";
 
-      const credit = document.createElement("td");
-      credit.className = "border px-3 py-2 text-right text-gray-500";
-      credit.textContent = "—"; // Placeholder, update with real values if available
+    // Credit
+    const creditCell = document.createElement("td");
+    creditCell.className = "border px-3 py-2 text-right text-gray-500";
+    creditCell.textContent = "—";
 
-      row.append(no, name, debit, credit);
-      tbody.appendChild(row);
-    });
-  </script>
+    // Action
+    const actionCell = document.createElement("td");
+    actionCell.className = "border px-3 py-2 text-center";
+    const viewBtn = document.createElement("button");
+    viewBtn.className = "text-blue-600 hover:underline text-sm";
+    viewBtn.textContent = "View";
+    actionCell.appendChild(viewBtn);
 
+    // Append all cells to the row
+    row.append(noCell, nameCell, debitCell, creditCell, actionCell);
+    tbody.appendChild(row);
+  });
+</script>
 
 {% endblock %}

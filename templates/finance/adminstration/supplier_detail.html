@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-7xl mx-auto mt-12 bg-white shadow-md rounded-lg p-8">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-blue-600">Supplier Details</h2>
+    <a href="{% url 'supplier_list' %}">
+      <button class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-gray-100 rounded text-sm font-medium">
+        ← Back to List
+      </button>
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-700">
+    <div>
+      <label class="font-semibold">Supplier Name:</label>
+      <p class="mt-1">{{ supplier.name }}</p>
+    </div>
+    <div>
+      <label class="font-semibold">Contact Person:</label>
+      <p class="mt-1">{{ supplier.contact_person }}</p>
+    </div>
+    <div>
+      <label class="font-semibold">Phone:</label>
+      <p class="mt-1">{{ supplier.phone }}</p>
+    </div>
+    <div>
+      <label class="font-semibold">Email:</label>
+      <p class="mt-1">{{ supplier.email }}</p>
+    </div>
+    <div>
+      <label class="font-semibold">Address:</label>
+      <p class="mt-1">{{ supplier.address }}</p>
+    </div>
+    <div>
+      <label class="font-semibold">Tax ID:</label>
+      <p class="mt-1">{{ supplier.tax_id }}</p>
+    </div>
+    <div>
+      <label class="font-semibold">Bank Name:</label>
+      <p class="mt-1">{{ supplier.bank_name }}</p>
+    </div>
+    <div>
+      <label class="font-semibold">Bank Account / Payment Terms:</label>
+      <p class="mt-1">{{ supplier.payment_terms }}</p>
+    </div>
+    <div>
+      <label class="font-semibold">Bank Account Number:</label>
+      <p class="mt-1">1454567678738</p>
+    </div>
+    <div hidden >
+      <label class="font-semibold">Done By:</label>
+      <p class="mt-1">{{ supplier.done_by.get_full_name|default:supplier.done_by.username }}</p>
+    </div>
+    <div>
+      <label class="font-semibold">Date Created:</label>
+      <p class="mt-1">{{ supplier.created_at|date:"Y-m-d H:i" }}</p>
+    </div>
+
+
+
+    <!-- Related Records Section -->
+    <!-- Related Records Section -->
+<div class="mt-8 border-t pt-6">
+  <h3 class="text-lg font-semibold text-blue-600 mb-4">Related Records</h3>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+    <!-- Purchase Orders -->
+    <a href="" 
+       class="flex justify-between items-center px-4 py-3 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded shadow">
+      <span class="font-medium">Purchase Orders</span>
+      <span class="bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
+        {{ supplier.purchase_orders.count }}
+      </span>
+    </a>
+
+    <!-- Requisitions -->
+    <a href="" 
+       class="flex justify-between items-center px-4 py-3 bg-green-100 hover:bg-green-200 text-green-800 rounded shadow">
+      <span class="font-medium">Requisitions</span>
+      <span class="bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
+        {{ supplier.requisitions.count }}
+      </span>
+    </a>
+
+    <!-- Invoices -->
+    <a href="" 
+       class="flex justify-between items-center px-4 py-3 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 rounded shadow">
+      <span class="font-medium">Invoices</span>
+      <span class="bg-yellow-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
+        {{ supplier.invoices.count }}
+      </span>
+    </a>
+
+    <!-- Payments -->
+    <a href="" 
+       class="flex justify-between items-center px-4 py-3 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded shadow">
+      <span class="font-medium">Payments</span>
+      <span class="bg-purple-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
+        {{ supplier.payments.count }}
+      </span>
+    </a>
+
+  </div>
+</div>
+
+
+  </div>
+</div>
+
+{% endblock %}

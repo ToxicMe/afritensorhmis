@@ -3,6 +3,8 @@ from registration.models import Visit
 from accounts.models import CustomUser
 from doctor.models import DoctorNote, PrescriptionNote
 from laboratory.models import Test, TestResult, TestResultEntry
+from billing.models import Bill  
+from django.db import transaction
 
 
 # Create your views here.
@@ -10,6 +12,7 @@ from laboratory.models import Test, TestResult, TestResultEntry
 def doctor(request):
     return render(request, 'doctor/dashboard.html')
 
+@transaction.atomic
 def add_doctor_note(request, visit_id):
     visit = get_object_or_404(Visit, id=visit_id)
     patient = visit.patient
@@ -26,11 +29,26 @@ def add_doctor_note(request, visit_id):
                 doctor_notes=doctor_notes,
                 done_by=request.user
             )
+
             if selected_test_ids:
-                note.tests.set(Test.objects.filter(id__in=selected_test_ids))
-            visit.stage = 'laboratory'
+                selected_tests = Test.objects.filter(id__in=selected_test_ids)
+                note.tests.set(selected_tests)
+
+                # ✅ Create a Bill for each selected test
+                for test in selected_tests:
+                    Bill.objects.create(
+                        visit=visit,
+                        patient=patient,
+                        description=f"Test: {test.name}",
+                        amount=test.price,
+                        status='pending'  # Default to pending
+                    )
+
+            # ✅ Update visit stage
+            visit.stage = 'billing_note'
             visit.save()
-            return redirect(doctor_visits_list)  
+
+            return redirect('doctor_visits_list')  # Replace with correct name
         else:
             error = "Doctor notes are required."
             return render(request, 'doctor/doctor_note.html', {
@@ -89,7 +107,7 @@ def save_prescription_note(request, tracking_code):
                 doctor_prescription=note,
                 done_by=request.user
             )
-            visit.stage = 'billing'  # Optionally update stage
+            visit.stage = 'pharmacy'  # Optionally update stage
             visit.save()
             return redirect(prescription_visits_list)  # Or wherever you want to go after
         else:

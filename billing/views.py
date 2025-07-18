@@ -4,11 +4,11 @@ from django.contrib import messages
 from django.db import transaction
 from accounts.models import CustomUser
 from .models import *
+from django.db.models import Sum, Max, Q
 from registration.models import Visit
-
-
-
-# Create your views here.
+from .payment_processors.mpesa import mpesa_pay  # your helper
+from django.db.models import Sum
+from django.http import HttpResponse
 
 
 
@@ -41,6 +41,7 @@ def unpaid_bills_list(request):
     # Group by visit and aggregate total amount and latest status
     bills_by_visit = (
         Bill.objects.filter(status='pending')
+        .exclude(description__icontains='pharmacy')  
         .values('visit')
         .annotate(
             total_amount=Sum('amount'),
@@ -51,7 +52,7 @@ def unpaid_bills_list(request):
             patient_username=Max('patient__username'),
             description=Max('description'),
             status=Max('status'),
-            transaction_id=Max('transaction_id')  # To link to receipt
+            transaction_id=Max('transaction_id')  
         )
         .order_by('-latest_date')
     )
@@ -59,29 +60,56 @@ def unpaid_bills_list(request):
 
 @transaction.atomic
 def mark_bills_paid(request, tracking_code):
-    if request.method == "POST":
-        payment_method = request.POST.get("payment_method", "cash")
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect("home")
 
-        visit = get_object_or_404(Visit, tracking_code=tracking_code)
-        pending_bills = Bill.objects.select_for_update().filter(visit=visit, status='pending')
+    payment_method = request.POST.get("payment_method", "cash")
+    visit = get_object_or_404(Visit, tracking_code=tracking_code)
+    pending_bills = Bill.objects.select_for_update().filter(visit=visit, status='pending')
 
-        if not pending_bills.exists():
-            messages.warning(request, "There are no pending bills to update.")
+    if not pending_bills.exists():
+        messages.warning(request, "There are no pending bills to update.")
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+    total_amount = pending_bills.aggregate(total=Sum('amount'))['total'] or 1
+
+    # Handle Mpesa payment
+    if payment_method == "mpesa":
+        try:
+            response = mpesa_pay(visit.patient.phone_number, total_amount, visit.patient.get_full_name())
+            if response.response_code != '0':
+                messages.error(request, "M-Pesa request failed. Please try again.")
+                return redirect(request.META.get("HTTP_REFERER", "/"))
+        except Exception as e:
+            messages.error(request, f"M-Pesa Error: {str(e)}")
             return redirect(request.META.get("HTTP_REFERER", "/"))
 
-        # Mark all pending bills as paid
-        pending_bills.update(status='paid', payment_method=payment_method)
+    # Store bill for redirect
+    first_bill = pending_bills.first()
 
-        # Create a PaymentReceipt
-        PaymentReceipt.objects.create(
-            visit=visit,
-            patient=visit.patient,
-            payment_method=payment_method,
-            created_by=request.user
-        )
+    # Mark all pending bills as paid
+    pending_bills.update(status='paid', payment_method=payment_method)
 
-        messages.success(request, f"All bills for Visit {tracking_code} marked as paid.")
-        return redirect('view_bill', transaction_id=pending_bills.first().transaction_id)
+    # Create receipt
+    PaymentReceipt.objects.create(
+        visit=visit,
+        patient=visit.patient,
+        payment_method=payment_method,
+        created_by=request.user
+    )
 
-    messages.error(request, "Invalid request method.")
-    return redirect("home")
+    # === Update visit stage logic ===
+    if visit.stage == "billing_note":
+        visit.stage = "laboratory"
+    elif visit.stage == "billing_prescription":
+        visit.stage = "pharmacy"
+    elif visit.stage == "billing_pharmacy":
+        visit.stage = "discharged"
+    else:
+        visit.stage = "triage"
+
+    visit.save()
+
+    messages.success(request, f"All bills for Visit {tracking_code} marked as paid.")
+    return redirect('view_bill', transaction_id=first_bill.transaction_id)

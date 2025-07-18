@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="max-w-8xl mx-auto mt-12 bg-white shadow-md rounded-lg p-6">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-blue-700">Pharmacy Unpaid Bills</h2>
+  </div>
+
+  <table class="min-w-full border border-gray-300 text-sm">
+    <thead class="bg-gray-100 text-blue-700">
+      <tr>
+        <th class="px-4 py-2 border">Patient</th>
+        <th class="px-4 py-2 border">Tracking Code</th>
+        <th class="px-4 py-2 border">Description</th>
+        <th class="px-4 py-2 border">Amount (KES)</th>
+        <th class="px-4 py-2 border">Status</th>
+        <th class="px-4 py-2 border">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100 text-gray-800">
+      {% for bill in grouped_bills %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-2 border">
+          {{ bill.patient_name|default:bill.patient_username }}
+        </td>
+        <td class="px-4 py-2 border">
+          {% if bill.tracking_code %}
+            {{ bill.tracking_code }}
+          {% else %}
+            <span class="text-gray-400 italic">Walk-in</span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-2 border">
+          {{ bill.description|default:"—" }}
+        </td>
+        <td class="px-4 py-2 border">
+          {{ bill.total_amount|floatformat:2 }}
+        </td>
+        <td class="px-4 py-2 border capitalize">
+          {{ bill.status }}
+        </td>
+        <td class="px-4 py-2 border">
+          {% if bill.tracking_code %}
+            <a href="{% url 'view_bill' bill.transaction_id %}" class="text-blue-600 hover:underline">View</a>
+          {% else %}
+            <a href="{% url 'view_walkin_bill' bill.transaction_id %}" class="text-blue-600 hover:underline">View</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" class="text-center py-4 text-gray-500">No unpaid pharmacy bills found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

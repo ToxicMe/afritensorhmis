@@ -27,7 +27,7 @@
         {% csrf_token %}
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Name</label>
+            <label class="block text-sm font-medium text-gray-700">Supplier Name</label>
             <input name="name" type="text" required class="mt-1 w-full px-3 py-2 border rounded" />
           </div>
           <div>
@@ -55,9 +55,10 @@
             <input name="bank_name" type="text" class="mt-1 w-full px-3 py-2 border rounded" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Payment Terms</label>
+            <label class="block text-sm font-medium text-gray-700">Bank Account Number</label>
             <input name="payment_terms" type="text" class="mt-1 w-full px-3 py-2 border rounded" />
           </div>
+          
           <div class="col-span-2">
             <label class="block text-sm font-medium text-gray-700">Done By</label>
             <p class="mt-1 text-gray-800">{{ request.user.get_full_name|default:request.user.username }}</p>
@@ -87,6 +88,8 @@
           <th class="px-4 py-2 border">Payment Terms</th>
           <th class="px-4 py-2 border">Done By</th>
           <th class="px-4 py-2 border">Created</th>
+          <th class="px-4 py-2 border text-center">Action</th>
+
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100 text-gray-700">
@@ -102,6 +105,12 @@
           <td class="px-4 py-2 border">{{ supplier.payment_terms }}</td>
           <td class="px-4 py-2 border">{{ supplier.done_by }}</td>
           <td class="px-4 py-2 border">{{ supplier.created_at|date:"Y-m-d" }}</td>
+         <td class="px-4 py-2 border text-center">
+          <a href="{% url 'supplier_detail' supplier.id %}" 
+            class="text-blue-600 hover:underline text-sm font-medium">
+            View
+          </a>
+        </td>
         </tr>
         {% empty %}
         <tr>

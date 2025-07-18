@@ -16,6 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from accounts import views as accounts_views  # import your login view directly
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,6 +31,9 @@ urlpatterns = [
     path('pharmacy/', include('pharmacy.urls')),
     path('billing/', include('billing.urls')),
     path('finance/', include('finance.urls')),
+    path('', accounts_views.login_view, name='index'),  # Root URL shows login
+
+    
 
 
 

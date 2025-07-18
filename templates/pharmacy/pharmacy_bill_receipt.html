@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div id="receipt-section" class="max-w-6xl mx-auto p-6 mt-12 bg-white shadow rounded relative print:p-0 print:shadow-none print:mt-0 print:max-w-full">
+
+  <!-- Print Button -->
+  <div class="absolute top-4 right-4 no-print">
+    <button onclick="printReceipt()" class="bg-blue-800 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded shadow">
+      Print PDF
+    </button>
+  </div>
+
+  <h2 class="text-2xl font-bold mb-4">Pharmacy Bill Receipt</h2>
+
+  <div class="mb-6">
+    <p><strong>Patient Name:</strong> {{ patient.get_full_name|default:patient.username }}</p>
+
+    {% if visit %}
+      <p><strong>Visit:</strong> {{ visit.tracking_code }}</p>
+      <p><strong>Visit Date:</strong> {{ visit.date_time|date:"Y-m-d H:i" }}</p>
+    {% else %}
+      <p><strong>Visit:</strong> <span class="italic text-gray-500">Walk-in</span></p>
+      <p><strong>Date:</strong> {{ bills.0.date|date:"Y-m-d H:i" }}</p>
+    {% endif %}
+  </div>
+
+  <table class="w-full table-auto border border-gray-300 text-sm mb-6">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="border px-4 py-2 text-left">Date</th>
+        <th class="border px-4 py-2 text-left">Description</th>
+        <th class="border px-4 py-2 text-left">Amount (KSh)</th>
+        <th class="border px-4 py-2 text-left">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for bill in bills %}
+      <tr>
+        <td class="border px-4 py-2">{{ bill.date|date:"Y-m-d H:i" }}</td>
+        <td class="border px-4 py-2">{{ bill.description }}</td>
+        <td class="border px-4 py-2">KSh {{ bill.amount }}</td>
+        <td class="border px-4 py-2">{{ bill.status|capfirst }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="text-right mt-6">
+    <p class="text-lg font-bold text-green-700">Total Amount: KSh {{ total_amount }}</p>
+  </div>
+
+  <!-- Pay Button -->
+  <div class="text-right mt-6 mb-6 no-print">
+    <button id="openModal" type="button"
+      class="mt-4 mx-auto block px-4 py-2 rounded-lg text-white text-sm font-medium border-none outline-none tracking-wide bg-blue-600 hover:bg-blue-700 active:bg-blue-600">
+      PAY
+    </button>
+  </div>
+</div>
+
+<!-- Payment Modal -->
+<div>
+  <div id="modal" class="hidden">
+    <div class="fixed inset-0 p-4 flex justify-center items-center w-full h-full z-[1000] before:fixed before:inset-0 before:bg-black before:bg-opacity-50 overflow-auto">
+      <div class="bg-white shadow-lg rounded-lg p-8 relative w-full max-w-lg">
+        <div class="flex items-center justify-between">
+          <h3 class="text-blue-600 text-xl font-semibold">Payment Details</h3>
+          <svg id="closeIcon" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 cursor-pointer hover:fill-red-500" viewBox="0 0 320.591 320.591">
+            <path d="M30.391 318.583a30.37 30.37 0 0 1-21.56-7.288c-11.774-11.844-11.774-30.973 0-42.817L266.643 10.665c12.246-11.459 31.462-10.822 42.921 1.424 10.362 11.074 10.966 28.095 1.414 39.875L51.647 311.295a30.366 30.366 0 0 1-21.256 7.288z"/>
+            <path d="M287.9 318.583a30.37 30.37 0 0 1-21.257-8.806L8.83 51.963C-2.078 39.225-.595 20.055 12.143 9.146c11.369-9.736 28.136-9.736 39.504 0l259.331 257.813c12.243 11.462 12.876 30.679 1.414 42.922-.456.487-.927.958-1.414 1.414a30.368 30.368 0 0 1-23.078 7.288z"/>
+          </svg>
+        </div>
+
+        <form method="post" action="{% if visit %}{% url 'mark_bills_paid' visit.tracking_code %}{% else %}{% url 'mark_bills_paid_walkin' transaction_id=bills.0.transaction_id %}{% endif %}" class="mt-6 space-y-6">
+          {% csrf_token %}
+          <input type="hidden" name="payment_method" id="selectedPaymentMethod" value="cash">
+
+          {% if visit %}
+          <div>
+            <label class="text-sm text-gray-700">Visit ID</label>
+            <input type="text" value="{{ visit.tracking_code }}" readonly class="w-full mt-1 px-3 py-2 bg-gray-100 rounded-lg">
+          </div>
+          {% endif %}
+
+          <div>
+            <label class="text-sm text-gray-700">Patient Name</label>
+            <input type="text" value="{{ patient.get_full_name|default:patient.username }}" readonly class="w-full mt-1 px-3 py-2 bg-gray-100 rounded-lg">
+          </div>
+
+          <div>
+            <label class="text-sm text-gray-700">Date</label>
+            <input type="text" value="{% if visit %}{{ visit.date_time|date:'Y-m-d H:i' }}{% else %}{{ bills.0.date|date:'Y-m-d H:i' }}{% endif %}" readonly class="w-full mt-1 px-3 py-2 bg-gray-100 rounded-lg">
+          </div>
+
+          <!-- Payment Method Dropdown -->
+          <div class="relative mt-4">
+            <button type="button" id="dropdownToggle"
+              class="px-5 py-2.5 rounded bg-blue-600 text-white text-sm font-medium">
+              Choose Payment Method
+              <svg class="w-3 fill-white inline ml-3" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" d="M12 18.17a2.38 2.38 0 0 1-1.68-.7l-9.52-9.52a2.38 2.38 0 0 1 3.36-3.36l7.84 7.84 7.84-7.84a2.38 2.38 0 0 1 3.36 3.36l-9.52 9.52a2.38 2.38 0 0 1-1.68.7z" clip-rule="evenodd"/>
+              </svg>
+            </button>
+            <ul id="dropdownMenu" class="hidden absolute z-50 mt-2 bg-white shadow-lg rounded w-full">
+              <li class="dropdown-item px-4 py-2 hover:bg-gray-100 cursor-pointer" data-method="cash">Cash</li>
+              <li class="dropdown-item px-4 py-2 hover:bg-gray-100 cursor-pointer" data-method="mpesa">Mpesa</li>
+              <li class="dropdown-item px-4 py-2 hover:bg-gray-100 cursor-pointer" data-method="card">Card</li>
+              <li class="dropdown-item px-4 py-2 hover:bg-gray-100 cursor-pointer" data-method="insurance">Insurance</li>
+              <li class="dropdown-item px-4 py-2 hover:bg-gray-100 cursor-pointer" data-method="other">Other</li>
+            </ul>
+          </div>
+
+          <div>
+            <label class="text-sm text-gray-700">Phone Number</label>
+            <input type="tel" value="{{ patient.phone_number }}" readonly class="w-full mt-1 px-3 py-2 bg-gray-100 rounded-lg">
+          </div>
+
+          <div class="flex justify-end gap-4 mt-6">
+            <button type="button" id="closeButton" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-sm">Cancel</button>
+            <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">Pay</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+function printReceipt() {
+  window.print();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  let modal = document.getElementById('modal');
+  let openModalBtn = document.getElementById('openModal');
+  let closeModalBtns = [document.getElementById('closeIcon'), document.getElementById('closeButton')];
+  let dropdownToggle = document.getElementById('dropdownToggle');
+  let dropdownMenu = document.getElementById('dropdownMenu');
+  let paymentInput = document.getElementById('selectedPaymentMethod');
+
+  function toggleDropdown() {
+    dropdownMenu.classList.toggle('hidden');
+  }
+
+  function hideDropdown() {
+    dropdownMenu.classList.add('hidden');
+  }
+
+  dropdownToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleDropdown();
+  });
+
+  document.querySelectorAll('.dropdown-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const method = item.dataset.method;
+      paymentInput.value = method;
+      dropdownToggle.innerHTML = `Payment: ${method.charAt(0).toUpperCase() + method.slice(1)} <svg xmlns="http://www.w3.org/2000/svg" class="w-3 fill-white inline ml-3" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 18.17a2.38 2.38 0 0 1-1.68-.7l-9.52-9.52a2.38 2.38 0 1 1 3.36-3.36l7.84 7.84 7.84-7.84a2.38 2.38 0 1 1 3.36 3.36l-9.52 9.52a2.38 2.38 0 0 1-1.68.7z" clip-rule="evenodd"/></svg>`;
+      hideDropdown();
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!dropdownMenu.contains(e.target) && e.target !== dropdownToggle) {
+      hideDropdown();
+    }
+  });
+
+  openModalBtn.addEventListener('click', () => {
+    modal.classList.remove('hidden');
+  });
+
+  closeModalBtns.forEach(btn => btn.addEventListener('click', () => {
+    modal.classList.add('hidden');
+  }));
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal.firstElementChild) {
+      modal.classList.add('hidden');
+    }
+  });
+});
+</script>
+
+<!-- Print Optimization -->
+<style>
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #receipt-section, #receipt-section * {
+    visibility: visible;
+  }
+  #receipt-section {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
+</style>
+
+{% endblock %}

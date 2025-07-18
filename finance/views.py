@@ -3,36 +3,132 @@ from .models import *
 from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.db.models import Q
+from django.utils import timezone
 User = get_user_model()
+from django.utils.timezone import now
 
+from django.core.paginator import Paginator
+
+
+def purchase_order_create(request):
+    if request.method == 'POST':
+        po = PurchaseOrder.objects.create(
+            supplier_id=request.POST.get('supplier'),
+            requisition_id=request.POST.get('requisition') or None,
+            expected_delivery_date=request.POST.get('expected_delivery_date'),
+            total_amount=request.POST.get('total_amount') or 0,
+            payment_terms=request.POST.get('payment_terms'),
+            delivery_location=request.POST.get('delivery_location'),
+            notes=request.POST.get('notes'),
+            created_by=request.user,
+        )
+        messages.success(request, "Purchase Order created successfully.")
+    return redirect('purchase_order_list')
+
+def purchase_order_detail(request, pk):
+    po = get_object_or_404(PurchaseOrder, pk=pk)
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "approve":
+            po.status = "approved"
+            po.save()
+            messages.success(request, "Purchase Order approved.")
+        elif action == "reject":
+            reason = request.POST.get("rejection_reason")
+            po.status = "cancelled"
+            po.rejection_reason = reason
+            po.save()
+            messages.error(request, f"Purchase Order rejected: {reason}")
+        return redirect("purchase_order_list")
+
+    return render(request, "finance/purchasing/purchase_order_detail.html", {"purchase_order": po})
+
+def purchase_order_list(request):
+    supplier_id = request.GET.get('supplier')
+    status = request.GET.get('status')
+
+    purchase_orders = PurchaseOrder.objects.all()
+
+    if supplier_id:
+        purchase_orders = purchase_orders.filter(supplier_id=supplier_id)
+    if status:
+        purchase_orders = purchase_orders.filter(status=status)
+
+    purchase_orders = purchase_orders.order_by('-order_date')
+
+    paginator = Paginator(purchase_orders, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    suppliers = Supplier.objects.all()
+
+    return render(request, 'finance/purchasing/purchase_order_list.html', {
+        'page_obj': page_obj,
+        'suppliers': suppliers,
+        'requisitions': Requisition.objects.all(), 
+        'filter_supplier': supplier_id,
+        'filter_status': status
+    })
+
+
+def supplier_detail(request, pk):
+    supplier = get_object_or_404(Supplier, pk=pk)
+    return render(request, 'finance/adminstration/supplier_detail.html', {'supplier': supplier}) 
 
 # Create your views here.
+
 def requisition_create(request):
     if request.method == 'POST':
         try:
-            user_id = request.POST.get('name')  # 'name' is now user ID from dropdown
-            user_instance = User.objects.get(id=user_id)
+            print("Request POST:", request.POST)
+
+            user_id = request.POST.get('user')
+            if not user_id:
+                raise ValueError("User ID missing")
+
+            user = User.objects.get(id=user_id)
+            print("User resolved:", user)
 
             requisition = Requisition.objects.create(
-                name=user_instance,
+                user=user,
                 job_title=request.POST.get('job_title'),
                 department=request.POST.get('department'),
                 email=request.POST.get('email'),
                 date_of_request=request.POST.get('date_of_request'),
                 is_urgent=request.POST.get('is_urgent') == 'True',
-                notes=request.POST.get('notes'),
-                done_by=request.user  # current logged-in user
+                notes=request.POST.get('notes', ''),
+                done_by=request.user,
             )
+            print("Requisition created:", requisition)
 
-            # Handle items if you added them in the form (optional)
-            # Example: loop over POST data to create RequisitionItem
+            # Item lists
+            descriptions = request.POST.getlist('item_description[]')
+            units = request.POST.getlist('unit[]')
+            quantities = request.POST.getlist('quantity[]')
+
+            for desc, unit, qty in zip(descriptions, units, quantities):
+                if desc.strip() and unit.strip() and qty:
+                    RequisitionItem.objects.create(
+                        requisition=requisition,
+                        item_description=desc,
+                        unit=unit,
+                        quantity=int(qty)
+                    )
+            print("Items created.")
 
             messages.success(request, "Requisition created successfully.")
-        except User.DoesNotExist:
-            messages.error(request, "Selected user does not exist.")
-        return redirect('requisition_list')
-    
+            return redirect('requisition_list')
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()  # 🔥 Show full traceback
+            messages.error(request, "There was an error processing the requisition.")
+            return redirect('requisition_list')
+
     return redirect('requisition_list')
+
 
 
 def requisition_list(request):

@@ -2,7 +2,6 @@ import string
 import random
 from django.db import models
 from django.utils import timezone
-
 from registration.models import Visit
 from accounts.models import CustomUser
 
@@ -28,7 +27,7 @@ class Bill(models.Model):
     ]
 
     transaction_id = models.CharField(max_length=10, unique=True, editable=False)
-    visit = models.ForeignKey(Visit, on_delete=models.CASCADE, related_name='bills')
+    visit = models.ForeignKey(Visit, on_delete=models.CASCADE, related_name='bills',  blank=True, null=True)
     patient = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='bills')
     description = models.TextField()
     amount = models.DecimalField(max_digits=10, decimal_places=2)

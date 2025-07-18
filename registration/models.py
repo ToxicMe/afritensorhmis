@@ -9,24 +9,26 @@ class Visit(models.Model):
         ('note', 'Note'),
         ('laboratory', 'Laboratory'),
         ('prescription', 'Prescription'),
-        ('billing', 'Billing'),
+        ('billing', 'Billing(From Registration)'),
+        ('billing_note', 'Billing (From Note)'),
+        ('billing_prescription', 'Billing (From Prescription)'),
+        ('billing_pharmacy', 'Billing (From Pharmacy)'),
         ('pharmacy', 'Pharmacy'),
         ('inpatient', 'Inpatient'),
         ('discharged', 'Discharged'),
     ]
 
-    tracking_code = models.CharField(max_length=20, unique=True, editable=True, blank=True, null=True)
     id = models.AutoField(primary_key=True)
+    tracking_code = models.CharField(max_length=50, unique=True, editable=True, blank=True, null=True)
     date_time = models.DateTimeField(default=timezone.now)
-    updated_on = models.DateTimeField(auto_now=True)  
+    updated_on = models.DateTimeField(auto_now=True)
 
     hospital = models.ForeignKey('hospital.Hospital', on_delete=models.CASCADE, related_name='visits')
     patient = models.ForeignKey('accounts.CustomUser', on_delete=models.CASCADE, related_name='visits')
-    stage = models.CharField(max_length=20, choices=STAGE_CHOICES)
+    stage = models.CharField(max_length=30, choices=STAGE_CHOICES)
 
     def save(self, *args, **kwargs):
         if not self.tracking_code:
-            # Example format: VIS-<HospitalID>-<PatientID>-<RandomStr>
             random_str = get_random_string(length=6).upper()
             self.tracking_code = f"VIS-{self.hospital.id}-{self.patient.id}-{random_str}"
         super().save(*args, **kwargs)
