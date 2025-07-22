@@ -36,6 +36,8 @@ urlpatterns = [
         path('purchase-orders/', views.purchase_order_list, name='purchase_order_list'),
         path('purchase-orders/<int:pk>/', views.purchase_order_detail, name='purchase_order_detail'),
         path('purchase-orders/create/', views.purchase_order_create, name='purchase_order_create'),
+        path('assets/add/', views.add_fixed_asset, name='add_fixed_asset'),
+
     
 
 

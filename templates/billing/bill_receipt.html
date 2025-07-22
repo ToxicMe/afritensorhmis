@@ -60,7 +60,16 @@ document.addEventListener('DOMContentLoaded', () => {
       <tr>
         <td class="border px-4 py-2">{{ bill.date|date:"Y-m-d H:i" }}</td>
         <td class="border px-4 py-2">{{ bill.description }}</td>
-        <td class="border px-4 py-2">KSh {{ bill.amount }}</td>
+        
+    <td class="border px-4 py-2">
+  {% if bill.discounted %}
+    <span class="text-green-700 font-semibold">KSh {{ bill.discounted_amount }}</span>
+  {% else %}
+    KSh {{ bill.amount }}
+  {% endif %}
+</td>
+
+
         <td class="border px-4 py-2">{{ bill.status|capfirst }}</td>
         <td class="border px-4 py-2">
           <a href="" class="text-blue-600 hover:underline">Dispute</a>

@@ -10,6 +10,8 @@ def generate_transaction_id():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
 
 
+# models.py
+
 class Bill(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
@@ -27,10 +29,14 @@ class Bill(models.Model):
     ]
 
     transaction_id = models.CharField(max_length=10, unique=True, editable=False)
-    visit = models.ForeignKey(Visit, on_delete=models.CASCADE, related_name='bills',  blank=True, null=True)
+    visit = models.ForeignKey(Visit, on_delete=models.CASCADE, related_name='bills', blank=True, null=True)
     patient = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='bills')
     description = models.TextField()
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    discounted = models.BooleanField(default=False)  # New field
+    discount_reason = models.TextField(blank=True, null=True)  # New field
+    custom_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  # Optional override
+
     date = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, blank=True, null=True)
@@ -42,10 +48,16 @@ class Bill(models.Model):
                 if not Bill.objects.filter(transaction_id=new_id).exists():
                     self.transaction_id = new_id
                     break
+
+        # Override amount if custom amount is provided
+        if self.custom_amount:
+            self.amount = self.custom_amount
+
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Bill {self.transaction_id} for {self.patient.get_full_name() or self.patient.username}"
+
 
 
 

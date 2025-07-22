@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto mt-8 p-6 bg-white shadow rounded">
+  <h2 class="text-2xl font-bold mb-6">Visit Details - {{ visit.tracking_code }}</h2>
+
+  <!-- Tabs -->
+  <div>
+    <ul class="flex border-b mb-6 space-x-4">
+      <li><button onclick="showTab('triage')" class="tab-button">Triage</button></li>
+      <li><button onclick="showTab('doctor')" class="tab-button">Doctor Notes</button></li>
+      <li><button onclick="showTab('prescription')" class="tab-button">Prescription</button></li>
+      <li><button onclick="showTab('lab')" class="tab-button">Lab</button></li>
+      <li><button onclick="showTab('sales')" class="tab-button">Sales</button></li>
+      <li><button onclick="showTab('billing')" class="tab-button">Billing</button></li>
+    </ul>
+
+    <!-- TRIAGE -->
+    <div id="tab-triage" class="tab-content hidden">
+      {% if triage %}
+        <h3 class="text-lg font-semibold mb-2">Triage Info</h3>
+        <p><strong>Weight:</strong> {{ triage.weight }} kg</p>
+        <p><strong>Blood Pressure:</strong> {{ triage.bp }}</p>
+        <p><strong>Temperature:</strong> {{ triage.temp }} °C</p>
+        <p><strong>Notes:</strong> {{ triage.notes }}</p>
+      {% else %}
+        <p class="text-gray-500">No triage record available.</p>
+      {% endif %}
+    </div>
+
+    <!-- DOCTOR NOTES -->
+    <div id="tab-doctor" class="tab-content hidden">
+      {% for note in doctor_notes %}
+        <div class="mb-4 border-b pb-2">
+          <p><strong>Doctor:</strong> {{ note.done_by.get_full_name }}</p>
+          <p>{{ note.doctor_notes|linebreaks }}</p>
+          <p class="text-sm text-gray-500">{{ note.created_at|date:"Y-m-d H:i" }}</p>
+        </div>
+      {% empty %}
+        <p class="text-gray-500">No doctor notes available.</p>
+      {% endfor %}
+    </div>
+
+    <!-- PRESCRIPTION -->
+    <div id="tab-prescription" class="tab-content hidden">
+      {% if prescription %}
+        <p><strong>Prescribed By:</strong> {{ prescription.done_by.get_full_name }}</p>
+        <p>{{ prescription.doctor_prescription|linebreaks }}</p>
+      {% else %}
+        <p class="text-gray-500">No prescription record found.</p>
+      {% endif %}
+    </div>
+
+    <!-- LAB -->
+    <div id="tab-lab" class="tab-content hidden">
+      {% if lab_results %}
+        <ul class="list-disc ml-6">
+          {% for result in lab_results %}
+            <li>{{ result.test.name }}: {{ result.result }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-gray-500">No lab results found.</p>
+      {% endif %}
+    </div>
+
+    <!-- SALES -->
+    <div id="tab-sales" class="tab-content hidden">
+      {% for sale in sales %}
+        <div class="mb-3">
+          <p><strong>Status:</strong> {{ sale.status }}</p>
+          <p><strong>Amount:</strong> KSh {{ sale.amount }}</p>
+          <p class="text-sm text-gray-500">{{ sale.created_at }}</p>
+        </div>
+      {% empty %}
+        <p class="text-gray-500">No pharmacy sales available.</p>
+      {% endfor %}
+    </div>
+
+    <!-- BILLING -->
+    <div id="tab-billing" class="tab-content hidden">
+      {% for bill in bills %}
+        <div class="mb-3 border-b pb-2">
+          <p><strong>Description:</strong> {{ bill.description }}</p>
+          <p><strong>Amount:</strong> KSh {{ bill.amount }}</p>
+          <p><strong>Status:</strong> {{ bill.status }}</p>
+        </div>
+      {% empty %}
+        <p class="text-gray-500">No bills recorded.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Tabs Script -->
+<script>
+  function showTab(id) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    document.getElementById('tab-' + id).classList.remove('hidden');
+
+    document.querySelectorAll('.tab-button').forEach(btn => {
+      btn.classList.remove('border-b-2', 'border-blue-600');
+    });
+    event.target.classList.add('border-b-2', 'border-blue-600');
+  }
+
+  // Default tab
+  document.addEventListener("DOMContentLoaded", () => showTab('triage'));
+</script>
+
+<style>
+  .tab-button {
+    padding: 8px 16px;
+    font-weight: 500;
+    color: #1f2937;
+  }
+
+  .tab-button:hover {
+    background-color: #f3f4f6;
+  }
+</style>
+
+{% endblock %}

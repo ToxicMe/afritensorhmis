@@ -5,10 +5,63 @@ from doctor.models import DoctorNote, PrescriptionNote
 from laboratory.models import Test, TestResult, TestResultEntry
 from billing.models import Bill  
 from django.db import transaction
+from django.db.models import Q, Sum, Max
+from billing.utils import create_patient_bill
+from django.contrib import messages
 
 
 # Create your views here.
 # Create your views here.
+def doctor_unpaid_bills_list(request):
+    bills_by_visit = (
+        Bill.objects
+        .filter(
+            status='pending',
+            visit__type__in=['minor_surgery', 'outpatient_consultation']
+        )
+        .exclude(description__icontains='pharmacy')  # still exclude pharmacy-related
+        .values('visit')
+        .annotate(
+            total_amount=Sum('amount'),
+            latest_date=Max('date'),
+            tracking_code=Max('visit__tracking_code'),
+            patient_id=Max('patient__id'),
+            patient_name=Max('patient__first_name'),
+            patient_username=Max('patient__username'),
+            description=Max('description'),
+            status=Max('status'),
+            transaction_id=Max('transaction_id')
+        )
+        .order_by('-latest_date')
+    )
+
+    return render(request, 'billing/unpaid_bills_list.html', {'grouped_bills': bills_by_visit})
+
+
+def add_bill_from_note(request, visit_id):
+    visit = get_object_or_404(Visit, id=visit_id)
+    patient = visit.patient
+
+    if request.method == "POST":
+        description = request.POST.get("description")
+        amount = request.POST.get("amount")
+        reason = request.POST.get("reason", "").strip()
+
+        bill, error = create_patient_bill(
+            visit=visit,
+            patient=patient,
+            description=description,
+            amount=amount,
+            discount_reason=reason if reason else None
+        )
+
+        if bill:
+            messages.success(request, "Bill added successfully.")
+        else:
+            messages.error(request, f"Failed to add bill: {error}")
+
+    return redirect("add_doctor_note", visit_id=visit_id)
+
 def doctor(request):
     return render(request, 'doctor/dashboard.html')
 
@@ -138,9 +191,9 @@ def doctor_visits_list(request):
         })
 
     visits = Visit.objects.filter(
-        stage='doctor',
+        Q(stage='doctor') | Q(stage='minor_surgery') | Q(stage='consultation'),
         hospital=user.hospital
-    ).order_by('updated_on')
+    ).order_by('updated_on')  # oldest first
 
     return render(request, 'doctor/doctor_visits_list.html', {
         'visits': visits

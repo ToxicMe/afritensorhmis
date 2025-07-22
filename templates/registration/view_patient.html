@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-6xl h-full mb-12 mx-auto mt-10">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">Patient Details</h2>
+    <button id="openInsuranceModal" 
+       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+       Add Insurance Info
+    </button>
+  </div>
+
+  <!-- Patient Info -->
+  <div class="bg-white shadow rounded-lg p-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 text-sm">
+      <div><strong>Full Name:</strong> {{ patient.patient_name }}</div>
+      <div><strong>Email:</strong> {{ patient.email }}</div>
+      <div><strong>Phone:</strong> {{ patient.phone_number }}</div>
+      <div><strong>Gender:</strong> {{ patient.gender|title }}</div>
+      <div><strong>Residence:</strong> {{ patient.residence }}</div>
+      <div><strong>County:</strong> {{ patient.county }}</div>
+      <div><strong>Country:</strong> {{ patient.country }}</div>
+      <div><strong>Registered On:</strong> {{ patient.date_of_registration }}</div>
+      <div><strong>Hospital:</strong> {{ patient.hospital.name }}</div>
+    </div>
+  </div>
+
+  <!-- Insurance Info -->
+  {% if insurance %}
+    {% for item in insurance %}
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 relative">
+        <h3 class="text-lg font-semibold text-blue-700 mb-2">Insurance Information</h3>
+        <p><strong>Provider:</strong> {{ item.insurance_provider.name }}</p>
+        <p><strong>Card Number:</strong> **********</p>
+        <p><strong>Principal Name:</strong> {{ item.principal_name }}</p>
+        <p><strong>Scheme Type:</strong> {{ item.get_scheme_type_display }}</p>
+
+        <div class="text-right mt-4">
+          <button type="button"
+                  class="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded"
+                  onclick="openRemoveModal({{ item.id }})">
+            Remove Insurance Info
+          </button>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="bg-gray-100 border border-gray-300 rounded-lg p-4 mb-8">
+      <p class="text-gray-600">No insurance information available for this patient.</p>
+    </div>
+  {% endif %}
+
+  <!-- Visit History -->
+  <h3 class="text-xl font-semibold text-gray-800 mb-4">Visit History</h3>
+  <div class="overflow-x-auto">
+    <table class="min-w-full mb-12 bg-white border text-sm">
+      <thead class="bg-gray-100 text-gray-700">
+        <tr>
+          <th class="px-4 py-2 border">Date</th>
+          <th class="px-4 py-2 border">Tracking Code</th>
+          <th class="px-4 py-2 border">Stage</th>
+          <th class="px-4 py-2 border">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for visit in visits %}
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-2 border">{{ visit.date_time|date:"Y-m-d H:i" }}</td>
+          <td class="px-4 py-2 border">{{ visit.tracking_code }}</td>
+          <td class="px-4 py-2 border">{{ visit.get_stage_display }}</td>
+          <td class="px-4 py-2 border">
+            <a href="{% url 'visit_detail' visit.tracking_code %}" 
+               class="text-blue-600 hover:underline text-sm">View</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-center py-4 text-gray-500">No visit records found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ================= REMOVE INSURANCE MODAL ================= -->
+<div id="removeModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center">
+  <div class="bg-white max-w-md w-full p-6 rounded-lg shadow relative">
+    <h3 class="text-lg font-semibold text-red-600 mb-4">Confirm Removal</h3>
+    <p class="text-sm text-gray-700 mb-6">Are you sure you want to remove this patient's insurance information?</p>
+
+    <form method="POST" action="">
+      {% csrf_token %}
+      <div class="flex justify-end space-x-4">
+        <button type="button" id="cancelRemove" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">
+          Cancel
+        </button>
+        <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+          Confirm
+        </button>
+      </div>
+    </form>
+
+    <button id="closeRemoveModal" class="absolute top-2 right-3 text-gray-500 hover:text-red-600 text-xl">&times;</button>
+  </div>
+</div>
+
+
+<!-- ================= ADD INSURANCE MODAL ================= -->
+<div id="insuranceModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-white w-full max-w-2xl p-6 rounded-lg shadow-lg relative overflow-y-auto max-h-[90vh]">
+    
+    <button id="closeInsuranceModal" class="absolute top-3 right-4 text-xl text-gray-700 hover:text-red-500">&times;</button>
+    <h3 class="text-xl font-semibold text-gray-800 mb-6">Add Insurance Information</h3>
+
+    <form method="POST" action="{% url 'add_insurance_info' patient.id %}" enctype="multipart/form-data" class="space-y-4">
+      {% csrf_token %}
+
+      <!-- Insurance Provider -->
+      <div>
+        <label class="block text-sm font-medium mb-1">Insurance Provider</label>
+        <select name="insurance_provider" required class="w-full border px-3 py-2 rounded">
+          {% for provider in insurance_providers %}
+            <option value="{{ provider.id }}">{{ provider.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Card Number -->
+      <div>
+        <label class="block text-sm font-medium mb-1">Card/Membership Number</label>
+        <input type="text" name="card_number" class="w-full border px-3 py-2 rounded" required>
+      </div>
+
+      <!-- Scheme Type -->
+      <div>
+        <label class="block text-sm font-medium mb-1">Scheme Type</label>
+        <select name="scheme_type" class="w-full border px-3 py-2 rounded" required>
+          <option value="inpatient">Inpatient</option>
+          <option value="outpatient">Outpatient</option>
+          <option value="in_and_out">Inpatient & Outpatient</option>
+          <option value="none">None</option>
+        </select>
+      </div>
+
+      <!-- Principal Name -->
+      <div>
+        <label class="block text-sm font-medium mb-1">Principal Member Name</label>
+        <input type="text" name="principal_name" class="w-full border px-3 py-2 rounded" required>
+      </div>
+
+      <!-- Relationship -->
+      <div>
+        <label class="block text-sm font-medium mb-1">Relationship to Principal</label>
+        <select name="relationship_to_principal" class="w-full border px-3 py-2 rounded" required>
+          <option value="" disabled selected>Select relationship</option>
+          <option value="self">Self</option>
+          <option value="spouse">Spouse</option>
+          <option value="child">Child</option>
+          <option value="parent">Parent</option>
+          <option value="sibling">Sibling</option>
+          <option value="guardian">Guardian</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <!-- Employer & SHA -->
+      <div class="grid md:grid-cols-2 gap-4">
+        <div><label class="block text-sm mb-1">Employer Name</label><input type="text" name="employer_name" class="w-full border px-3 py-2 rounded"></div>
+        <div><label class="block text-sm mb-1">Employer Code</label><input type="text" name="employer_code" class="w-full border px-3 py-2 rounded"></div>
+        <div><label class="block text-sm mb-1">SHA Number</label><input type="text" name="sha_number" class="w-full border px-3 py-2 rounded"></div>
+        <div><label class="block text-sm mb-1">SHA Contribution Proof</label><input type="file" name="sha_contribution_proof" class="w-full border px-3 py-2 rounded"></div>
+      </div>
+
+      <!-- Auth -->
+      <div class="grid md:grid-cols-2 gap-4">
+        <div><label class="block text-sm mb-1">Pre-Authorization Code</label><input type="text" name="pre_authorization_code" class="w-full border px-3 py-2 rounded"></div>
+        <div><label class="block text-sm mb-1">Authorization Letter</label><input type="file" name="authorization_letter" class="w-full border px-3 py-2 rounded"></div>
+        <div><label class="block text-sm mb-1">Authorization Date</label><input type="date" name="authorization_date" class="w-full border px-3 py-2 rounded"></div>
+        <div><label class="block text-sm mb-1">Approved Amount</label><input type="number" step="0.01" name="approved_amount" class="w-full border px-3 py-2 rounded"></div>
+      </div>
+
+      <div class="text-right pt-4">
+        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Save Insurance Info</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================== JS =================== -->
+<script>
+function openRemoveModal(insuranceId) {
+  const modal = document.getElementById("removeModal");
+  const form = modal.querySelector("form");
+  form.action = `/registration/insurance/remove/${insuranceId}/`;
+  modal.classList.remove('hidden');
+}
+
+document.getElementById("cancelRemove")?.addEventListener('click', () => {
+  document.getElementById("removeModal").classList.add('hidden');
+});
+
+document.getElementById("closeRemoveModal")?.addEventListener('click', () => {
+  document.getElementById("removeModal").classList.add('hidden');
+});
+
+const openModalBtn = document.getElementById('openInsuranceModal');
+const closeModalBtn = document.getElementById('closeInsuranceModal');
+const insuranceModal = document.getElementById('insuranceModal');
+
+openModalBtn.addEventListener('click', () => {
+  insuranceModal.classList.remove('hidden');
+  insuranceModal.classList.add('flex');
+});
+
+closeModalBtn.addEventListener('click', () => {
+  insuranceModal.classList.add('hidden');
+  insuranceModal.classList.remove('flex');
+});
+
+window.addEventListener('click', (e) => {
+  if (e.target === insuranceModal) {
+    insuranceModal.classList.add('hidden');
+    insuranceModal.classList.remove('flex');
+  }
+});
+</script>
+
+{% endblock %}

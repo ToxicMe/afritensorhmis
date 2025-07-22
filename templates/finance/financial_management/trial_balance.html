@@ -1,17 +1,115 @@
 {% extends "base.html" %}
 {% block content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+  // Toggle dropdown
+  document.getElementById("exportBtn").addEventListener("click", function () {
+    document.getElementById("exportMenu").classList.toggle("hidden");
+  });
+
+  // Export as CSV
+  document.getElementById("exportCSV").addEventListener("click", function () {
+    const rows = Array.from(document.querySelectorAll("#trialBalanceBody tr"));
+    let csv = "No,Name,Debit,Credit\n";
+    rows.forEach(row => {
+      const cols = row.querySelectorAll("td");
+      const rowData = Array.from(cols).slice(0, 4).map(td => td.textContent.trim()).join(",");
+      csv += rowData + "\n";
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    downloadFile(url, "trial_balance.csv");
+  });
+
+  // Export as Excel
+  document.getElementById("exportExcel").addEventListener("click", function () {
+    const table = document.querySelector("table");
+    const wb = XLSX.utils.table_to_book(table, { sheet: "Trial Balance" });
+    XLSX.writeFile(wb, "trial_balance.xlsx");
+  });
+
+  // Export as PDF
+  document.getElementById("exportPDF").addEventListener("click", async function () {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.text("Trial Balance", 14, 16);
+    let startY = 24;
+
+    const rows = Array.from(document.querySelectorAll("#trialBalanceBody tr"));
+    rows.forEach((row, i) => {
+      const cols = row.querySelectorAll("td");
+      const data = Array.from(cols).slice(0, 4).map(td => td.textContent.trim());
+      doc.text(data.join("  |  "), 14, startY + i * 10);
+    });
+
+    doc.save("trial_balance.pdf");
+  });
+
+  function downloadFile(url, filename) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+</script>
+
 
 <div class="max-w-7xl mt-12 mx-auto bg-white shadow-md rounded-lg p-6 space-y-8">
 
-  <!-- Header -->
-  <div class="text-center">
-    <h1 class="text-3xl font-bold text-gray-800">Trial Balance</h1>
-    <p class="text-sm text-gray-500 mt-1">Listing of accounts with debit and credit balances</p>
+     <!-- Centered Title -->
+    <div class="md:w-1/3 mt-6 mb-10 text-center">
+      <h1 class="text-3xl font-bold text-gray-800">Trial Balance</h1>
+      <p class="text-sm text-gray-500 mt-1">Listing of accounts with debit and credit balances</p>
+    </div>
+
+  <!-- Header Section with Date Range, Title, P&L, and Export -->
+  <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+
+   
+
+
+    <!-- Date Range Filter -->
+    <div class="md:w-1/3 text-center">
+      <label for="startDate" class="block text-sm text-gray-700 font-medium">Date Range</label>
+      <div class="flex justify-center space-x-2 mt-1">
+        <input type="date" id="startDate" class="border px-2 py-1 rounded text-sm">
+        <span class="text-gray-600 mt-1">to</span>
+        <input type="date" id="endDate" class="border px-2 py-1 rounded text-sm">
+        <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">Filter</button>
+      </div>
+    </div>
+
+  
+    <!-- P&L and Export Dropdown -->
+    <div class="md:w-1/3 flex flex-col items-end space-y-2">
+      <!-- P&L Summary -->
+      <div class="bg-gray-100 px-4 py-2 rounded text-right w-max">
+        <p class="text-sm text-gray-700 font-semibold">P&L Summary</p>
+        <p class="text-lg font-bold text-green-700">KSh 125,000</p>
+      </div>
+
+      <!-- Export Dropdown -->
+     <div class="relative">
+      <button id="exportBtn"
+              class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm focus:outline-none">
+        Export ▼
+      </button>
+      <div id="exportMenu"
+          class="hidden absolute right-0 mt-2 w-40 bg-white border rounded shadow z-50">
+        <a href="#" id="exportCSV" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export as CSV</a>
+        <a href="#" id="exportExcel" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export as Excel</a>
+        <a href="#" id="exportPDF" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export as PDF</a>
+      </div>
+    </div>
+    </div>
   </div>
 
   <!-- Trial Balance Table -->
-  <div class="overflow-x-auto">
-    <table class="min-w-full border text-sm text-gray-800">
+  <div class="overflow-x-auto mt-6">
+    <table id="trialBalanceBody" class="min-w-full  border text-sm text-gray-800">
       <thead class="bg-blue-600 text-left">
         <tr>
           <th class="py-2 px-3 border text-gray-100">No</th>
@@ -38,7 +136,7 @@
   </div>
 </div>
 
-<!-- Trial Balance Script -->
+<!-- Script to Inject Sample Table Data -->
 <script>
   const trialBalanceData =[
   {
@@ -2141,32 +2239,28 @@
   }
 ];
 
+
   const tbody = document.getElementById("trialBalanceBody");
 
-  trialBalanceData.forEach((item, index) => {
+  trialBalanceData.forEach((item) => {
     const row = document.createElement("tr");
 
-    // Account Code
     const noCell = document.createElement("td");
     noCell.className = "border px-3 py-2";
     noCell.textContent = item["Trial Balance"] || "—";
 
-    // Account Name
     const nameCell = document.createElement("td");
     nameCell.className = "border px-3 py-2";
     nameCell.textContent = item["__EMPTY"]?.trim() || "—";
 
-    // Debit
     const debitCell = document.createElement("td");
     debitCell.className = "border px-3 py-2 text-right text-gray-500";
     debitCell.textContent = "—";
 
-    // Credit
     const creditCell = document.createElement("td");
     creditCell.className = "border px-3 py-2 text-right text-gray-500";
     creditCell.textContent = "—";
 
-    // Action
     const actionCell = document.createElement("td");
     actionCell.className = "border px-3 py-2 text-center";
     const viewBtn = document.createElement("button");
@@ -2174,10 +2268,29 @@
     viewBtn.textContent = "View";
     actionCell.appendChild(viewBtn);
 
-    // Append all cells to the row
     row.append(noCell, nameCell, debitCell, creditCell, actionCell);
     tbody.appendChild(row);
+  });
+
+  // Export Menu Toggle
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    const menu = document.getElementById('exportMenu');
+    menu.classList.toggle('hidden');
+  });
+
+  // Close dropdown on outside click
+  window.addEventListener('click', function (e) {
+    const btn = document.getElementById('exportBtn');
+    const menu = document.getElementById('exportMenu');
+    if (!btn.contains(e.target) && !menu.contains(e.target)) {
+      menu.classList.add('hidden');
+    }
   });
 </script>
 
 {% endblock %}
+
+
+  
+
+

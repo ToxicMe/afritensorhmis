@@ -7,6 +7,7 @@ class Visit(models.Model):
         ('triage', 'Triage'),
         ('doctor', 'Doctor'),
         ('note', 'Note'),
+        ('consultation', 'Consultation'),
         ('laboratory', 'Laboratory'),
         ('prescription', 'Prescription'),
         ('billing', 'Billing(From Registration)'),
@@ -17,8 +18,17 @@ class Visit(models.Model):
         ('inpatient', 'Inpatient'),
         ('discharged', 'Discharged'),
     ]
+    VISIT_TYPE = [
+        ('inpatient', 'Inpatient'),
+        ('outpatient', 'Outpatient'),
+        ('minor_surgery', 'Minor_surgery'),
+        ('outpatient_consultation', 'Outpatient (Consultation)'),
+
+         
+    ]
 
     id = models.AutoField(primary_key=True)
+    type = models.CharField(max_length=30, choices=VISIT_TYPE, default='outpatient', help_text="Type of visit: Inpatient or Outpatient")
     tracking_code = models.CharField(max_length=50, unique=True, editable=True, blank=True, null=True)
     date_time = models.DateTimeField(default=timezone.now)
     updated_on = models.DateTimeField(auto_now=True)

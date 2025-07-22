@@ -7,9 +7,39 @@ from django.db.models import Q
 from django.utils import timezone
 User = get_user_model()
 from django.utils.timezone import now
-
+from .models import *
 from django.core.paginator import Paginator
 
+def add_fixed_asset(request):
+    hospitals = Hospital.objects.all()
+    if request.method == 'POST':
+        try:
+            asset = FixedAsset.objects.create(
+                asset=request.POST.get('asset'),
+                asset_class=request.POST.get('asset_class'),
+                purchase_date=request.POST.get('purchase_date'),
+                disposal_date=request.POST.get('disposal_date') or None,
+                description=request.POST.get('description'),
+                cost=request.POST.get('cost') or 0,
+                additions=request.POST.get('additions') or 0,
+                disposal=request.POST.get('disposal') or 0,
+                total_asset=request.POST.get('total_asset') or 0,
+                opening_depreciation=request.POST.get('opening_depreciation') or 0,
+                depreciation_year=request.POST.get('depreciation_year') or 0,
+                depreciation_deletion=request.POST.get('depreciation_deletion') or 0,
+                total_depreciation=request.POST.get('total_depreciation') or 0,
+                net_book_value=request.POST.get('net_book_value') or 0,
+                currency=request.POST.get('currency'),
+                done_by=request.user,
+                hospital=request.user.hospital  # Assuming this relation exists
+            )
+            messages.success(request, f"Asset {asset.asset} added successfully.")
+        except Exception as e:
+            messages.error(request, f"Error saving asset: {str(e)}")
+
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+    return redirect('finance/financial_management/fixed_assets.html', {'hospitals': hospitals})
 
 def purchase_order_create(request):
     if request.method == 'POST':
@@ -25,6 +55,7 @@ def purchase_order_create(request):
         )
         messages.success(request, "Purchase Order created successfully.")
     return redirect('purchase_order_list')
+
 
 def purchase_order_detail(request, pk):
     po = get_object_or_404(PurchaseOrder, pk=pk)
@@ -44,6 +75,7 @@ def purchase_order_detail(request, pk):
         return redirect("purchase_order_list")
 
     return render(request, "finance/purchasing/purchase_order_detail.html", {"purchase_order": po})
+
 
 def purchase_order_list(request):
     supplier_id = request.GET.get('supplier')
@@ -77,7 +109,7 @@ def supplier_detail(request, pk):
     supplier = get_object_or_404(Supplier, pk=pk)
     return render(request, 'finance/adminstration/supplier_detail.html', {'supplier': supplier}) 
 
-# Create your views here.
+
 
 def requisition_create(request):
     if request.method == 'POST':
@@ -139,6 +171,7 @@ def requisition_list(request):
         'users': users
     })
 
+
 def requisition_detail(request, pk):
     requisition = get_object_or_404(Requisition, pk=pk)
     return render(request, 'finance/requisition_management/requisition_detail.html', {'requisition': requisition})
@@ -147,6 +180,7 @@ def requisition_detail(request, pk):
 def approve_requisition(request, pk):
     # Add approval logic if needed (e.g. updating a status field)
     return redirect('requisition_detail', pk=pk)
+
 
 def add_supplier(request):
     if request.method == "POST":
@@ -162,6 +196,7 @@ def add_supplier(request):
             done_by=request.user,
         )
     return redirect('supplier_list')
+    
 
 def supplier_list(request):
     suppliers = Supplier.objects.all().order_by('-created_at')
@@ -195,7 +230,8 @@ def payables(request):
     return render(request, 'finance/financial_management/payables.html')
 
 def fixed_assets(request):
-    return render(request, 'finance/financial_management/fixed_assets.html')
+    hospitals = Hospital.objects.all()
+    return render(request, 'finance/financial_management/fixed_assets.html',  {'hospitals': hospitals})
 
 
 

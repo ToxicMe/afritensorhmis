@@ -10,6 +10,10 @@ urlpatterns = [
     path('prescription-visits/', views.prescription_visits_list, name='prescription_visits_list'),
     path('prescription/<str:tracking_code>/', views.view_test_results_for_prescription, name='view_prescription_tests'),
     path('prescription/save/<str:tracking_code>/', views.save_prescription_note, name='save_prescription_note'),
+    path('doctor/note/add-bill/<int:visit_id>/', views.add_bill_from_note, name='add_bill_from_note'),
+    path('billing/unpaid/', views.doctor_unpaid_bills_list, name='doctor_unpaid_bills_list'),
+
+
 
 
 
