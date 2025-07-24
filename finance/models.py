@@ -9,49 +9,44 @@ from django.conf import settings
 from hospital.models import Hospital  # adjust if hospital model path differs
 
 class FixedAsset(models.Model):
-    DEPRECIATION_METHOD_CHOICES = [
-        ('straight_line', 'Straight Line'),
-        ('reducing_balance', 'Reducing Balance'),
-    ]
-
-    asset_id = models.CharField(max_length=50, unique=True)
+    asset_id = models.CharField(max_length=100, unique=True)
     asset_class = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    location = models.CharField(max_length=100, blank=True, null=True)
-    custodian = models.CharField(max_length=100, blank=True, null=True)
-
+    
     purchase_date = models.DateField()
-    disposal_date = models.DateField(blank=True, null=True)
+    disposal_date = models.DateField(null=True, blank=True)
+    
+    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='fixed_assets')
+
+    description = models.TextField(blank=True, null=True)
 
     cost = models.DecimalField(max_digits=12, decimal_places=2)
     additions = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    disposal_value = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    disposal_value = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
 
-    useful_life_years = models.PositiveIntegerField(help_text="In years")
-    depreciation_method = models.CharField(max_length=30, choices=DEPRECIATION_METHOD_CHOICES)
+    total_asset = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     opening_depreciation = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     depreciation_for_year = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     depreciation_on_disposal = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    total_depreciation = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     net_book_value = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    currency = models.CharField(max_length=10, default="KES")
 
-    hospital = models.ForeignKey('hospital.Hospital', on_delete=models.CASCADE, related_name='assets')
-    done_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    done_by = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, related_name='assets_added')
 
-    created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        ordering = ['-created_at']
-        verbose_name = "Fixed Asset"
-        verbose_name_plural = "Fixed Assets"
+    def save(self, *args, **kwargs):
+        self.total_asset = (self.cost or 0) + (self.additions or 0)
+        self.net_book_value = self.total_asset - (
+            (self.opening_depreciation or 0) +
+            (self.depreciation_for_year or 0) +
+            (self.depreciation_on_disposal or 0)
+        )
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.asset_id} - {self.asset_class}"
-
 
 
 class Requisition(models.Model):

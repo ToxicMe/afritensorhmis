@@ -3,43 +3,49 @@ from .models import *
 from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.db.models import Q
+from django.db.models import Q, Sum, Count, Case, When, F, DecimalField, ExpressionWrapper
 from django.utils import timezone
 User = get_user_model()
 from django.utils.timezone import now
 from .models import *
 from django.core.paginator import Paginator
+from billing.models import Bill
+
+
 
 def add_fixed_asset(request):
     hospitals = Hospital.objects.all()
+
     if request.method == 'POST':
         try:
+            hospital_id = request.POST.get('hospital')
+            hospital = Hospital.objects.get(id=hospital_id)
+
             asset = FixedAsset.objects.create(
-                asset=request.POST.get('asset'),
+                asset_id=request.POST.get('asset_id'),
                 asset_class=request.POST.get('asset_class'),
                 purchase_date=request.POST.get('purchase_date'),
                 disposal_date=request.POST.get('disposal_date') or None,
-                description=request.POST.get('description'),
-                cost=request.POST.get('cost') or 0,
-                additions=request.POST.get('additions') or 0,
-                disposal=request.POST.get('disposal') or 0,
-                total_asset=request.POST.get('total_asset') or 0,
-                opening_depreciation=request.POST.get('opening_depreciation') or 0,
-                depreciation_year=request.POST.get('depreciation_year') or 0,
-                depreciation_deletion=request.POST.get('depreciation_deletion') or 0,
-                total_depreciation=request.POST.get('total_depreciation') or 0,
-                net_book_value=request.POST.get('net_book_value') or 0,
-                currency=request.POST.get('currency'),
+                hospital=hospital,
+                description=request.POST.get('description') or '',
+                cost=Decimal(request.POST.get('cost') or 0),
+                additions=Decimal(request.POST.get('additions') or 0),
+                disposal_value=Decimal(request.POST.get('disposal_value') or 0),
+                opening_depreciation=Decimal(request.POST.get('opening_depreciation') or 0),
+                depreciation_for_year=Decimal(request.POST.get('depreciation_for_year') or 0),
+                depreciation_on_disposal=Decimal(request.POST.get('depreciation_on_disposal') or 0),
                 done_by=request.user,
-                hospital=request.user.hospital  # Assuming this relation exists
             )
-            messages.success(request, f"Asset {asset.asset} added successfully.")
+            # total_asset and net_book_value will auto-calculate in save()
+            messages.success(request, f"Asset {asset.asset_id} added successfully.")
+        except Hospital.DoesNotExist:
+            messages.error(request, "Selected hospital not found.")
         except Exception as e:
             messages.error(request, f"Error saving asset: {str(e)}")
 
         return redirect(request.META.get('HTTP_REFERER', '/'))
 
-    return redirect('finance/financial_management/fixed_assets.html', {'hospitals': hospitals})
+    return render(request, 'finance/financial_management/fixed_assets.html', {'hospitals': hospitals})
 
 def purchase_order_create(request):
     if request.method == 'POST':
@@ -224,6 +230,34 @@ def receivables(request):
 def receivables_details(request):
     return render(request, 'finance/financial_management/receivables_details.html')
 
+def income_statement(request):
+    # Aggregate total insurance bills using custom_amount if set, else amount
+    total_insurance_bills = Bill.objects.filter(status='paid', payment_method='insurance').aggregate(
+        total=Sum(
+            Case(
+                When(custom_amount__isnull=False, then=F('custom_amount')),
+                default=F('amount'),
+                output_field=DecimalField()
+            )
+        )
+    )['total'] or 0  # If no records, default to 0
+
+      # Total discounts = amount - custom_amount for all bills with custom_amount
+    total_discounts = Bill.objects.filter(
+        custom_amount__isnull=False
+    ).aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F('amount') - F('custom_amount'),
+                output_field=DecimalField()
+            )
+        )
+    )['total'] or 0
+
+    return render(request, 'finance/financial_management/income_statement.html', {
+        'total_insurance_bills': total_insurance_bills,
+        'total_discounts': total_discounts,
+    })
 
 
 def payables(request):
@@ -231,7 +265,11 @@ def payables(request):
 
 def fixed_assets(request):
     hospitals = Hospital.objects.all()
-    return render(request, 'finance/financial_management/fixed_assets.html',  {'hospitals': hospitals})
+    assets = FixedAsset.objects.all().order_by('-created_at')  # Latest first
+    return render(request, 'finance/financial_management/fixed_assets.html', {
+        'hospitals': hospitals,
+        'assets': assets
+    })
 
 
 

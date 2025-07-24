@@ -1,218 +1,285 @@
 {% extends "base.html" %}
 {% block content %}
 
-<!-- Alpine.js for modal toggle -->
-<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<script>
+  const trialBalanceData = [
+  
 
-<!-- Flash Messages -->
-{% if messages %}
-  <div class="my-4">
-    {% for message in messages %}
-      <div class="text-sm p-2 mb-2 rounded 
-                  {% if message.tags == 'error' %}bg-red-100 text-red-700
-                  {% elif message.tags == 'success' %}bg-green-100 text-green-700
-                  {% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-700
-                  {% else %}bg-blue-100 text-blue-700{% endif %}">
-        {{ message }}
-      </div>
-    {% endfor %}
-  </div>
-{% endif %}
+
+  { "Trial Balance": 100000, "__EMPTY": "INTANGIBLE ASSETS" },
+  { "Trial Balance": 100001, "__EMPTY": "INTANGIBLE ASSETS" },
+  { "Trial Balance": 100002, "__EMPTY": "ACCUMULATED AMORTISATION - Intangible assets" },
+  { "Trial Balance": 100200, "__EMPTY": "Property, Plant and Equipment" },
+  { "Trial Balance": 100201, "__EMPTY": "BUILDINGS" },
+  { "Trial Balance": 100202, "__EMPTY": "LEASEHOLD IMPROVEMENTS" },
+  { "Trial Balance": 100203, "__EMPTY": "MEDICAL EQUIPMENT" },
+  { "Trial Balance": 100204, "__EMPTY": "FURNITURE, FITTINGS AND OTHER EQUIPMENT" },
+  { "Trial Balance": 100205, "__EMPTY": "COMPUTERS" },
+  { "Trial Balance": 100206, "__EMPTY": "MOTOR VEHICLES" },
+  { "Trial Balance": 100207, "__EMPTY": "CAPITAL WORK IN PROGRESS" },
+  { "Trial Balance": 100208, "__EMPTY": "ACC. DEPR - BUILDINGS" },
+  { "Trial Balance": 100209, "__EMPTY": "ACC. DEPR - LEASEHOLD IMPROVEMENTS" },
+  { "Trial Balance": 100210, "__EMPTY": "ACC. DEPR - MEDICAL EQUIPMENT" },
+  { "Trial Balance": 100211, "__EMPTY": "ACC. DEPR - FURNITURE FITTINGS" },
+  { "Trial Balance": 100212, "__EMPTY": "ACC. DEPR - COMPUTERS" },
+  { "Trial Balance": 100213, "__EMPTY": "ACC. DEPR - MOTOR VEHICLES" },
+  { "Trial Balance": 100214, "__EMPTY": "RIGHT OF USE ASSET" },
+  { "Trial Balance": 100215, "__EMPTY": "ACC. DEPR - RIGHT OF USE ASSET" },
+  { "Trial Balance": 100220, "__EMPTY": "THIRD PARTY PROJECTS WORK IN PROGRESS" },
+  { "Trial Balance": 100299, "__EMPTY": "Property, Plant and Equipment - Total" }
+    // ... Add more from your JSON
+  ];
+</script>
+
 
 <section class="bg-gray-100 py-10" x-data="{ open: false }">
-  <div class="max-w-8xl mx-auto bg-white p-6 shadow rounded-lg overflow-x-auto">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-2xl font-bold text-blue-600">Fixed Asset Register</h2>
-      <button @click="open = true"
-              class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded">
-        + Add Asset
-      </button>
+  <div class="max-w-8xl mx-auto bg-white p-6 shadow rounded-lg overflow-x-auto relative">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-blue-700">Fixed Asset Register</h2>
+      <div class="flex gap-4 items-center">
+        <!-- Export Button -->
+        <div class="relative">
+          <button id="exportBtn" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">
+            Export ▼
+          </button>
+          <div id="exportMenu" class="hidden absolute right-0 mt-2 w-40 bg-white border rounded shadow z-50">
+            <a href="" class="block px-4 py-2 text-sm hover:bg-gray-100">Export as CSV</a>
+            <a href="" class="block px-4 py-2 text-sm hover:bg-gray-100">Export as Excel</a>
+            <a href="" class="block px-4 py-2 text-sm hover:bg-gray-100">Export as PDF</a>
+          </div>
+        </div>
+
+        <!-- Add Asset Button -->
+        <button @click="open = true" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded">
+          + Add Asset
+        </button>
+      </div>
     </div>
 
     <!-- Table -->
-    <table class="min-w-full border border-gray-300 text-sm">
-      <thead class="bg-gray-100 text-blue-600">
+    <table class="min-w-full border border-gray-300 text-sm text-center">
+      <thead class="bg-gray-100 text-blue-700">
         <tr>
           <th class="px-4 py-2 border">Asset</th>
           <th class="px-4 py-2 border">Asset Class</th>
           <th class="px-4 py-2 border">Purchase Date</th>
-          <th class="px-4 py-2 border">Disposal/Deletion Date</th>
-          <th class="px-4 py-2 border">Asset Description</th>
-          <th class="px-4 py-2 border">Cost of Assets</th>
+          <th class="px-4 py-2 border">Disposal Date</th>
+          <th class="px-4 py-2 border">Description</th>
+          <th class="px-4 py-2 border">Cost</th>
           <th class="px-4 py-2 border">Additions</th>
-          <th class="px-4 py-2 border">Disposal/Deletion</th>
+          <th class="px-4 py-2 border">Disposal</th>
           <th class="px-4 py-2 border">Total Asset</th>
-          <th class="px-4 py-2 border">Opening Cumulative Depreciation</th>
-          <th class="px-4 py-2 border">Depreciation for Year</th>
-          <th class="px-4 py-2 border">Depreciation on Deletion</th>
-          <th class="px-4 py-2 border">Total Accumulated Depreciation</th>
-          <th class="px-4 py-2 border">Net Book Value</th>
-          <th class="px-4 py-2 border">Currency</th>
+          <th class="px-4 py-2 border">Opening Depreciation</th>
+          <th class="px-4 py-2 border">Depreciation (Year)</th>
+          <th class="px-4 py-2 border">Depreciation (Deletion)</th>
+          <th class="px-4 py-2 border">Accumulated Depreciation</th>
+          <th class="px-4 py-2 border">NBV</th>
+          <th class="px-4 py-2 border">Action</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100 text-gray-700">
-        <!-- Sample Row -->
-        <tr>
-          <td class="px-4 py-2 border">50000879</td>
-          <td class="px-4 py-2 border">Tools</td>
-          <td class="px-4 py-2 border">13/09/2013</td>
-          <td class="px-4 py-2 border">—</td>
-          <td class="px-4 py-2 border">D Shackles 16 mm pin dia 2 Ton</td>
-          <td class="px-4 py-2 border">16,975.35</td>
-          <td class="px-4 py-2 border">0</td>
-          <td class="px-4 py-2 border">0</td>
-          <td class="px-4 py-2 border">16,975.35</td>
-          <td class="px-4 py-2 border">-16,975.35</td>
-          <td class="px-4 py-2 border">0</td>
-          <td class="px-4 py-2 border">0</td>
-          <td class="px-4 py-2 border">-16,975.35</td>
-          <td class="px-4 py-2 border">0.00</td>
-          <td class="px-4 py-2 border">KES</td>
-        </tr>
-        <!-- More rows dynamically -->
-      </tbody>
+      {% for asset in assets %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-2 border">{{ asset.asset_id }}</td>
+        <td class="px-4 py-2 border">{{ asset.asset_class }}</td>
+        <td class="px-4 py-2 border">{{ asset.purchase_date }}</td>
+        <td class="px-4 py-2 border">{{ asset.disposal_date|default:'—' }}</td>
+        <td class="px-4 py-2 border">{{ asset.description }}</td>
+        <td class="px-4 py-2 border">{{ asset.cost }}</td>
+        <td class="px-4 py-2 border">{{ asset.additions }}</td>
+        <td class="px-4 py-2 border">{{ asset.disposal_value }}</td>
+        <td class="px-4 py-2 border">{{ asset.total_asset }}</td>
+        <td class="px-4 py-2 border">{{ asset.opening_depreciation }}</td>
+        <td class="px-4 py-2 border">{{ asset.depreciation_for_year }}</td>
+        <td class="px-4 py-2 border">{{ asset.depreciation_on_disposal }}</td>
+        <td class="px-4 py-2 border">
+          {{ asset.opening_depreciation|add:asset.depreciation_for_year|add:asset.depreciation_on_disposal }}
+        </td>
+        <td class="px-4 py-2 border">{{ asset.net_book_value }}</td>
+        <td class="px-4 py-2 border"><a href="" class="text-blue-600 hover:underline">VIEW</a></td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="15" class="text-center py-4 text-gray-500">No assets found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
     </table>
   </div>
 
-  <!-- Modal -->
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" x-show="open">
-    <div class="bg-white p-6 rounded-lg w-full max-w-2xl shadow-xl">
-      <div class="flex justify-between mb-4">
-        <h3 class="text-xl font-semibold text-gray-800">Add New Asset</h3>
-        <button @click="open = false" class="text-gray-500 hover:text-red-600 text-2xl leading-none">&times;</button>
+  <!-- Modal Form -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" x-show="open">
+  <div class="bg-white p-6 rounded-lg w-full max-w-3xl shadow-xl">
+    <div class="flex justify-between mb-4">
+      <h3 class="text-xl font-semibold text-gray-800">Add New Asset</h3>
+      <button @click="open = false" class="text-gray-500 hover:text-red-600 text-2xl leading-none">&times;</button>
+    </div>
+
+    <form action="{% url 'add_fixed_asset' %}" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {% csrf_token %}
+
+      <!-- Asset Selector -->
+      <div class="md:col-span-2">
+        <label for="asset_selector" class="block text-sm font-medium mb-1">Select Asset (Auto-fill)</label>
+        <select id="asset_selector" class="border p-2 rounded w-full">
+          <option value="">-- Select an Asset --</option>
+          {% for asset in asset_options %}
+            <option value="{{ asset.code }}|{{ asset.name }}">{{ asset.code }} - {{ asset.name }}</option>
+          {% endfor %}
+        </select>
       </div>
 
-   <form action="{% url 'add_fixed_asset' %}" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-  {% csrf_token %}
+      <!-- Asset ID -->
+      <div>
+        <label for="asset_id" class="block text-sm font-medium mb-1">Asset ID</label>
+        <input type="text" id="asset_id" name="asset_id" required class="border p-2 rounded w-full">
+      </div>
 
-  <!-- Asset ID -->
-  <div>
-    <label for="asset_id" class="block text-sm font-medium mb-1">Asset ID</label>
-    <input type="text" id="asset_id" name="asset_id" required class="border p-2 rounded w-full">
+      <!-- Asset Class -->
+      <div>
+        <label for="asset_class" class="block text-sm font-medium mb-1">Asset Class</label>
+        <input type="text" id="asset_class" name="asset_class" required class="border p-2 rounded w-full">
+      </div>
+
+      <!-- Purchase Date -->
+      <div>
+        <label for="purchase_date" class="block text-sm font-medium mb-1">Purchase Date</label>
+        <input type="date" id="purchase_date" name="purchase_date" required class="border p-2 rounded w-full">
+      </div>
+
+      <!-- Disposal Date -->
+      <div>
+        <label for="disposal_date" class="block text-sm font-medium mb-1">Disposal/Deletion Date</label>
+        <input type="date" id="disposal_date" name="disposal_date" class="border p-2 rounded w-full">
+      </div>
+
+      <!-- Hospital Selector -->
+       <div>
+        <label for="hospital" class="block text-sm font-medium mb-1">Hospital</label>
+        <select id="hospital" name="hospital"  class="border p-2 rounded w-full">
+          <option value="" disabled selected>Select a hospital</option>
+          {% for hospital in hospitals %}
+            <option value="{{ hospital.id }}">{{ hospital.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label for="description" class="block text-sm font-medium mb-1">Description</label>
+        <input type="text" id="description" name="description" class="border p-2 rounded w-full">
+      </div>
+
+      <!-- Cost -->
+      <div>
+        <label for="cost" class="block text-sm font-medium mb-1">Cost of Asset</label>
+        <input type="number" step="0.01" id="cost" name="cost" required class="border p-2 rounded w-full">
+      </div>
+
+      <!-- Additions -->
+      <div>
+        <label for="additions" class="block text-sm font-medium mb-1">Additions</label>
+        <input type="number" step="0.01" id="additions" name="additions" class="border p-2 rounded w-full">
+      </div>
+
+      <!-- Disposal Value -->
+      <div>
+        <label for="disposal_value" class="block text-sm font-medium mb-1">Disposal/Deletion Value</label>
+        <input type="number" step="0.01" id="disposal_value" name="disposal_value" class="border p-2 rounded w-full">
+      </div>
+
+      <!-- Total Asset -->
+      <div>
+        <label for="total_asset" class="block text-sm font-medium mb-1">Total Asset</label>
+        <input type="number" step="0.01" id="total_asset" name="total_asset" class="border p-2 rounded w-full">
+      </div>
+
+      <!-- Opening Depreciation -->
+      <div>
+        <label for="opening_depreciation" class="block text-sm font-medium mb-1">Opening Depreciation</label>
+        <input type="number" step="0.01" id="opening_depreciation" name="opening_depreciation" class="border p-2 rounded w-full">
+      </div>
+
+      <!-- Depreciation for Year -->
+      <div>
+        <label for="depreciation_for_year" class="block text-sm font-medium mb-1">Depreciation for Year</label>
+        <input type="number" step="0.01" id="depreciation_for_year" name="depreciation_for_year" class="border p-2 rounded w-full">
+      </div>
+
+      <!-- Depreciation on Deletion -->
+      <div>
+        <label for="depreciation_on_disposal" class="block text-sm font-medium mb-1">Depreciation on Deletion</label>
+        <input type="number" step="0.01" id="depreciation_on_disposal" name="depreciation_on_disposal" class="border p-2 rounded w-full">
+      </div>
+
+     
+
+      <!-- Net Book Value -->
+      <div>
+        <label for="net_book_value" class="block text-sm font-medium mb-1">Net Book Value</label>
+        <input type="number" step="0.01" id="net_book_value" name="net_book_value" class="border p-2 rounded w-full">
+      </div>
+
+
+     
+
+    
+
+      <!-- Submit -->
+      <div class="col-span-1 md:col-span-2 mt-4">
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+          Submit Asset
+        </button>
+      </div>
+    </form>
   </div>
-
-  <!-- Asset Class -->
-  <div>
-    <label for="asset_class" class="block text-sm font-medium mb-1">Asset Class</label>
-    <input type="text" id="asset_class" name="asset_class" required class="border p-2 rounded w-full">
-  </div>
-
-  <!-- Description -->
-  <div>
-    <label for="description" class="block text-sm font-medium mb-1">Description</label>
-    <input type="text" id="description" name="description" class="border p-2 rounded w-full">
-  </div>
-
-  <!-- Location -->
-  <div>
-    <label for="hospital" class="block text-sm font-medium mb-1">Hospital</label>
-    <select id="hospital" name="hospital" required class="border p-2 rounded w-full">
-      <option value="" disabled selected>Select a hospital</option>
-      {% for hospital in hospitals %}
-        <option value="{{ hospital.id }}">{{ hospital.name }}</option>
-      {% endfor %}
-    </select>
-  </div>
-
-  <!-- Custodian -->
-  <div>
-    <label for="custodian" class="block text-sm font-medium mb-1">Custodian</label>
-    <input type="text" id="custodian" name="custodian" class="border p-2 rounded w-full">
-  </div>
-
-  <!-- Purchase Date -->
-  <div>
-    <label for="purchase_date" class="block text-sm font-medium mb-1">Purchase Date</label>
-    <input type="date" id="purchase_date" name="purchase_date" required class="border p-2 rounded w-full">
-  </div>
-
-  <!-- Disposal Date -->
-  <div>
-    <label for="disposal_date" class="block text-sm font-medium mb-1">Disposal/Deletion Date</label>
-    <input type="date" id="disposal_date" name="disposal_date" class="border p-2 rounded w-full">
-  </div>
-
-  <!-- Cost -->
-  <div>
-    <label for="cost" class="block text-sm font-medium mb-1">Cost of Asset</label>
-    <input type="number" step="0.01" id="cost" name="cost" required class="border p-2 rounded w-full">
-  </div>
-
-  <!-- Additions -->
-  <div>
-    <label for="additions" class="block text-sm font-medium mb-1">Additions</label>
-    <input type="number" step="0.01" id="additions" name="additions" class="border p-2 rounded w-full">
-  </div>
-
-  <!-- Disposal Value -->
-  <div>
-    <label for="disposal_value" class="block text-sm font-medium mb-1">Disposal/Deletion Value</label>
-    <input type="number" step="0.01" id="disposal_value" name="disposal_value" class="border p-2 rounded w-full">
-  </div>
-
-  <!-- Useful Life -->
-  <div>
-    <label for="useful_life_years" class="block text-sm font-medium mb-1">Useful Life (Years)</label>
-    <input type="number" id="useful_life_years" name="useful_life_years" class="border p-2 rounded w-full">
-  </div>
-
-  <!-- Depreciation Method -->
-  <div>
-    <label for="depreciation_method" class="block text-sm font-medium mb-1">Depreciation Method</label>
-    <select id="depreciation_method" name="depreciation_method" class="border p-2 rounded w-full">
-      <option value="" disabled selected>Select Method</option>
-      <option value="straight_line">Straight Line</option>
-      <option value="declining_balance">Declining Balance</option>
-    </select>
-  </div>
-
-  <!-- Opening Depreciation -->
-  <div>
-    <label for="opening_depreciation" class="block text-sm font-medium mb-1">Opening Cumulative Depreciation</label>
-    <input type="number" step="0.01" id="opening_depreciation" name="opening_depreciation" class="border p-2 rounded w-full">
-  </div>
-
-  <!-- Depreciation for Year -->
-  <div>
-    <label for="depreciation_for_year" class="block text-sm font-medium mb-1">Depreciation for Year</label>
-    <input type="number" step="0.01" id="depreciation_for_year" name="depreciation_for_year" class="border p-2 rounded w-full">
-  </div>
-
-  <!-- Depreciation on Disposal -->
-  <div>
-    <label for="depreciation_on_disposal" class="block text-sm font-medium mb-1">Depreciation on Deletion</label>
-    <input type="number" step="0.01" id="depreciation_on_disposal" name="depreciation_on_disposal" class="border p-2 rounded w-full">
-  </div>
-
-  <!-- Total Depreciation -->
-  <div>
-    <label for="total_depreciation" class="block text-sm font-medium mb-1">Total Accumulated Depreciation</label>
-    <input type="number" step="0.01" id="total_depreciation" name="total_depreciation" class="border p-2 rounded w-full">
-  </div>
-
-  <!-- Net Book Value -->
-  <div>
-    <label for="net_book_value" class="block text-sm font-medium mb-1">Net Book Value</label>
-    <input type="number" step="0.01" id="net_book_value" name="net_book_value" class="border p-2 rounded w-full">
-  </div>
-
-  <!-- Currency -->
-  <div>
-    <label for="currency" class="block text-sm font-medium mb-1">Currency</label>
-    <input type="text" id="currency" name="currency" placeholder="e.g. KES" required class="border p-2 rounded w-full">
-  </div>
-
-  <!-- Submit Button -->
-  <div class="col-span-1 md:col-span-2 mt-4">
-    <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
-      Submit Asset
-    </button>
-  </div>
-</form>
-
-
-    </div>
-  </div>
+</div>
 </section>
+
+<!-- Script -->
+<script>
+
+
+
+
+
+  // Populate dropdown from JSON
+  const selector = document.getElementById("asset_selector");
+  trialBalanceData.forEach(item => {
+    if (!isNaN(item["Trial Balance"])) {
+      const opt = document.createElement("option");
+      opt.value = `${item["Trial Balance"]}|${item["__EMPTY"].trim()}`;
+      opt.textContent = `${item["Trial Balance"]} - ${item["__EMPTY"].trim()}`;
+      selector.appendChild(opt);
+    }
+  });
+
+  // Initialize TomSelect after options added
+  new TomSelect('#asset_selector', {
+    maxOptions: 1000,
+    dropdownClass: 'max-h-60 overflow-y-auto',
+    sortField: { field: "text", direction: "asc" }
+  });
+
+  // Autofill on change
+  selector.addEventListener("change", function () {
+    const selected = this.value;
+    if (selected) {
+      const [id, cls] = selected.split("|");
+      document.getElementById("asset_id").value = id?.trim();
+      document.getElementById("asset_class").value = cls?.trim();
+    } else {
+      document.getElementById("asset_id").value = "";
+      document.getElementById("asset_class").value = "";
+    }
+  });
+</script>
 
 {% endblock %}

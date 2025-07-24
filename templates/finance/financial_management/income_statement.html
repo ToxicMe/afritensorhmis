@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto mt-12 bg-white shadow-md rounded p-6 text-sm font-sans">
+  <h2 class="text-center text-xl font-bold mb-2">Income Statement</h2>
+  <p class="text-center text-sm mb-6">Profit and Loss for the period 01.01.2025 to 31.12.2025</p>
+
+  <table class="w-full border-collapse">
+    <thead>
+      <tr class="border-b">
+        <th class="text-left">Description</th>
+        <th class="text-right">Debit</th>
+        <th class="text-right">Credit</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Sales -->
+      <tr>
+        <td>Sales</td>
+        <td></td>
+        <td class="text-right">10,000.00</td>
+      </tr>
+
+      <!-- Cost of Sales -->
+      <tr class="font-semibold"><td colspan="3">Cost of sales</td></tr>
+      <tr><td>Opening stock</td><td class="text-right">1,000.00</td><td></td></tr>
+      <tr><td>Add: Purchases for the year</td><td class="text-right">100.00</td><td></td></tr>
+      <tr><td>Less: Closing stock</td><td class="text-right">(500.00)</td><td class="text-right">600.00</td></tr>
+
+      <!-- Gross Profit -->
+      <tr class="border-t font-bold">
+        <td>Gross profit</td>
+        <td></td>
+        <td class="text-right">9,400.00</td>
+      </tr>
+
+      <!-- Expenses -->
+      <tr class="font-semibold"><td colspan="3">Expenses</td></tr>
+      <tr><td>Advertising & Promotion</td><td class="text-right">234.00</td><td></td></tr>
+      <tr><td>Discount allowed</td><td class="text-right">{{ total_discounts|floatformat:2 }}</td><td></td></tr>
+      <tr><td>Depreciation & Amortization</td><td class="text-right">2.00</td><td></td></tr>
+      <tr><td>Insurance</td><td class="text-right">{{ total_insurance_bills|floatformat:2 }}
+      <tr><td>Maintenance</td><td class="text-right">7.00</td><td></td></tr>
+      <tr><td>Office Supplies</td><td class="text-right">4.00</td><td></td></tr>
+      <tr><td>Rent</td><td class="text-right">6.00</td><td></td></tr>
+      <tr><td>Salaries, Benefits & Wages</td><td class="text-right">4.00</td><td></td></tr>
+      <tr><td>Telecommunication</td><td class="text-right">45.00</td><td></td></tr>
+      <tr><td>Travel</td><td class="text-right">46.00</td><td></td></tr>
+      <tr><td>Utilities</td><td class="text-right">87.00</td><td></td></tr>
+
+      <tr class="border-t font-bold">
+        <td>Total Expenses</td>
+        <td class="text-right">741.00</td>
+        <td></td>
+      </tr>
+
+      <!-- Profit Before Interest -->
+      <tr class="font-bold">
+        <td>Profit Before Interest & Taxes</td>
+        <td></td>
+        <td class="text-right">8,659.00</td>
+      </tr>
+      <tr>
+        <td>Interest Expense</td>
+        <td class="text-right">24.00</td>
+        <td></td>
+      </tr>
+
+      <!-- Profit Before Taxes -->
+      <tr class="font-bold">
+        <td>Profit Before Taxes</td>
+        <td></td>
+        <td class="text-right">8,635.00</td>
+      </tr>
+      <tr>
+        <td>Income Taxes</td>
+        <td class="text-right">2,597.70</td>
+        <td></td>
+      </tr>
+
+      <!-- Net Profit -->
+      <tr class="border-t font-bold text-green-700">
+        <td>Net Profit after Interest & Taxes</td>
+        <td></td>
+        <td class="text-right">6,037.30</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Legend -->
+  <div class="mt-4 border-t pt-2 text-xs">
+    <strong>Entry:</strong> Debit = Expenses, Credit = Sales
+  </div>
+</div>
+
+{% endblock %}
