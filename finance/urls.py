@@ -8,7 +8,7 @@ urlpatterns = [
         path('fixed_assets/', views.fixed_assets, name='fixed_assets'), 
         path('receivables/', views.receivables, name='receivables'), 
         path('trial_balance/', views.trial_balance, name='trial_balance'),     
-        path('receivables/details/', views.receivables_details, name='receivables_details'),
+        path('receivables/details/<int:bill_id>/', views.receivables_details, name='receivables_details'),
         path('payables/', views.payables, name='payables'),
         path('balance_sheet/', views.balance_sheet, name='balance_sheet'),
         path('general_ledger/', views.general_ledger, name='general_ledger'),      
@@ -38,6 +38,7 @@ urlpatterns = [
         path('purchase-orders/create/', views.purchase_order_create, name='purchase_order_create'),
         path('assets/add/', views.add_fixed_asset, name='add_fixed_asset'),
         path('income_statement', views.income_statement, name='income_statement'),
+        path('payments', views.payments, name='payments'),
 
 
     

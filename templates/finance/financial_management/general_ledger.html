@@ -1,72 +1,143 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="max-w-7xl mt-12 mx-auto bg-white shadow-md rounded-lg p-6 space-y-8">
+<div class="max-w-8xl mt-12 mx-auto bg-white shadow-md rounded-lg p-6 space-y-8">
 
   <!-- Header -->
-  <div class="text-center">
-    <h1 class="text-3xl font-bold text-gray-800">General Ledger</h1>
-    <p class="text-sm text-gray-500 mt-1">A detailed log of all financial transactions</p>
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800">General Ledger</h1>
+      <p class="text-sm text-gray-500 mt-1">A detailed log of all financial transactions</p>
+    </div>
+    <button id="openModalBtn"
+      class="bg-blue-600 text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-blue-700 transition">
+      + Add Entry
+    </button>
+  </div>
+
+  <!-- Modal -->
+  <div id="ledgerModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white w-full max-w-xl rounded-lg shadow-lg p-6 relative">
+      <h2 class="text-lg font-bold mb-4 text-gray-800">Add Ledger Entry</h2>
+
+      <form method="post" action="">
+        {% csrf_token %}
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-gray-600">Date</label>
+            <input type="date" name="date" class="w-full px-3 py-2 border rounded" required>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600">Account Number</label>
+            <input type="text" name="account_number" class="w-full px-3 py-2 border rounded" required>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600">Description</label>
+            <input type="text" name="description" class="w-full px-3 py-2 border rounded" required>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600">Amount</label>
+            <input type="number" name="amount" step="0.01" class="w-full px-3 py-2 border rounded" required>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600">Type</label>
+            <select name="entry_type" class="w-full px-3 py-2 border rounded" required>
+              <option value="">Select</option>
+              <option value="debit">Debit</option>
+              <option value="credit">Credit</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600">Text</label>
+            <input type="text" name="text" class="w-full px-3 py-2 border rounded">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600">Reference</label>
+            <input type="text" name="reference" class="w-full px-3 py-2 border rounded">
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="mt-6 flex justify-end gap-4">
+          <button type="button" id="closeModalBtn"
+            class="px-4 py-2 rounded bg-gray-300 text-gray-800 hover:bg-gray-400">Cancel</button>
+          <button type="submit"
+            class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Save Entry</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <!-- Ledger Table -->
   <div class="overflow-x-auto">
-    <table class="min-w-full border text-sm text-gray-800">
-      <thead class="bg-blue-600 text-left">
+    <table class="min-w-full border text-sm text-gray-800 mt-6">
+      <thead class="bg-blue-600 text-white">
         <tr>
-          <th class="py-2 px-3 border text-gray-100">Date</th>
-          <th class="py-2 px-3 border text-gray-100">Account Number</th>
-          <th class="py-2 px-3 border text-gray-100">Description</th>
-          <th class="py-2 px-3 border text-gray-100">Debit (KES)</th>
-          <th class="py-2 px-3 border text-gray-100">Credit (KES)</th>
-          <th class="py-2 px-3 border text-gray-100">Running Balance (KES)</th>
+          <th class="py-2 px-3 border">GL Account</th>
+          <th class="py-2 px-3 border">Account Description</th>
+          <th class="py-2 px-3 border">Debit</th>
+          <th class="py-2 px-3 border">Credit</th>
+          <th class="py-2 px-3 border">Text</th>
+          <th class="py-2 px-3 border">Reference</th>
+          <th class="py-2 px-3 border">Entry done by</th>
         </tr>
       </thead>
       <tbody>
-        <!-- Example Row -->
+        {% for entry in entries %}
         <tr>
-          <td class="border px-3 py-2">2025-06-01</td>
-          <td class="border px-3 py-2">1001</td>
-          <td class="border px-3 py-2">Sales Revenue</td>
-          <td class="border px-3 py-2">—</td>
-          <td class="border px-3 py-2">KES 15,000</td>
-          <td class="border px-3 py-2">KES 15,000</td>
+          <td class="border px-3 py-2">{{ entry.account_number }}</td>
+          <td class="border px-3 py-2">{{ entry.description }}</td>
+          <td class="border px-3 py-2 text-right">
+            {% if entry.entry_type == 'debit' %}{{ entry.amount|floatformat:2 }}{% else %}—{% endif %}
+          </td>
+          <td class="border px-3 py-2 text-right">
+            {% if entry.entry_type == 'credit' %}{{ entry.amount|floatformat:2 }}{% else %}—{% endif %}
+          </td>
+          <td class="border px-3 py-2">{{ entry.text }}</td>
+          <td class="border px-3 py-2">{{ entry.reference }}</td>
+          <td class="border px-3 py-2">{{ entry.entry_by.get_full_name|default:entry.entry_by.username }}</td>
         </tr>
-        <tr>
-          <td class="border px-3 py-2">2025-06-03</td>
-          <td class="border px-3 py-2">1002</td>
-          <td class="border px-3 py-2">Office Supplies</td>
-          <td class="border px-3 py-2">KES 2,000</td>
-          <td class="border px-3 py-2">—</td>
-          <td class="border px-3 py-2">KES 13,000</td>
-        </tr>
-        <tr>
-          <td class="border px-3 py-2">2025-06-05</td>
-          <td class="border px-3 py-2">1003</td>
-          <td class="border px-3 py-2">Bank Deposit</td>
-          <td class="border px-3 py-2">KES 5,000</td>
-          <td class="border px-3 py-2">—</td>
-          <td class="border px-3 py-2">KES 18,000</td>
-        </tr>
-        <!-- End Example -->
+        {% empty %}
+        <tr><td colspan="7" class="text-center py-4 text-gray-400">No entries yet</td></tr>
+        {% endfor %}
       </tbody>
     </table>
+  </div>
 
-       <!-- Back Button -->
-       <div class="mt-6 text-center">
-        <span class="text-black-600 font-bold">
-            
-            <div class="space-x-4 space-y-4 text-center">
-                <a href="{% url 'accounting'%}">
-                <button type="button"
-                  class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold cursor-pointer border-2 border-black-700 outline-none bg-transparent hover:bg-black-700 text-black-700 hover:text-white transition-all duration-300">Back</button>
-                    </a>
-                </div>      
-        </span>
-      </div>
-    
+  <!-- Back Button -->
+  <div class="mt-6 text-center">
+    <a href="{% url 'accounting' %}">
+      <button type="button"
+        class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold border-2 border-gray-700 bg-transparent hover:bg-gray-700 hover:text-white transition-all duration-300">
+        Back
+      </button>
+    </a>
   </div>
 
 </div>
+
+<script>
+  const openModalBtn = document.getElementById("openModalBtn");
+  const closeModalBtn = document.getElementById("closeModalBtn");
+  const ledgerModal = document.getElementById("ledgerModal");
+
+  openModalBtn.addEventListener("click", function (e) {
+    e.preventDefault();
+    ledgerModal.classList.remove("hidden");
+    ledgerModal.classList.add("flex");
+  });
+
+  closeModalBtn.addEventListener("click", () => {
+    ledgerModal.classList.add("hidden");
+    ledgerModal.classList.remove("flex");
+  });
+
+  ledgerModal.addEventListener("click", function (e) {
+    if (e.target === ledgerModal) {
+      ledgerModal.classList.add("hidden");
+      ledgerModal.classList.remove("flex");
+    }
+  });
+</script>
 
 {% endblock %}

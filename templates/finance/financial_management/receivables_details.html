@@ -1,26 +1,5 @@
-
 {% extends "base.html" %}
 {% block content %}
-
-{% if messages %}
-  <div class="my-4">
-    {% for message in messages %}
-      <div class="text-sm p-2 mb-2 rounded 
-                  {% if message.tags == 'error' %}bg-red-100 text-red-700
-                  {% elif message.tags == 'success' %}bg-green-100 text-green-700
-                  {% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-700
-                  {% else %}bg-blue-100 text-blue-700{% endif %}">
-        {{ message }}
-      </div>
-    {% endfor %}
-  </div>
-{% endif %}
-
-
-
-
-
-
 
 <div class="max-w-7xl mt-12 mx-auto bg-white shadow-md rounded-lg p-6 space-y-10">
     
@@ -33,10 +12,10 @@
     <section>
       <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Customer Information</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-        <div><strong>Customer Name:</strong> John Doe</div>
-        <div><strong>Email:</strong> john.doe@example.com</div>
-        <div><strong>Phone:</strong> +254 700 123456</div>
-        <div><strong>Address:</strong> 123 Karen Lane, Nairobi</div>
+        <div><strong>Customer Name:</strong> {{ customer.get_full_name }}</div>
+        <div><strong>Email:</strong> {{ customer.email }}</div>
+        <div><strong>Phone:</strong> {{ customer.phone|default:"—" }}</div>
+        <div><strong>Address:</strong> {{ customer.address|default:"—" }}</div>
       </div>
     </section>
 
@@ -44,59 +23,67 @@
     <section>
       <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Invoice Details</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-        <div><strong>Invoice Number:</strong> INV-20250615-001</div>
-        <div><strong>Invoice Date:</strong> June 15, 2025</div>
-        <div><strong>Invoice Amount:</strong> KES 12,000</div>
-        <div><strong>Due Date:</strong> June 30, 2025</div>
+        <div><strong>Invoice Number:</strong> {{ bill.transaction_id }}</div>
+        <div><strong>Invoice Date:</strong> {{ bill.date|date:"F d, Y" }}</div>
+        <div><strong>Invoice Amount:</strong> KES {{ bill.amount|floatformat:2 }}</div>
+        <div><strong>Due Date:</strong> {{ bill.date|date:"F d, Y" }}</div>
         <div><strong>Credit Terms:</strong> Net 30 Days</div>
-        <div><strong>Balance Due:</strong> KES 5,000</div>
-        <div><strong>Status:</strong> <span class="text-yellow-600 font-semibold">Partially Paid</span></div>
+        <div><strong>Balance Due:</strong> 
+            {% if bill.custom_amount %}
+              KES {{ bill.amount|floatformat:2|add:"-bill.custom_amount"|floatformat:2 }}
+            {% else %}
+              KES 0.00
+            {% endif %}
+        </div>
+        <div><strong>Status:</strong> 
+            <span class="text-yellow-600 font-semibold capitalize">{{ bill.status }}</span>
+        </div>
       </div>
     </section>
 
     <!-- Payment Information -->
+    {% if bill.status == 'paid' or bill.custom_amount %}
     <section>
       <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Payment Information</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-        <div><strong>Payment Date:</strong> June 10, 2025</div>
-        <div><strong>Payment Amount:</strong> KES 7,000</div>
+        <div><strong>Payment Date:</strong> {{ bill.date|date:"F d, Y" }}</div>
+        <div><strong>Payment Amount:</strong> 
+            KES {{ bill.custom_amount|default:bill.amount|floatformat:2 }}
+        </div>
       </div>
     </section>
+    {% endif %}
 
-    <!-- Aging Summary (Optional) -->
+    <!-- Aging Summary (Placeholder or calculated if you want) -->
     <section>
       <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Aging Summary</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-        <div><strong>1–30 Days:</strong> KES 5,000</div>
-        <div><strong>31–60 Days:</strong> KES 0</div>
-        <div><strong>60+ Days:</strong> KES 0</div>
+        <div><strong>1–30 Days:</strong> KES {{ bill.amount|floatformat:2 }}</div>
+        <div><strong>31–60 Days:</strong> KES 0.00</div>
+        <div><strong>60+ Days:</strong> KES 0.00</div>
       </div>
     </section>
 
     <!-- Notes -->
+    {% if bill.discounted and bill.discount_reason %}
     <section>
       <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Notes</h2>
       <p class="text-sm text-gray-600">
+        Discount Reason: {{ bill.discount_reason }}
       </p>
     </section>
+    {% endif %}
 
-      <!-- Back Button -->
-  <div class="mt-6 text-center">
-    <span class="text-black-600 font-bold">
-        
-        <div class="space-x-4 space-y-4 text-center">
-            <a href="{% url 'receivables'%}">
-            <button type="button"
-              class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold cursor-pointer border-2 border-black-700 outline-none bg-transparent hover:bg-black-700 text-black-700 hover:text-white transition-all duration-300">Back</button>
-                </a>
-            </div>      
-    </span>
-  </div>
+    <!-- Back Button -->
+    <div class="mt-6 text-center">
+      <a href="{% url 'receivables' %}">
+        <button type="button"
+          class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold cursor-pointer border-2 border-gray-700 outline-none bg-transparent hover:bg-gray-800 text-gray-700 hover:text-white transition-all duration-300">
+          Back
+        </button>
+      </a>
+    </div>
 
+</div>
 
-  </div>
-
-
-
-  
 {% endblock %}

@@ -8,6 +8,37 @@ from django.utils import timezone
 from django.conf import settings
 from hospital.models import Hospital  # adjust if hospital model path differs
 
+
+
+class LedgerEntry(models.Model):
+    ENTRY_TYPE_CHOICES = [
+        ('debit', 'Debit'),
+        ('credit', 'Credit'),
+    ]
+
+    date = models.DateField()
+    account_number = models.CharField(max_length=20)
+    description = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    entry_type = models.CharField(max_length=6, choices=ENTRY_TYPE_CHOICES)
+    text = models.TextField(blank=True, null=True)
+    reference = models.CharField(max_length=100, blank=True, null=True)
+    entry_by = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, related_name='assets_added_by')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.date} - {self.account_number} - {self.entry_type.upper()} - {self.amount}"
+
+    def debit_amount(self):
+        return self.amount if self.entry_type == 'debit' else None
+
+    def credit_amount(self):
+        return self.amount if self.entry_type == 'credit' else None
+
 class FixedAsset(models.Model):
     asset_id = models.CharField(max_length=100, unique=True)
     asset_class = models.CharField(max_length=100)

@@ -4,14 +4,19 @@ from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.db.models import Q, Sum, Count, Case, When, F, DecimalField, ExpressionWrapper
+from decimal import Decimal
 from django.utils import timezone
-User = get_user_model()
 from django.utils.timezone import now
 from .models import *
 from django.core.paginator import Paginator
 from billing.models import Bill
 
+User = get_user_model()
 
+
+def ledger_view(request):
+
+    return render(request, 'ledger.html', {'entries': entries})
 
 def add_fixed_asset(request):
     hospitals = Hospital.objects.all()
@@ -171,6 +176,7 @@ def requisition_create(request):
 
 def requisition_list(request):
     requisitions = Requisition.objects.all()
+    User = get_user_model()
     users = User.objects.all()
     return render(request, 'finance/requisition_management/requisition_list.html', {
         'requisitions': requisitions,
@@ -211,24 +217,165 @@ def supplier_list(request):
 def accounting(request):
     return render(request, 'finance/dashboard.html')
 
+
+
+
+def payments(request):
+    bills = Bill.objects.all()
+
+    # --- Filters ---
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    status = request.GET.get('status', 'paid')  # default to 'paid'
+    query = request.GET.get('q')
+
+    if start_date:
+        bills = bills.filter(date__gte=start_date)
+    if end_date:
+        bills = bills.filter(date__lte=end_date)
+
+    if status:
+        bills = bills.filter(status=status)
+
+    if query:
+        bills = bills.filter(
+            Q(transaction_id__icontains=query) |
+            Q(patient__first_name__icontains=query) |
+            Q(patient__last_name__icontains=query)
+        )
+
+    # --- Aggregation ---
+    total_paid_amount = bills.aggregate(
+        total=Sum('amount')
+    )['total'] or 0
+
+    # --- Pagination ---
+    paginator = Paginator(bills, 20)  # 20 per page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'finance/cash_office/payments.html', {
+        'page_obj': page_obj,
+        'total_paid_amount': total_paid_amount,
+        'start_date': start_date,
+        'end_date': end_date,
+        'status': status,
+        'query': query,
+    })
+
 def cash_flow(request):
     return render(request, 'finance/financial_management/cash_flow.html')
 
 def general_ledger(request):
-    return render(request, 'finance/financial_management/general_ledger.html')
+    if request.method == 'POST':
+        date = request.POST.get('date')
+        account_number = request.POST.get('account_number')
+        description = request.POST.get('description')
+        amount = request.POST.get('amount')
+        entry_type = request.POST.get('entry_type')
+        text = request.POST.get('text')
+        reference = request.POST.get('reference')
+
+    try:
+        entry = LedgerEntry.objects.create(
+                date=date,
+                account_number=account_number,
+                description=description,
+                amount=amount,
+                entry_type=entry_type,
+                text=text,
+                reference=reference,
+                entry_by=request.user
+            )
+        entry.save()
+        messages.success(request, "Ledger entry saved successfully.")
+        return redirect('general_ledger')  # Adjust to match your URL name
+    except Exception as e:
+        messages.error(request, f"Error saving entry: {str(e)}")
+
+    # For GET request, fetch existing entries
+    entries = LedgerEntry.objects.all()
+    return render(request, 'finance/financial_management/general_ledger.html',{'entries':entries})
 
 def balance_sheet(request):
     return render(request, 'finance/financial_management/balance_sheet.html')
 
 def trial_balance(request):
-    return render(request, 'finance/financial_management/trial_balance.html')
+    total_leasehold_value = FixedAsset.objects.filter(
+    asset_class__iexact="LEASEHOLD IMPROVEMENTS"
+    ).aggregate(
+        total=Sum('net_book_value')
+    )['total'] or 0
+
+    total_computers_value = FixedAsset.objects.filter(
+    asset_class__iexact="COMPUTERS"
+    ).aggregate(
+        total=Sum('net_book_value')
+    )['total'] or 0
+        
+    total_net_book_value = FixedAsset.objects.aggregate(total=Sum('net_book_value'))['total'] or 0
+    print(total_net_book_value)
+
+        # Aggregate total insurance bills using custom_amount if set, else amount
+    total_insurance_bills = Bill.objects.filter(status='paid', payment_method='insurance').aggregate(
+        total=Sum(
+            Case(
+                When(custom_amount__isnull=False, then=F('custom_amount')),
+                default=F('amount'),
+                output_field=DecimalField()
+            )
+        )
+    )['total'] or 0  # If no records, default to 0
+
+    return render(request, 'finance/financial_management/trial_balance.html', {'total_computers_value': total_computers_value, 'total_net_book_value': total_net_book_value, 'total_leasehold_value': total_leasehold_value, 'total_insurance_bills':total_insurance_bills})
 
 
 def receivables(request):
-    return render(request, 'finance/financial_management/receivables.html')
+    # Start with all insurance bills
+    insurance_bills = Bill.objects.filter(payment_method='insurance')
 
-def receivables_details(request):
-    return render(request, 'finance/financial_management/receivables_details.html')
+    # Get filter values
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    status = request.GET.get('status')
+    query = request.GET.get('q')
+
+    # Apply filters
+    if start_date:
+        insurance_bills = insurance_bills.filter(date__date__gte=start_date)
+    if end_date:
+        insurance_bills = insurance_bills.filter(date__date__lte=end_date)
+    if status:
+        insurance_bills = insurance_bills.filter(status=status)
+    if query:
+        insurance_bills = insurance_bills.filter(
+            Q(transaction_id__icontains=query) |
+            Q(patient__first_name__icontains=query) |
+            Q(patient__last_name__icontains=query) |
+            Q(patient__username__icontains=query)
+        )
+
+    # Calculate total insurance amount
+    total_insurance_amount = insurance_bills.aggregate(
+        total=Sum('amount')
+    )['total'] or 0
+
+    return render(request, 'finance/financial_management/receivables.html', {
+        'insurance_bills': insurance_bills,
+        'total_insurance_amount': total_insurance_amount,
+        'start_date': start_date,
+        'end_date': end_date,
+        'status': status,
+        'query': query
+    })
+
+def receivables_details(request, bill_id):
+    bill = get_object_or_404(Bill, id=bill_id)
+
+    return render(request, 'finance/financial_management/receivables_details.html', {
+        'bill': bill,
+        'customer': bill.patient,
+    })
 
 def income_statement(request):
     # Aggregate total insurance bills using custom_amount if set, else amount
