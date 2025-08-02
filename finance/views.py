@@ -13,10 +13,32 @@ from billing.models import Bill
 
 User = get_user_model()
 
+def view_petty_cash_entry(request, entry_id):
+    entry = get_object_or_404(PettyCashEntry, id=entry_id)
+    return render(request, 'finance/cash_office/petty_cash_entry_detail.html', {'entry': entry})
 
-def ledger_view(request):
+def add_petty_cash_entry(request):
+    if request.method == "POST":
+        entry = PettyCashEntry(
+            date=request.POST.get("date"),
+            description=request.POST.get("description"),
+            amount=request.POST.get("amount"),
+            paid_to=request.POST.get("paid_to"),
+            approved_by=request.POST.get("approved_by"),
+            received_by=request.POST.get("received_by"),
+            reference=request.POST.get("reference"),
+            entry_type=request.POST.get("entry_type"),
+            done_by=request.user
+        )
+        entry.save()
+        return redirect('petty_cash') 
 
-    return render(request, 'ledger.html', {'entries': entries})
+def petty_cash(request):
+    users = User.objects.exclude(account_type='Patient')  
+
+    entries = PettyCashEntry.objects.all().order_by('-date')
+
+    return render(request, 'finance/cash_office/petty_cash_journal.html',{'entries': entries,  'users': users})
 
 def add_fixed_asset(request):
     hospitals = Hospital.objects.all()
@@ -301,6 +323,8 @@ def balance_sheet(request):
     return render(request, 'finance/financial_management/balance_sheet.html')
 
 def trial_balance(request):
+    petty_cash_total_debit = PettyCashEntry.objects.filter(entry_type='debit').aggregate(total=Sum('amount'))['total'] or 0
+
     total_leasehold_value = FixedAsset.objects.filter(
     asset_class__iexact="LEASEHOLD IMPROVEMENTS"
     ).aggregate(
@@ -327,7 +351,13 @@ def trial_balance(request):
         )
     )['total'] or 0  # If no records, default to 0
 
-    return render(request, 'finance/financial_management/trial_balance.html', {'total_computers_value': total_computers_value, 'total_net_book_value': total_net_book_value, 'total_leasehold_value': total_leasehold_value, 'total_insurance_bills':total_insurance_bills})
+    return render(request, 'finance/financial_management/trial_balance.html', {'total_computers_value': total_computers_value, 
+                                                                               'total_net_book_value': total_net_book_value, 
+                                                                               'total_leasehold_value': total_leasehold_value, 
+                                                                               'total_insurance_bills':total_insurance_bills,
+                                                                               'petty_cash_total_debit':petty_cash_total_debit,
+                                                                               
+                                                                               })
 
 
 def receivables(request):

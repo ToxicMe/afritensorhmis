@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-6xl mt-12 mx-auto bg-white shadow-md rounded-lg p-6">
+  <h1 class="text-2xl font-bold text-blue-600 mb-4">Petty Cash Entry Details</h1>
+
+  <div class="grid grid-cols-2 gap-6 text-sm text-gray-800">
+    <div><strong>Voucher No:</strong> {{ entry.entry_code }}</div>
+    <div><strong>Date:</strong> {{ entry.date }}</div>
+
+    <div><strong>Paid To:</strong> {{ entry.paid_to }}</div>
+    <div><strong>Approved By:</strong> {{ entry.approved_by }}</div>
+
+    <div><strong>Received By:</strong> {{ entry.received_by|default:"—" }}</div>
+    <div><strong>Reference:</strong> {{ entry.reference|default:"—" }}</div>
+
+    <div><strong>Amount:</strong> KES {{ entry.amount|floatformat:2 }}</div>
+    <div><strong>Entry Type:</strong> {{ entry.get_entry_type_display }}</div>
+
+    <div><strong>Description:</strong> {{ entry.description }}</div>
+    <div><strong>Recorded By:</strong> {{ entry.done_by|default:"—" }}</div>
+  </div>
+
+  <div class="mt-6 text-center">
+    <a href="{% url 'petty_cash' %}">
+      <button class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm">
+        Back 
+      </button>
+    </a>
+  </div>
+</div>
+
+{% endblock %}

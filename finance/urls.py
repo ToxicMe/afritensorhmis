@@ -39,6 +39,13 @@ urlpatterns = [
         path('assets/add/', views.add_fixed_asset, name='add_fixed_asset'),
         path('income_statement', views.income_statement, name='income_statement'),
         path('payments', views.payments, name='payments'),
+        path('petty_cash', views.petty_cash, name='petty_cash'),
+        path("petty-cash/add/", views.add_petty_cash_entry, name="add_petty_cash_entry"),
+        path('petty-cash/<int:entry_id>/', views.view_petty_cash_entry, name='view_petty_cash_entry'),
+
+
+
+
 
 
     

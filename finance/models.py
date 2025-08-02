@@ -9,6 +9,42 @@ from django.conf import settings
 from hospital.models import Hospital  # adjust if hospital model path differs
 
 
+class PettyCashEntry(models.Model):
+    entry_code = models.CharField(max_length=20, unique=True, editable=False)
+    date = models.DateField(default=now)
+    description = models.TextField()
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    paid_to = models.CharField(max_length=255)
+    approved_by = models.CharField(max_length=255)
+    received_by = models.CharField(max_length=255, blank=True)
+    reference = models.CharField(max_length=255, blank=True, null=True)
+
+    ENTRY_TYPE_CHOICES = [
+        ('debit', 'Debit'),   # cash in
+        ('credit', 'Credit'), # cash out
+    ]
+    entry_type = models.CharField(max_length=6, choices=ENTRY_TYPE_CHOICES)
+    done_by = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, related_name='petty_added_by')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date']
+
+    def save(self, *args, **kwargs):
+        if not self.entry_code:
+            last_entry = PettyCashEntry.objects.order_by('-id').first()
+            if last_entry and last_entry.entry_code.startswith('PT-'):
+                last_number = int(last_entry.entry_code.split('-')[1])
+                new_number = f"{last_number + 1:04d}"
+            else:
+                new_number = "0001"
+            self.entry_code = f"PT-{new_number}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.entry_code
+    
 
 class LedgerEntry(models.Model):
     ENTRY_TYPE_CHOICES = [
