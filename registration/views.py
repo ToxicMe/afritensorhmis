@@ -156,21 +156,25 @@ def create_visit(request):
     if request.method != "POST":
         return JsonResponse({'error': "Invalid request method."}, status=405)
 
+    # Extract POST data
     patient_id = request.POST.get("patient_id")
     visit_type = request.POST.get("type")
     discounted = request.POST.get("discounted") == "on"
     discount_reason = request.POST.get("discount_reason", "").strip()
     custom_amount_input = request.POST.get("custom_amount", "").strip()
 
+    # Validate patient selection
     if not patient_id:
         return JsonResponse({'error': "No patient selected."}, status=400)
 
+    # Fetch patient
     patient = get_object_or_404(CustomUser, id=patient_id, account_type='patient')
 
+    # Validate hospital
     if not request.user.hospital:
         return JsonResponse({'error': "You do not have a hospital assigned to your account."}, status=403)
 
-    # ✅ Check for existing active visit
+    # Prevent duplicate active visit
     ongoing_visit = Visit.objects.filter(
         patient=patient,
         hospital=request.user.hospital
@@ -178,11 +182,11 @@ def create_visit(request):
 
     if ongoing_visit:
         return JsonResponse({
-            'warning': f"{patient.patient_name} already has an active visit.",
+            'warning': f"{patient.get_full_name()} already has an active visit.",
             'redirect_url': reverse('view_patient', args=[patient.id])
-        }, status=200)
+        })
 
-    # ✅ Determine initial stage
+    # Determine initial stage based on visit type
     stage_map = {
         'outpatient': 'billing',
         'outpatient_consultation': 'consultation',
@@ -191,7 +195,7 @@ def create_visit(request):
     }
     initial_stage = stage_map.get(visit_type, 'billing')
 
-    # ✅ Create Visit
+    # Create the visit
     visit = Visit.objects.create(
         patient=patient,
         hospital=request.user.hospital,
@@ -199,9 +203,10 @@ def create_visit(request):
         stage=initial_stage
     )
 
-    # ✅ Conditionally create bill
+    # Auto-create bill if billing is required
     if visit_type not in ['outpatient_consultation', 'minor_surgery', 'inpatient']:
         try:
+            # Parse or override amount
             amount = Decimal("1000.00")
             if custom_amount_input:
                 try:
@@ -209,14 +214,16 @@ def create_visit(request):
                 except InvalidOperation:
                     return JsonResponse({'error': "Invalid custom amount."}, status=400)
 
+            # Create bill
             bill, error = create_patient_bill(
                 visit=visit,
                 patient=patient,
                 description="Consultation Fee",
                 amount=amount,
                 discounted=discounted,
-                custom_amount=custom_amount_input if custom_amount_input else None,
-                discount_reason=discount_reason
+                custom_amount=custom_amount_input or None,
+                discount_reason=discount_reason,
+                created_by=request.user,  # ✅ Correctly passed
             )
 
             if bill:
@@ -233,12 +240,10 @@ def create_visit(request):
                 'error': f"Visit created, but failed to create bill: {str(e)}"
             }, status=500)
 
-    # ✅ If no billing required
+    # If no billing required
     return JsonResponse({
         'success': f"{visit.get_type_display()} visit created successfully."
     })
-
-
 
 
 def patient_list(request):

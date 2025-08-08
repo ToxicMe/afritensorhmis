@@ -9,9 +9,30 @@ from django.utils import timezone
 from django.utils.timezone import now
 from .models import *
 from django.core.paginator import Paginator
-from billing.models import Bill
+from billing.models import Bill, PaymentReceipt
 
 User = get_user_model()
+
+def pending_insurance_receipts(request):
+    insurance_receipts = PaymentReceipt.objects.filter(
+        payment_method='insurance',
+        status='pending'
+    ).order_by('-date_created')
+
+
+    return render(request, 'finance/insurance/insurance_receipts.html', {
+        'insurance_receipts': insurance_receipts,
+    })
+
+def insurance_payment_receipts(request):
+    insurance_receipts = PaymentReceipt.objects.filter(payment_method='insurance').order_by('-date_created')
+
+    total_insurance_amount = insurance_receipts.count()  # or compute custom totals based on bills if needed
+
+    return render(request, 'finance/insurance/insurance_receipts.html', {
+        'insurance_receipts': insurance_receipts,
+        'total_insurance_amount': total_insurance_amount,
+    })
 
 def view_petty_cash_entry(request, entry_id):
     entry = get_object_or_404(PettyCashEntry, id=entry_id)
@@ -409,15 +430,9 @@ def receivables_details(request, bill_id):
 
 def income_statement(request):
     # Aggregate total insurance bills using custom_amount if set, else amount
-    total_insurance_bills = Bill.objects.filter(status='paid', payment_method='insurance').aggregate(
-        total=Sum(
-            Case(
-                When(custom_amount__isnull=False, then=F('custom_amount')),
-                default=F('amount'),
-                output_field=DecimalField()
-            )
-        )
-    )['total'] or 0  # If no records, default to 0
+    total_insurance_bills = PaymentReceipt.objects.filter(status='pending', payment_method='insurance').aggregate(
+    total=Sum('amount')
+        )['total'] or 0  # If no records, default to 0
 
       # Total discounts = amount - custom_amount for all bills with custom_amount
     total_discounts = Bill.objects.filter(
@@ -449,6 +464,9 @@ def fixed_assets(request):
     })
 
 
+
+def insurance(request):
+    return render(request, 'finance/insurance/dashboard.html')
 
 def payables_details(request):
     return render(request, 'finance/financial_management/payables_details.html')

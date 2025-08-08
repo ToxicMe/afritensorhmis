@@ -4,6 +4,7 @@ from django.db import models
 from django.utils import timezone
 from registration.models import Visit
 from accounts.models import CustomUser
+from django.contrib.auth import get_user_model
 
 
 def generate_transaction_id():
@@ -40,6 +41,8 @@ class Bill(models.Model):
     date = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, blank=True, null=True)
+    created_by = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, related_name='bills_created')
+
 
     def save(self, *args, **kwargs):
         if not self.transaction_id:
@@ -69,12 +72,38 @@ class PaymentReceipt(models.Model):
         ('insurance', 'Insurance'),
         ('other', 'Other'),
     ]
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('cancelled', 'Cancelled'),
+        ('disputed', 'Disputed'),
+        ('refunded', 'Refunded'),
+        ('partially_paid', 'Partially Paid'),
+        ('overpaid', 'Overpaid'),
+        ('underpaid', 'Underpaid'),
+        ('voided', 'Voided'),
+        ('failed', 'Failed'),
+        ('authorized', 'Authorized'),
+        ('requires_authorization', 'Requires Authorization'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('expired', 'Expired'),
+        ('rejected', 'Rejected'),
+        ('reversed', 'Reversed'),
+        ('chargeback', 'Chargeback'),
+        ('refunded', 'Refunded'),
+        ('partially_refunded', 'Partially Refunded'),
+        ('pending_refund', 'Pending Refund'),
+
+    ]
 
     visit = models.ForeignKey(Visit, on_delete=models.CASCADE, related_name='payment_receipts')
     receipt_id = models.CharField(max_length=12, unique=True, editable=False)
+    amount =  models.CharField(max_length=200, null=False)
     patient = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='payment_receipts')
     date_created = models.DateTimeField(default=timezone.now)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
+    status = models.CharField(max_length=200, choices=STATUS_CHOICES, default='pending')
     created_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='receipts_created')
 
     def save(self, *args, **kwargs):

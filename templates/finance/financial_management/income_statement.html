@@ -1,94 +1,130 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-7xl mx-auto mt-12 bg-white shadow-md rounded p-6 text-sm font-sans">
-  <h2 class="text-center text-xl font-bold mb-2">Income Statement</h2>
-  <p class="text-center text-sm mb-6">Profit and Loss for the period 01.01.2025 to 31.12.2025</p>
 
-  <table class="w-full border-collapse">
-    <thead>
-      <tr class="border-b">
-        <th class="text-left">Description</th>
-        <th class="text-right">Debit</th>
-        <th class="text-right">Credit</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Sales -->
-      <tr>
-        <td>Sales</td>
-        <td></td>
-        <td class="text-right">10,000.00</td>
-      </tr>
+<!-- Alpine.js for interactivity -->
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-      <!-- Cost of Sales -->
-      <tr class="font-semibold"><td colspan="3">Cost of sales</td></tr>
-      <tr><td>Opening stock</td><td class="text-right">1,000.00</td><td></td></tr>
-      <tr><td>Add: Purchases for the year</td><td class="text-right">100.00</td><td></td></tr>
-      <tr><td>Less: Closing stock</td><td class="text-right">(500.00)</td><td class="text-right">600.00</td></tr>
+<div class="max-w-6xl mx-auto mt-12 bg-white shadow-lg rounded-lg p-6 text-sm font-sans">
+  <h2 class="text-center text-2xl font-bold mb-1">Income Statement</h2>
+  <p class="text-center text-sm text-gray-600 mb-6">Profit and Loss for the period 01.01.2025 to 31.12.2025</p>
 
-      <!-- Gross Profit -->
-      <tr class="border-t font-bold">
-        <td>Gross profit</td>
-        <td></td>
-        <td class="text-right">9,400.00</td>
-      </tr>
+  <div class="divide-y divide-gray-200">
+    <!-- Accordion Item -->
+    <div x-data="{ open: false }" class="py-4">
+      <button @click="open = !open" class="w-full text-left font-semibold text-lg text-blue-700">
+        Sales
+      </button>
+      <div x-show="open" class="mt-2">
+        <div class="flex justify-between text-sm py-1">
+          <span>Total Sales</span>
+          <span class="text-right text-green-700 font-medium">10,000.00</span>
+        </div>
+      </div>
+    </div>
 
-      <!-- Expenses -->
-      <tr class="font-semibold"><td colspan="3">Expenses</td></tr>
-      <tr><td>Advertising & Promotion</td><td class="text-right">234.00</td><td></td></tr>
-      <tr><td>Discount allowed</td><td class="text-right">{{ total_discounts|floatformat:2 }}</td><td></td></tr>
-      <tr><td>Depreciation & Amortization</td><td class="text-right">2.00</td><td></td></tr>
-      <tr><td>Insurance</td><td class="text-right">{{ total_insurance_bills|floatformat:2 }}
-      <tr><td>Maintenance</td><td class="text-right">7.00</td><td></td></tr>
-      <tr><td>Office Supplies</td><td class="text-right">4.00</td><td></td></tr>
-      <tr><td>Rent</td><td class="text-right">6.00</td><td></td></tr>
-      <tr><td>Salaries, Benefits & Wages</td><td class="text-right">4.00</td><td></td></tr>
-      <tr><td>Telecommunication</td><td class="text-right">45.00</td><td></td></tr>
-      <tr><td>Travel</td><td class="text-right">46.00</td><td></td></tr>
-      <tr><td>Utilities</td><td class="text-right">87.00</td><td></td></tr>
+    <!-- Cost of Sales -->
+    <div x-data="{ open: false }" class="py-4">
+      <button @click="open = !open" class="w-full text-left font-semibold text-lg text-blue-700">
+        Cost of Sales
+      </button>
+      <div x-show="open" class="mt-2 space-y-1 text-sm">
+        <div class="flex justify-between"><span>Opening Stock</span><span>1,000.00</span></div>
+        <div class="flex justify-between"><span>Purchases for the year</span><span>100.00</span></div>
+        <div class="flex justify-between"><span>Less: Closing Stock</span><span class="text-red-600">-500.00</span></div>
+        <div class="flex justify-between font-semibold border-t pt-1"><span>Total Cost</span><span>600.00</span></div>
+      </div>
+    </div>
 
-      <tr class="border-t font-bold">
-        <td>Total Expenses</td>
-        <td class="text-right">741.00</td>
-        <td></td>
-      </tr>
+    <!-- Gross Profit -->
+    <div class="py-4">
+      <div class="flex justify-between font-bold text-base text-gray-800">
+        <span>Gross Profit</span>
+        <span class="text-green-700">9,400.00</span>
+      </div>
+    </div>
 
-      <!-- Profit Before Interest -->
-      <tr class="font-bold">
-        <td>Profit Before Interest & Taxes</td>
-        <td></td>
-        <td class="text-right">8,659.00</td>
-      </tr>
-      <tr>
-        <td>Interest Expense</td>
-        <td class="text-right">24.00</td>
-        <td></td>
-      </tr>
+    <!-- Discount Allowed -->
+    <div x-data="{ open: false }" class="py-4">
+      <button @click="open = !open" class="w-full text-left font-semibold text-lg text-blue-700">
+        Discount Allowed
+      </button>
+      <div x-show="open" class="mt-2 space-y-1 text-sm">
+        <div class="flex justify-between"><span>Total Discounts</span><span>{{ total_discounts|floatformat:2 }}</span></div>
+        <ul class="list-disc pl-6 text-gray-600">
+          <li>New client promo – 0.00</li>
+          <li>Holiday special – 0.00</li>
+          <li>Referral program – 0.00</li>
+        </ul>
+      </div>
+    </div>
 
-      <!-- Profit Before Taxes -->
-      <tr class="font-bold">
-        <td>Profit Before Taxes</td>
-        <td></td>
-        <td class="text-right">8,635.00</td>
-      </tr>
-      <tr>
-        <td>Income Taxes</td>
-        <td class="text-right">2,597.70</td>
-        <td></td>
-      </tr>
+    <!-- Receivables -->
+    <div x-data="{ open: false }" class="py-4">
+      <button @click="open = !open" class="w-full text-left font-semibold text-lg text-blue-700">
+        Receivables (Pending Insurance)
+      </button>
+      <div x-show="open" class="mt-2 text-sm space-y-1">
+        <div class="flex justify-between"><span>Receivables Total</span><span>{{ total_insurance_bills|floatformat:2 }}</span></div>
+        <ul class="list-disc pl-6 text-gray-600">
+          <li>Vehicle cover – 400.00</li>
+          <li>Office insurance – 300.00</li>
+          <li>Health insurance – 300.00</li>
+        </ul>
+      </div>
+    </div>
 
-      <!-- Net Profit -->
-      <tr class="border-t font-bold text-green-700">
-        <td>Net Profit after Interest & Taxes</td>
-        <td></td>
-        <td class="text-right">6,037.30</td>
-      </tr>
-    </tbody>
-  </table>
+    <!-- Total Expenses -->
+    <div class="py-4">
+      <div class="flex justify-between font-semibold">
+        <span>Total Expenses</span>
+        <span>741.00</span>
+      </div>
+    </div>
 
-  <!-- Legend -->
-  <div class="mt-4 border-t pt-2 text-xs">
-    <strong>Entry:</strong> Debit = Expenses, Credit = Sales
+    <!-- Profit Before Interest -->
+    <div class="py-2">
+      <div class="flex justify-between font-bold text-base">
+        <span>Profit Before Interest & Taxes</span>
+        <span class="text-green-700">8,659.00</span>
+      </div>
+    </div>
+
+    <!-- Interest -->
+    <div class="py-2">
+      <div class="flex justify-between text-sm">
+        <span>Interest Expense</span>
+        <span>24.00</span>
+      </div>
+    </div>
+
+    <!-- Profit Before Taxes -->
+    <div class="py-2">
+      <div class="flex justify-between font-bold">
+        <span>Profit Before Taxes</span>
+        <span class="text-green-700">8,635.00</span>
+      </div>
+    </div>
+
+    <!-- Income Taxes -->
+    <div class="py-2">
+      <div class="flex justify-between">
+        <span>Income Taxes</span>
+        <span>2,597.70</span>
+      </div>
+    </div>
+
+    <!-- Net Profit -->
+    <div class="py-4 border-t mt-2 pt-3">
+      <div class="flex justify-between text-green-800 font-bold text-lg">
+        <span>Net Profit after Interest & Taxes</span>
+        <span>6,037.30</span>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="mt-6 pt-3 text-xs text-gray-500 border-t">
+      <strong>Legend:</strong> Debit = Expenses, Credit = Revenue
+    </div>
   </div>
 </div>
 

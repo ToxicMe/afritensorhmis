@@ -9,8 +9,66 @@ from registration.models import Visit
 from .payment_processors.mpesa import mpesa_pay  # your helper
 from django.db.models import Sum
 from django.http import HttpResponse
+from billing.utils import create_payment_receipt
+from collections import defaultdict
 
 
+
+def all_payment_receipts(request):
+    receipts = PaymentReceipt.objects.select_related("patient", "visit", "created_by").order_by("-date_created")
+
+    # Add total paid to each receipt
+    for receipt in receipts:
+        total_paid = receipt.visit.bills.filter(status='paid').aggregate(total=Sum('amount'))['total'] or 0
+        receipt.total_paid = total_paid
+
+    # Unique cashier names
+    cashiers = sorted(set([r.created_by.get_full_name() for r in receipts if r.created_by]))
+
+    return render(request, 'billing/receipt_list.html', {
+        "receipts": receipts,
+        "cashiers": cashiers
+    })
+
+def view_payment_receipt(request, receipt_id):
+    receipt = get_object_or_404(PaymentReceipt, receipt_id=receipt_id)
+    visit = receipt.visit
+    patient = receipt.patient
+    bills = Bill.objects.filter(visit=visit, status='paid')
+
+    total_amount = bills.aggregate(total=Sum('amount'))['total'] or 0
+
+    return render(request, 'billing/receipt_detail.html', {
+        'receipt': receipt,
+        'visit': visit,
+        'patient': patient,
+        'bills': bills,
+        'total_amount': total_amount,
+    })
+
+
+
+
+
+def all_bills(request):
+    # Group by visit and aggregate total amount and latest status
+    bills_by_visit = (
+        Bill.objects.all()
+        .values('visit')
+        .annotate(
+            total_amount=Sum('amount'),
+            latest_date=Max('date'),
+            tracking_code=Max('visit__tracking_code'),
+            patient_id=Max('patient__id'),
+            patient_name=Max('patient__first_name'),
+            patient_username=Max('patient__username'),
+            description=Max('description'),
+            status=Max('status'),
+            transaction_id=Max('transaction_id')  
+        )
+        .order_by('-latest_date')
+    )
+    return render(request, 'billing/unpaid_bills_list.html', {'grouped_bills': bills_by_visit})
 
 def view_bill(request, transaction_id):
     # Get the bill by transaction_id to extract the visit
@@ -85,21 +143,27 @@ def mark_bills_paid(request, tracking_code):
             messages.error(request, f"M-Pesa Error: {str(e)}")
             return redirect(request.META.get("HTTP_REFERER", "/"))
 
-    # Store bill for redirect
+    # Save the first bill for redirect
     first_bill = pending_bills.first()
 
-    # Mark all pending bills as paid
+    # Mark all bills as paid
     pending_bills.update(status='paid', payment_method=payment_method)
 
-    # Create receipt
-    PaymentReceipt.objects.create(
+    # ✅ Create receipt using utility function
+    receipt, error = create_payment_receipt(
         visit=visit,
         patient=visit.patient,
+        amount = total_amount,
         payment_method=payment_method,
         created_by=request.user
     )
 
-    # === Update visit stage logic ===
+    if error:
+        messages.error(request, f"Failed to create receipt: {error}")
+    else:
+        messages.success(request, f"Receipt {receipt.receipt_id} created.")
+
+    # ✅ Update visit stage
     if visit.stage == "billing_note":
         visit.stage = "laboratory"
     elif visit.stage == "billing_prescription":

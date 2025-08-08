@@ -66,6 +66,7 @@ class CustomUser(AbstractUser):
         ('admin', 'Admin'),
         ('doctor', 'Doctor'),
         ('nurse', 'Nurse'),
+        ('cashier', 'Cashier'),
         ('patient', 'Patient'),
     ])
     date_of_registration = models.DateField(auto_now_add=True)

@@ -3,7 +3,10 @@ from django.urls import path, include
 from . import views
 
 urlpatterns = [
-        path('accounting/', views.accounting, name='accounting'), 
+        path('accounting/', views.accounting, name='accounting'),
+        path('insurance/', views.insurance, name='insurance'),
+        path('receipts/insurance/', views.insurance_payment_receipts, name='insurance_receipts'),
+        path('receipts/insurance/pending/', views.pending_insurance_receipts, name='pending_insurance_receipts'),
         path('cash_flow/', views.cash_flow, name='cash_flow'),
         path('fixed_assets/', views.fixed_assets, name='fixed_assets'), 
         path('receivables/', views.receivables, name='receivables'), 

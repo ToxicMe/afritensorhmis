@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-4xl mx-auto mt-10 bg-white shadow rounded p-6">
+  <h2 class="text-xl font-bold mb-2">Receipt {{ receipt.receipt_id }}</h2>
+  <p class="text-sm text-gray-600 mb-4">Date: {{ receipt.date_created|date:"d M Y, H:i" }}</p>
+
+  <div class="mb-4">
+    <strong>Patient:</strong> {{ patient.get_full_name|default:patient.username }}<br>
+    <strong>Gender:</strong> {{ patient.get_gender|default:None }}<br>
+    <strong>Age:</strong> {{ patient.get_age|default:None }}<br>
+    <strong>Visit Code:</strong> {{ visit.tracking_code }}<br>
+    <strong>Payment Method:</strong> {{ receipt.get_payment_method_display }}<br>
+    <strong>Status:</strong> {{ receipt.get_status_display }}<br>
+  </div>
+
+  <table class="w-full table-auto border text-sm mt-4">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="border px-3 py-2 text-left">Description</th>
+        <th class="border px-3 py-2 text-right">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for bill in bills %}
+      <tr>
+        <td class="border px-3 py-2">{{ bill.description }}</td>
+        <td class="border px-3 py-2 text-right">{{ total_amount|floatformat:2 }}
+</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr class="font-bold">
+        <td class="border px-3 py-2 text-right">Total</td>
+        <td class="border px-3 py-2 text-right">
+          {{ total_amount|floatformat:2 }}
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="mt-4 text-center">
+    <a href="{% url 'all_payment_receipts' %}" class="text-blue-600 hover:underline">← Back to Receipts</a>
+  </div>
+</div>
+
+{% endblock %}

@@ -11,7 +11,7 @@ from decimal import Decimal
 from billing.models import Bill
 from django.db.models import Q, Sum, Max
 from django.views.decorators.http import require_POST
-
+from billing.utils import create_payment_receipt
 
 
 
@@ -85,8 +85,20 @@ def mark_bills_paid_walkin(request, transaction_id):
         return redirect("pharmacy_unpaid_bills")
 
     bills.update(status="paid", payment_method=payment_method)
+
+
+           # ✅ Create receipt using utility function
+    receipt, error = create_payment_receipt(
+        visit=visit,
+        patient=visit.patient,
+        payment_method=payment_method,
+        created_by=request.user
+    )
+
     messages.success(request, "Walk-in bill marked as paid.")
     return redirect("pharmacy_unpaid_bills")
+
+ 
 
 
 @transaction.atomic

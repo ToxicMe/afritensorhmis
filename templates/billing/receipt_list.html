@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-8xl mx-auto mt-10 bg-white shadow rounded p-6">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold">Payment Receipts</h2>
+    <div id="totalCollection" class="text-right text-green-700 text-lg font-semibold">
+      Total: KSh 0.00
+    </div>
+  </div>
+
+  <!-- Filter Dropdown -->
+  <div class="mb-6">
+    <label for="creatorFilter" class="block mb-1 text-sm font-medium text-gray-700">Filter by Cashier</label>
+    <select id="creatorFilter"
+            class="max-w-4xl border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300">
+      <option value="all">All Cashiers</option>
+      {% for creator in cashiers %}
+        <option value="{{ creator }}">{{ creator }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <table class="w-full border-collapse text-sm shadow" id="receiptTable">
+    <thead class="bg-blue-600 text-gray-100">
+      <tr>
+        <th class="border px-3 py-2 text-left">Receipt ID</th>
+        <th class="border px-3 py-2 text-left">Patient</th>
+        <th class="border px-3 py-2 text-left">Visit Code</th>
+        <th class="border px-3 py-2 text-left">Payment Method</th>
+        <th class="border px-3 py-2 text-left">Date</th>
+        <th class="border px-3 py-2 text-right">Amount (KSh)</th>
+        <th class="border px-3 py-2 text-center">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for receipt in receipts %}
+        <tr class="receipt-row border-t hover:bg-gray-50" data-creator="{{ receipt.created_by.get_full_name }}" data-amount="{{ receipt.total_paid }}">
+          <td class="px-3 py-2">{{ receipt.receipt_id }}</td>
+          <td class="px-3 py-2">{{ receipt.patient.get_full_name|default:receipt.patient.username }}</td>
+          <td class="px-3 py-2">{{ receipt.visit.tracking_code }}</td>
+          <td class="px-3 py-2">{{ receipt.get_payment_method_display }}</td>
+          <td class="px-3 py-2">{{ receipt.date_created|date:"d M Y, H:i" }}</td>
+          <td class="px-3 py-2 text-right">KSh {{ receipt.total_paid|floatformat:2 }}</td>
+          <td class="px-3 py-2 text-center">
+            <a href="{% url 'view_payment_receipt' receipt.receipt_id %}" class="text-blue-600 hover:underline">View</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if receipts|length == 0 %}
+    <p class="text-gray-600 text-center mt-6">No receipts found.</p>
+  {% endif %}
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const filterSelect = document.getElementById("creatorFilter");
+    const rows = document.querySelectorAll(".receipt-row");
+    const totalBox = document.getElementById("totalCollection");
+
+    function updateTable() {
+      const selected = filterSelect.value;
+      let total = 0;
+
+      rows.forEach(row => {
+        const creator = row.getAttribute("data-creator");
+        const amount = parseFloat(row.getAttribute("data-amount")) || 0;
+
+        if (selected === "all" || creator === selected) {
+          row.style.display = "table-row";
+          total += amount;
+        } else {
+          row.style.display = "none";
+        }
+      });
+
+      totalBox.textContent = `Total: KSh ${total.toFixed(2)}`;
+    }
+
+    filterSelect.addEventListener("change", updateTable);
+    updateTable();
+  });
+</script>
+
+{% endblock %}
