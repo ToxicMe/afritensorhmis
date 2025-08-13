@@ -1,131 +1,383 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="max-w-5xl mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-6 text-gray-800">Income Statement</h1>
 
-<!-- Alpine.js for interactivity -->
-<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-<div class="max-w-6xl mx-auto mt-12 bg-white shadow-lg rounded-lg p-6 text-sm font-sans">
-  <h2 class="text-center text-2xl font-bold mb-1">Income Statement</h2>
-  <p class="text-center text-sm text-gray-600 mb-6">Profit and Loss for the period 01.01.2025 to 31.12.2025</p>
-
-  <div class="divide-y divide-gray-200">
-    <!-- Accordion Item -->
-    <div x-data="{ open: false }" class="py-4">
-      <button @click="open = !open" class="w-full text-left font-semibold text-lg text-blue-700">
-        Sales
-      </button>
-      <div x-show="open" class="mt-2">
-        <div class="flex justify-between text-sm py-1">
-          <span>Total Sales</span>
-          <span class="text-right text-green-700 font-medium">10,000.00</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Cost of Sales -->
-    <div x-data="{ open: false }" class="py-4">
-      <button @click="open = !open" class="w-full text-left font-semibold text-lg text-blue-700">
-        Cost of Sales
-      </button>
-      <div x-show="open" class="mt-2 space-y-1 text-sm">
-        <div class="flex justify-between"><span>Opening Stock</span><span>1,000.00</span></div>
-        <div class="flex justify-between"><span>Purchases for the year</span><span>100.00</span></div>
-        <div class="flex justify-between"><span>Less: Closing Stock</span><span class="text-red-600">-500.00</span></div>
-        <div class="flex justify-between font-semibold border-t pt-1"><span>Total Cost</span><span>600.00</span></div>
-      </div>
-    </div>
-
-    <!-- Gross Profit -->
-    <div class="py-4">
-      <div class="flex justify-between font-bold text-base text-gray-800">
-        <span>Gross Profit</span>
-        <span class="text-green-700">9,400.00</span>
-      </div>
-    </div>
-
-    <!-- Discount Allowed -->
-    <div x-data="{ open: false }" class="py-4">
-      <button @click="open = !open" class="w-full text-left font-semibold text-lg text-blue-700">
-        Discount Allowed
-      </button>
-      <div x-show="open" class="mt-2 space-y-1 text-sm">
-        <div class="flex justify-between"><span>Total Discounts</span><span>{{ total_discounts|floatformat:2 }}</span></div>
-        <ul class="list-disc pl-6 text-gray-600">
-          <li>New client promo – 0.00</li>
-          <li>Holiday special – 0.00</li>
-          <li>Referral program – 0.00</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Receivables -->
-    <div x-data="{ open: false }" class="py-4">
-      <button @click="open = !open" class="w-full text-left font-semibold text-lg text-blue-700">
-        Receivables (Pending Insurance)
-      </button>
-      <div x-show="open" class="mt-2 text-sm space-y-1">
-        <div class="flex justify-between"><span>Receivables Total</span><span>{{ total_insurance_bills|floatformat:2 }}</span></div>
-        <ul class="list-disc pl-6 text-gray-600">
-          <li>Vehicle cover – 400.00</li>
-          <li>Office insurance – 300.00</li>
-          <li>Health insurance – 300.00</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Total Expenses -->
-    <div class="py-4">
-      <div class="flex justify-between font-semibold">
-        <span>Total Expenses</span>
-        <span>741.00</span>
-      </div>
-    </div>
-
-    <!-- Profit Before Interest -->
-    <div class="py-2">
-      <div class="flex justify-between font-bold text-base">
-        <span>Profit Before Interest & Taxes</span>
-        <span class="text-green-700">8,659.00</span>
-      </div>
-    </div>
-
-    <!-- Interest -->
-    <div class="py-2">
-      <div class="flex justify-between text-sm">
-        <span>Interest Expense</span>
-        <span>24.00</span>
-      </div>
-    </div>
-
-    <!-- Profit Before Taxes -->
-    <div class="py-2">
-      <div class="flex justify-between font-bold">
-        <span>Profit Before Taxes</span>
-        <span class="text-green-700">8,635.00</span>
-      </div>
-    </div>
-
-    <!-- Income Taxes -->
-    <div class="py-2">
-      <div class="flex justify-between">
-        <span>Income Taxes</span>
-        <span>2,597.70</span>
-      </div>
-    </div>
-
-    <!-- Net Profit -->
-    <div class="py-4 border-t mt-2 pt-3">
-      <div class="flex justify-between text-green-800 font-bold text-lg">
-        <span>Net Profit after Interest & Taxes</span>
-        <span>6,037.30</span>
-      </div>
-    </div>
-
-    <!-- Legend -->
-    <div class="mt-6 pt-3 text-xs text-gray-500 border-t">
-      <strong>Legend:</strong> Debit = Expenses, Credit = Revenue
-    </div>
-  </div>
+    <!-- Accordions -->
+    <div id="accordion-container" class="space-y-4"></div>
 </div>
 
+<script>
+    // JSON data (same structure for all categories)
+    const salesData = [
+    {No: "500000", Name: "Income Accounts", Debit: "", Credit: "", Action: "View"},
+    {No: "500001", Name: "Pharmacy Sales", Debit: "", Credit: "", Action: "View"},
+    {No: "500002", Name: "Surgical Income", Debit: "", Credit: "", Action: "View"},
+    {No: "500003", Name: "Theatre Items/Instruments sales", Debit: "", Credit: "", Action: "View"},
+    {No: "500004", Name: "Lab Tests", Debit: "", Credit: "", Action: "View"},
+    {No: "500005", Name: "Radiology Sales", Debit: "", Credit: "", Action: "View"},
+    {No: "500006", Name: "Physical medicine Sales", Debit: "", Credit: "", Action: "View"},
+    {No: "500007", Name: "Oncology Sales", Debit: "", Credit: "", Action: "View"},
+    {No: "500008", Name: "Renal Sales", Debit: "", Credit: "", Action: "View"},
+    {No: "500009", Name: "Endoscopy Income", Debit: "", Credit: "", Action: "View"},
+    {No: "500010", Name: "Consultation Income", Debit: "", Credit: "", Action: "View"},
+    {No: "500011", Name: "Nursing Fees", Debit: "", Credit: "", Action: "View"},
+    {No: "500012", Name: "Inpatient Registrars Income", Debit: "", Credit: "", Action: "View"},
+    {No: "500013", Name: "Medical Gases Income", Debit: "", Credit: "", Action: "View"},
+    {No: "500014", Name: "CSSD Income", Debit: "", Credit: "", Action: "View"},
+    {No: "500015", Name: "Ambulance Fees", Debit: "", Credit: "", Action: "View"},
+    {No: "500016", Name: "Cathlab Sales", Debit: "", Credit: "", Action: "View"},
+    {No: "500017", Name: "Revenue Work In Progress", Debit: "", Credit: "", Action: "View"},
+    {No: "500018", Name: "Consignment Sales", Debit: "", Credit: "", Action: "View"},
+    {No: "500019", Name: "Dental Services", Debit: "", Credit: "", Action: "View"},
+    {No: "500020", Name: "Theatre time", Debit: "", Credit: "", Action: "View"},
+    {No: "500090", Name: "Income", Debit: "", Credit: "", Action: "View"},
+    {No: "500100", Name: "Bed fees", Debit: "", Credit: "", Action: "View"},
+    {No: "500101", Name: "BED FEES General WARD", Debit: "", Credit: "", Action: "View"},
+    {No: "500102", Name: "BED FEES PRIVATE ROOM", Debit: "", Credit: "", Action: "View"},
+    {No: "500103", Name: "BED FEES ENSUITE", Debit: "", Credit: "", Action: "View"},
+    {No: "500104", Name: "BED FEES DELUXE", Debit: "", Credit: "", Action: "View"},
+    {No: "500105", Name: "LODGER FEES", Debit: "", Credit: "", Action: "View"},
+    {No: "500106", Name: "BED FEES Critical Care Units (ICU,NICU)", Debit: "", Credit: "", Action: "View"},
+    {No: "500107", Name: "BED FEES SHORT STAY WARD", Debit: "", Credit: "", Action: "View"},
+    {No: "500108", Name: "NORTHWING - Presidential Suite", Debit: "", Credit: "", Action: "View"},
+    {No: "500109", Name: "NORTHWING - Premier Suite", Debit: "", Credit: "", Action: "View"},
+    {No: "500110", Name: "NORTHWING - Deluxe Suite", Debit: "", Credit: "", Action: "View"},
+    {No: "500111", Name: "Bed Fees Critical Care HDU", Debit: "", Credit: "", Action: "View"},
+    {No: "500112", Name: "BED FEES DUPLEX", Debit: "", Credit: "", Action: "View"},
+    {No: "500113", Name: "Bed Fees Neonatal ICU", Debit: "", Credit: "", Action: "View"},
+    {No: "500114", Name: "Bed Fees Neonatal HDU", Debit: "", Credit: "", Action: "View"},
+    {No: "500115", Name: "Bed Fees Paedriatic ICU", Debit: "", Credit: "", Action: "View"},
+    {No: "500116", Name: "Bed Fees Paedriatic HDU", Debit: "", Credit: "", Action: "View"},
+    {No: "500199", Name: "Bed fees total", Debit: "", Credit: "", Action: "View"},
+    {No: "500200", Name: "Patient Discounts", Debit: "", Credit: "", Action: "View"},
+    {No: "500201", Name: "Discounts - Almoners Fund", Debit: "", Credit: "", Action: "View"},
+    {No: "500202", Name: "Discounts - Staff Bills", Debit: "", Credit: "", Action: "View"},
+    {No: "500203", Name: "Discounts - Members", Debit: "", Credit: "", Action: "View"},
+    {No: "500204", Name: "Discounts - Patient Bills", Debit: "", Credit: "", Action: "View"},
+    {No: "500205", Name: "Discounts - Charities & CSR", Debit: "", Credit: "", Action: "View"},
+    {No: "500249", Name: "Patient Discounts Totals", Debit: "", Credit: "", Action: "View"}
+    ];
+
+    const salesOtherIncomeData = [
+  { "No": "500350", "Name": "Other Income", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500399", "Name": "Finance Income", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500400", "Name": "Interest on Call Deposits", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500401", "Name": "Interest on Bonds and Bills", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500402", "Name": "Investment Income", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500403", "Name": "Interest Income", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500404", "Name": "Prompt Payment Income", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500405", "Name": "Commission on doctors fees", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500406", "Name": "Doctors - Card Deduction", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500407", "Name": "Realized FX Gain", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500408", "Name": "Unrealized FX Gain", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500409", "Name": "Bad Debts Recovered - Income", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500410", "Name": "Finance Income Total", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500411", "Name": "Rent Income", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500412", "Name": "Rental Income - Consulting rooms", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500413", "Name": "Rental Income - Parking Fees", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500414", "Name": "Rental Income - Utilities", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500415", "Name": "Rental Income - Telephone Charge", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500416", "Name": "Rental Income - Consumables", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500417", "Name": "Mortgage interest income ( Co-operative Bank)", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500419", "Name": "Rent Income Total", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500420", "Name": "Support Services Income", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500421", "Name": "Restaurant Sales", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500422", "Name": "Laundry Income", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500423", "Name": "Convention Centers Income", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500424", "Name": "Parking Income", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500425", "Name": "Disposal Account", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500426", "Name": "Health & Fitness Facility Income", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500427", "Name": "Covid Centre Financing", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500429", "Name": "Support Services Income Total", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500441", "Name": "Miscellenous Income", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500499", "Name": "Other Income Total", "Debit": "", "Credit": "", "Action": "View" },
+  { "No": "500500", "Name": "Post Migration Care Sales", "Debit": "", "Credit": "", "Action": "View" }
+];
+
+
+    const costOfSalesData = [
+    {No: "600000", Name: "Cost of Sales", Debit: "", Credit: "", Action: "View"},
+    {No: "600001", Name: "Cost of Drugs and Medicines", Debit: "", Credit: "", Action: "View"},
+    {No: "600002", Name: "Cost of Surgical Consumables", Debit: "", Credit: "", Action: "View"},
+    {No: "600003", Name: "Cost of Surgical Items", Debit: "", Credit: "", Action: "View"},
+    {No: "600004", Name: "Cost of Theatre Items/ Theatre Instruments", Debit: "", Credit: "", Action: "View"},
+    {No: "600005", Name: "Cost of Laboratory Consumables", Debit: "", Credit: "", Action: "View"},
+    {No: "600006", Name: "Cost of Radiology Materials", Debit: "", Credit: "", Action: "View"},
+    {No: "600007", Name: "Cost of Cath Lab Materials", Debit: "", Credit: "", Action: "View"},
+    {No: "600008", Name: "Cost of ICU Materials", Debit: "", Credit: "", Action: "View"},
+    {No: "600009", Name: "Cost of Renal Materials", Debit: "", Credit: "", Action: "View"},
+    {No: "600010", Name: "Cost of Physical medicine Materials", Debit: "", Credit: "", Action: "View"},
+    {No: "600011", Name: "PACs expense", Debit: "", Credit: "", Action: "View"},
+    {No: "600012", Name: "Service Contract-medical equipment", Debit: "", Credit: "", Action: "View"},
+    {No: "600013", Name: "Service Contract-Other equipment", Debit: "", Credit: "", Action: "View"},
+    {No: "600014", Name: "Outsourced tests-Laboratory", Debit: "", Credit: "", Action: "View"},
+    {No: "600015", Name: "Patient Expenses", Debit: "", Credit: "", Action: "View"},
+    {No: "600016", Name: "Doctors Fee Expenses-Speciality Clinics", Debit: "", Credit: "", Action: "View"},
+    {No: "600017", Name: "Discounts Received", Debit: "", Credit: "", Action: "View"},
+    {No: "600018", Name: "Cost of Sales - WIP", Debit: "", Credit: "", Action: "View"},
+    {No: "600019", Name: "Consignment Cost of sales", Debit: "", Credit: "", Action: "View"},
+    {No: "600020", Name: "Cost of sales-Dental", Debit: "", Credit: "", Action: "View"},
+    {No: "600021", Name: "Cost of sales-CSSD", Debit: "", Credit: "", Action: "View"},
+    {No: "600022", Name: "Doctors fee-IP Packages", Debit: "", Credit: "", Action: "View"},
+    {No: "600023", Name: "Outsourced tests - Radiology", Debit: "", Credit: "", Action: "View"},
+    {No: "600024", Name: "Outsourced tests - Oncology", Debit: "", Credit: "", Action: "View"},
+    {No: "600025", Name: "Outsourced services - CSSD", Debit: "", Credit: "", Action: "View"},
+    {No: "600026", Name: "Outsourced services - Dental", Debit: "", Credit: "", Action: "View"},
+    {No: "600049", Name: "Cost Of Sales Total", Debit: "", Credit: "", Action: "View"},
+    {No: "600100", Name: "Inventory Adjustment", Debit: "", Credit: "", Action: "View"},
+    {No: "600101", Name: "Adjustments - Medicine and Drugs", Debit: "", Credit: "", Action: "View"},
+    {No: "600102", Name: "Adjustments - Surgical Consumables", Debit: "", Credit: "", Action: "View"},
+    {No: "600103", Name: "Adjustment - Surgical Equipment", Debit: "", Credit: "", Action: "View"},
+    {No: "600104", Name: "Adjustments - Theatre Implants", Debit: "", Credit: "", Action: "View"},
+    {No: "600105", Name: "Adjustments - Lab Materials", Debit: "", Credit: "", Action: "View"},
+    {No: "600106", Name: "Adjustments - Radiology Materials", Debit: "", Credit: "", Action: "View"},
+    {No: "600107", Name: "Adjustments - Cathlab Materials", Debit: "", Credit: "", Action: "View"},
+    {No: "600108", Name: "Adjustments - ICU Materials", Debit: "", Credit: "", Action: "View"},
+    {No: "600109", Name: "Adjustments - Renal items", Debit: "", Credit: "", Action: "View"},
+    {No: "600110", Name: "Adjustments - Physical Medicine Materials", Debit: "", Credit: "", Action: "View"},
+    {No: "600111", Name: "Adjustments - General Stocks", Debit: "", Credit: "", Action: "View"},
+    {No: "600112", Name: "Adjustments - Foodstuffs", Debit: "", Credit: "", Action: "View"},
+    {No: "600113", Name: "Adjustments - Maintenance Stocks", Debit: "", Credit: "", Action: "View"},
+    {No: "600114", Name: "Cost of Oncology Materials", Debit: "", Credit: "", Action: "View"},
+    {No: "600115", Name: "Adjustment Oncology Materials", Debit: "", Credit: "", Action: "View"},
+    {No: "600116", Name: "Cost of Endoscopy Materials", Debit: "", Credit: "", Action: "View"},
+    {No: "600117", Name: "Adjustments-Endoscopy Materials", Debit: "", Credit: "", Action: "View"},
+    {No: "600118", Name: "Adjustments-CSSD", Debit: "", Credit: "", Action: "View"},
+    {No: "600199", Name: "Inventory Adjustment-Total", Debit: "", Credit: "", Action: "View"},
+    ];
+
+    const expensesData = [
+         { No: "700000", Name: "Adminstration Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "700001", Name: "Licenses & Permits", Debit: "", Credit: "", Action: "View" },
+    { No: "700002", Name: "License Fees - ICT", Debit: "", Credit: "", Action: "View" },
+    { No: "700003", Name: "Licenses Fees - Others", Debit: "", Credit: "", Action: "View" },
+    { No: "700004", Name: "Subscription Expense", Debit: "", Credit: "", Action: "View" },
+    { No: "700005", Name: "Inspection Fees", Debit: "", Credit: "", Action: "View" },
+    { No: "700006", Name: "Land Rates", Debit: "", Credit: "", Action: "View" },
+    { No: "700007", Name: "Land Rents", Debit: "", Credit: "", Action: "View" },
+    { No: "700008", Name: "Lease Rentals", Debit: "", Credit: "", Action: "View" },
+    { No: "700010", Name: "Licenses & Permits Total", Debit: "", Credit: "", Action: "View" },
+    { No: "700011", Name: "Marketing Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "700012", Name: "Marketing & Public Relations Expense", Debit: "", Credit: "", Action: "View" },
+    { No: "700013", Name: "Advertising Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "700014", Name: "Corporate Social Responsibility", Debit: "", Credit: "", Action: "View" },
+    { No: "700020", Name: "Marketing Expenses Total", Debit: "", Credit: "", Action: "View" },
+    { No: "700021", Name: "Insurance", Debit: "", Credit: "", Action: "View" },
+    { No: "700022", Name: "Professional Indemnity", Debit: "", Credit: "", Action: "View" },
+    { No: "700023", Name: "General Insurance", Debit: "", Credit: "", Action: "View" },
+    { No: "700025", Name: "Insurance Total", Debit: "", Credit: "", Action: "View" },
+    { No: "700026", Name: "Legal & Professional", Debit: "", Credit: "", Action: "View" },
+    { No: "700027", Name: "Legal Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "700028", Name: "Fines and Penalties", Debit: "", Credit: "", Action: "View" },
+    { No: "700035", Name: "Legal & Professional Total", Debit: "", Credit: "", Action: "View" },
+    { No: "700036", Name: "Other Administration Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "700037", Name: "Strategy Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "700038", Name: "Consultancy Services-Locum Doctors", Debit: "", Credit: "", Action: "View" },
+    { No: "700039", Name: "Newspapers & Periodicals", Debit: "", Credit: "", Action: "View" },
+    { No: "700040", Name: "Accreditation Expense", Debit: "", Credit: "", Action: "View" },
+    { No: "700041", Name: "ICT Project Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "700042", Name: "General Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "700043", Name: "Directors Remuneration", Debit: "", Credit: "", Action: "View" },
+    { No: "700044", Name: "Consultancy Services-others", Debit: "", Credit: "", Action: "View" },
+    { No: "700045", Name: "Other Directors Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "700046", Name: "College of Health Sciences-Other Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "700047", Name: "Joint Commission Inter. Accreditation", Debit: "", Credit: "", Action: "View" },
+    { No: "700050", Name: "Other Administration Expenses Total", Debit: "", Credit: "", Action: "View" },
+    { No: "700099", Name: "Adminstration Expenses Total", Debit: "", Credit: "", Action: "View" },
+    { No: "710000", Name: "Employment Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "710001", Name: "Salaries & Wages", Debit: "", Credit: "", Action: "View" },
+    { No: "710002", Name: "Staff Salaries - Management Staff", Debit: "", Credit: "", Action: "View" },
+    { No: "710003", Name: "Staff Salaries - Union Staff", Debit: "", Credit: "", Action: "View" },
+    { No: "710004", Name: "Staff Salaries - Locum Staff", Debit: "", Credit: "", Action: "View" },
+    { No: "710005", Name: "Staff Salaries - Overtime", Debit: "", Credit: "", Action: "View" },
+    { No: "710006", Name: "Staff Bonus", Debit: "", Credit: "", Action: "View" },
+    { No: "710007", Name: "Students Stipend", Debit: "", Credit: "", Action: "View" },
+    { No: "710008", Name: "Salaries-Third Party Contracts", Debit: "", Credit: "", Action: "View" },
+    { No: "710010", Name: "Salaries & Wages Total", Debit: "", Credit: "", Action: "View" },
+    { No: "710011", Name: "Retirement Benefits", Debit: "", Credit: "", Action: "View" },
+    { No: "710012", Name: "Staff Provident Fund", Debit: "", Credit: "", Action: "View" },
+    { No: "710013", Name: "NSSF", Debit: "", Credit: "", Action: "View" },
+    { No: "710014", Name: "Affordable Housing Levy", Debit: "", Credit: "", Action: "View" },
+    { No: "710015", Name: "Staff Gratuity", Debit: "", Credit: "", Action: "View" },
+    { No: "710020", Name: "Retirement Benefits Totals", Debit: "", Credit: "", Action: "View" },
+    { No: "710021", Name: "Staff Training", Debit: "", Credit: "", Action: "View" },
+    { No: "710022", Name: "Staff Training - Local", Debit: "", Credit: "", Action: "View" },
+    { No: "710023", Name: "Staff Training - International", Debit: "", Credit: "", Action: "View" },
+    { No: "710024", Name: "Staff Training - In-House", Debit: "", Credit: "", Action: "View" },
+    { No: "710025", Name: "NITA Levy", Debit: "", Credit: "", Action: "View" },
+    { No: "710029", Name: "Staff Training Expense Total", Debit: "", Credit: "", Action: "View" },
+    { No: "710030", Name: "Staff Medical Cost", Debit: "", Credit: "", Action: "View" },
+    { No: "710031", Name: "Staff Medical Costs - Management Staff", Debit: "", Credit: "", Action: "View" },
+    { No: "710032", Name: "Staff Medical Costs - Union Staff", Debit: "", Credit: "", Action: "View" },
+    { No: "710033", Name: "Staff Medical Insurance", Debit: "", Credit: "", Action: "View" },
+    { No: "710034", Name: "Staff Medical Costs – Locum", Debit: "", Credit: "", Action: "View" },
+    { No: "710039", Name: "Staff Medical Cost Total", Debit: "", Credit: "", Action: "View" },
+    { No: "710040", Name: "Staff Uniform Cost", Debit: "", Credit: "", Action: "View" },
+    { No: "710041", Name: "Staff Uniform Costs - Management Staff", Debit: "", Credit: "", Action: "View" },
+    { No: "710042", Name: "Staff Uniform Costs - Union Staff", Debit: "", Credit: "", Action: "View" },
+    { No: "710049", Name: "Staff Uniform Cost Total", Debit: "", Credit: "", Action: "View" },
+    { No: "710050", Name: "Staff Recruitment Cost", Debit: "", Credit: "", Action: "View" },
+    { No: "710051", Name: "Recruitment - Interview Costs", Debit: "", Credit: "", Action: "View" },
+    { No: "710052", Name: "Recruitment - Medical Examinations", Debit: "", Credit: "", Action: "View" },
+    { No: "710053", Name: "Recruitment - Consultancy Services", Debit: "", Credit: "", Action: "View" },
+    { No: "710054", Name: "Recruitment - Advertising Services", Debit: "", Credit: "", Action: "View" },
+    { No: "710059", Name: "Staff Recruitment Cost", Debit: "", Credit: "", Action: "View" },
+    { No: "710060", Name: "Other Staff Cost", Debit: "", Credit: "", Action: "View" },
+    { No: "710061", Name: "Staff Welfare", Debit: "", Credit: "", Action: "View" },
+    { No: "710062", Name: "Group Life and PA Cover Expense", Debit: "", Credit: "", Action: "View" },
+    { No: "710063", Name: "Culture and Transformation", Debit: "", Credit: "", Action: "View" },
+    { No: "710069", Name: "Other Staff Costs Totals", Debit: "", Credit: "", Action: "View" },
+    { No: "710099", Name: "Employment Expenses Total", Debit: "", Credit: "", Action: "View" },
+    { No: "720000", Name: "Repairs and Renewals", Debit: "", Credit: "", Action: "View" },
+    { No: "720001", Name: "Repairs & Renewals - Medical Equipment", Debit: "", Credit: "", Action: "View" },
+    { No: "720002", Name: "Repairs & Renewals - Non Medical Equipment", Debit: "", Credit: "", Action: "View" },
+    { No: "720003", Name: "Repairs & Renewals - Buildings", Debit: "", Credit: "", Action: "View" },
+    { No: "720004", Name: "Repairs & Renewals - IT Hardware", Debit: "", Credit: "", Action: "View" },
+    { No: "720005", Name: "Repairs & Renewals - Catering Equipment", Debit: "", Credit: "", Action: "View" },
+    { No: "720006", Name: "Repairs & Renewals - Laundry Equipment", Debit: "", Credit: "", Action: "View" },
+    { No: "720007", Name: "Repairs & Renewals - T.V's", Debit: "", Credit: "", Action: "View" },
+    { No: "720008", Name: "Service Contract - IT Hardware", Debit: "", Credit: "", Action: "View" },
+    { No: "720009", Name: "Service Contract - IT Software", Debit: "", Credit: "", Action: "View" },
+    { No: "720011", Name: "Grounds Maintenance Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "720012", Name: "Inhouse Contamination Tests", Debit: "", Credit: "", Action: "View" },
+    { No: "720013", Name: "Security Services", Debit: "", Credit: "", Action: "View" },
+    { No: "720014", Name: "Rent & rates - Outreach Centres", Debit: "", Credit: "", Action: "View" },
+    { No: "720015", Name: "Electricity Expense", Debit: "", Credit: "", Action: "View" },
+    { No: "720016", Name: "Water Expense", Debit: "", Credit: "", Action: "View" },
+    { No: "720017", Name: "Fuel Expense - Furnace Oil", Debit: "", Credit: "", Action: "View" },
+    { No: "720018", Name: "Medical Gases Expense", Debit: "", Credit: "", Action: "View" },
+    { No: "720019", Name: "LPG Gas Expense", Debit: "", Credit: "", Action: "View" },
+    { No: "720020", Name: "Interest on Lease Liability Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "720029", Name: "Establishment Expenses + Repairs and Mainte Totals", Debit: "", Credit: "", Action: "View" },
+    { No: "720030", Name: "Catering Costs", Debit: "", Credit: "", Action: "View" },
+    { No: "720031", Name: "Food Stuffs Costs", Debit: "", Credit: "", Action: "View" },
+    { No: "720032", Name: "Cutlery & Crockery Costs", Debit: "", Credit: "", Action: "View" },
+    { No: "720033", Name: "Outsourced Catering Services", Debit: "", Credit: "", Action: "View" },
+    { No: "720034", Name: "Charge In Food costs", Debit: "", Credit: "", Action: "View" },
+    { No: "720039", Name: "Catering Costs Totals", Debit: "", Credit: "", Action: "View" },
+    { No: "720040", Name: "Laundry Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "720041", Name: "Linen Costs", Debit: "", Credit: "", Action: "View" },
+    { No: "720042", Name: "Laundry Detergents and Items", Debit: "", Credit: "", Action: "View" },
+    { No: "720043", Name: "Charge In Laundry", Debit: "", Credit: "", Action: "View" },
+    { No: "720049", Name: "Laundry Expenses Totals", Debit: "", Credit: "", Action: "View" },
+    { No: "720050", Name: "Printing & Stationery", Debit: "", Credit: "", Action: "View" },
+    { No: "720051", Name: "Stationery Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "720052", Name: "Printing Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "720053", Name: "General Stocks - Housekeeping", Debit: "", Credit: "", Action: "View" },
+    { No: "720059", Name: "Printing & Stationery Totals", Debit: "", Credit: "", Action: "View" },
+    { No: "720060", Name: "Transport & Communication Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "720061", Name: "Courier Services", Debit: "", Credit: "", Action: "View" },
+    { No: "720062", Name: "Telephone Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "720063", Name: "Postage Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "720064", Name: "Taxi & Hire Services", Debit: "", Credit: "", Action: "View" },
+    { No: "720065", Name: "Transport Services", Debit: "", Credit: "", Action: "View" },
+    { No: "720066", Name: "Vehicle/Motor cycle maintenance Expense", Debit: "", Credit: "", Action: "View" },
+    { No: "720067", Name: "Vehicle License Fees", Debit: "", Credit: "", Action: "View" },
+    { No: "720068", Name: "Motor Vehicle Insurance", Debit: "", Credit: "", Action: "View" },
+    { No: "720069", Name: "Other Motor Vehicle Costs", Debit: "", Credit: "", Action: "View" },
+    { No: "720070", Name: "Out of office Lunch allowance", Debit: "", Credit: "", Action: "View" },
+    { No: "720071", Name: "Fuel Expense - Vehicles", Debit: "", Credit: "", Action: "View" },
+    { No: "720079", Name: "Transport & Communication Expenses Total", Debit: "", Credit: "", Action: "View" },
+    { No: "720080", Name: "Cleaning Services", Debit: "", Credit: "", Action: "View" },
+    { No: "720081", Name: "Outsourced Cleaning Services", Debit: "", Credit: "", Action: "View" },
+    { No: "720082", Name: "Cleaning Detergents", Debit: "", Credit: "", Action: "View" },
+    { No: "720083", Name: "Pesticides & Fumigation", Debit: "", Credit: "", Action: "View" },
+    { No: "720084", Name: "Incineration Services", Debit: "", Credit: "", Action: "View" },
+    { No: "720099", Name: "Cleaning Services Total", Debit: "", Credit: "", Action: "View" },
+    { No: "730000", Name: "Finance Expenses", Debit: "", Credit: "", Action: "View" },
+    { No: "730001", Name: "Depreciation Expense", Debit: "", Credit: "", Action: "View" },
+    { No: "730002", Name: "Amortization Expense - Intangible Assets", Debit: "", Credit: "", Action: "View" },
+    { No: "730003", Name: "Prompt Payment Discounts Expense", Debit: "", Credit: "", Action: "View" },
+    { No: "730004", Name: "Provision for Bad Debts", Debit: "", Credit: "", Action: "View" },
+    { No: "730005", Name: "Loan Interest Expense", Debit: "", Credit: "", Action: "View" },
+    { No: "730006", Name: "Corporate Discounts Expense", Debit: "", Credit: "", Action: "View"},
+     { No: "730007", Name: "Credit Cards Commission Expense", Debit: "", Credit: "", Action: "View" },
+    { No: "730008", Name: "Audit Fees", Debit: "", Credit: "", Action: "View" },
+    { No: "730009", Name: "Bank Charges", Debit: "", Credit: "", Action: "View" },
+    { No: "730010", Name: "Provision for fixed deposit Impairment", Debit: "", Credit: "", Action: "View" },
+    { No: "730012", Name: "Realized FX Loss", Debit: "", Credit: "", Action: "View" },
+    { No: "730013", Name: "Unrealized FX Loss", Debit: "", Credit: "", Action: "View" },
+    { No: "730015", Name: "Debt Recovery Costs", Debit: "", Credit: "", Action: "View" },
+    { No: "730016", Name: "Write-off Expense", Debit: "", Credit: "", Action: "View" },
+    { No: "730017", Name: "Withholding Tax Expense - Fixed Deposits", Debit: "", Credit: "", Action: "View" },
+    { No: "730018", Name: "Depreciation on Right Of Use Asset", Debit: "", Credit: "", Action: "View" },
+    { No: "730021", Name: "Revaluation Loss/Gain", Debit: "", Credit: "", Action: "View" },
+    { No: "730022", Name: "Amortization Expense-Bonds Premium", Debit: "", Credit: "", Action: "View" },
+    { No: "730050", Name: "Finance Expenses Total", Debit: "", Credit: "", Action: "View" },
+    { No: "730100", Name: "Doctors Fees", Debit: "", Credit: "", Action: "View" },
+    { No: "800001", Name: "Doctors fees amount", Debit: "", Credit: "", Action: "View" },
+    { No: "800002", Name: "External Doctors Fees - Old Bills", Debit: "", Credit: "", Action: "View" },
+    { No: "800100", Name: "Total Doctors Fees", Debit: "", Credit: "", Action: "View" }
+    ];
+
+    // Function to create an accordion section
+    function createAccordion(title, data) {
+        return `
+        <div class="border rounded-lg shadow">
+            <button type="button" class="w-full px-4 py-3 text-left bg-gray-100 hover:bg-gray-200 focus:outline-none flex justify-between items-center" onclick="toggleAccordion(this)">
+                <span class="font-semibold text-gray-800">${title}</span>
+                <span class="font-semibold text-gray-800"></span>
+                <span class="font-semibold text-gray-800"></span>
+                <svg class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            <div class="hidden px-4 py-3 bg-white">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full border border-gray-200 text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 border">No</th>
+                                <th class="px-4 py-2 border">Name</th>
+                                <th class="px-4 py-2 border">Debit</th>
+                                <th class="px-4 py-2 border">Credit</th>
+                                <th class="px-4 py-2 border">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(row => `
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-2 border">${row.No}</td>
+                                    <td class="px-4 py-2 border">${row.Name}</td>
+                                    <td class="px-4 py-2 border">${row.Debit || ""}</td>
+                                    <td class="px-4 py-2 border">${row.Credit || ""}</td>
+                                    <td class="px-4 py-2 border text-blue-600 cursor-pointer">${row.Action}</td>
+                                </tr>
+                            `).join("")}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        `;
+    }
+
+    // Render all accordions
+    document.getElementById("accordion-container").innerHTML = `
+        ${createAccordion("Sales", salesData)}
+        ${createAccordion("Sales - Other Incomes", salesOtherIncomeData)}
+        ${createAccordion("Cost of Sales", costOfSalesData)}
+        ${createAccordion("Expenses", expensesData)}
+    `;
+
+    // Toggle accordion open/close
+    function toggleAccordion(button) {
+        const content = button.nextElementSibling;
+        const icon = button.querySelector("svg");
+        content.classList.toggle("hidden");
+        icon.classList.toggle("rotate-180");
+    }
+</script>
 {% endblock %}
+
+
+
+
+
+
+
+
+
+
+

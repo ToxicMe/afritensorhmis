@@ -4,13 +4,15 @@ from django.contrib import messages
 from django.db import transaction
 from accounts.models import CustomUser
 from .models import *
-from django.db.models import Sum, Max, Q
+from django.db.models import Sum, Max, Q, Value, CharField, F
 from registration.models import Visit
 from .payment_processors.mpesa import mpesa_pay  # your helper
 from django.db.models import Sum
 from django.http import HttpResponse
 from billing.utils import create_payment_receipt
 from collections import defaultdict
+from datetime import date
+from django.db.models.functions import Concat, Cast
 
 
 
@@ -95,26 +97,49 @@ def billing(request):
     return render(request, 'billing/dashboard.html')
 
 
+
+def calculate_age(born):
+    today = date.today()
+    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+
+
+
 def unpaid_bills_list(request):
-    # Group by visit and aggregate total amount and latest status
     bills_by_visit = (
         Bill.objects.filter(status='pending')
-        .exclude(description__icontains='pharmacy')  
+        .exclude(description__icontains='pharmacy')
         .values('visit')
         .annotate(
             total_amount=Sum('amount'),
             latest_date=Max('date'),
             tracking_code=Max('visit__tracking_code'),
             patient_id=Max('patient__id'),
-            patient_name=Max('patient__first_name'),
-            patient_username=Max('patient__username'),
+            patient_first_name=Max('patient__first_name'),
+            patient_last_name=Max('patient__last_name'),
+            patient_gender=F('visit__patient__gender'),
+            patient_dob=Max('patient__date_of_birth'),
+            #patient_name=patient__first_name + patient_last_name,
             description=Max('description'),
             status=Max('status'),
-            transaction_id=Max('transaction_id')  
+            transaction_id=Max('transaction_id')
         )
         .order_by('-latest_date')
     )
+
+    # Calculate age server-side
+    for bill in bills_by_visit:
+        dob = bill.get('patient_dob')
+        if dob:
+            today = date.today()
+            bill['patient_age'] = (
+                today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+            )
+        else:
+            bill['patient_age'] = None
+
     return render(request, 'billing/unpaid_bills_list.html', {'grouped_bills': bills_by_visit})
+
+
 
 @transaction.atomic
 def mark_bills_paid(request, tracking_code):

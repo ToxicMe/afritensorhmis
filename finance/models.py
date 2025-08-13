@@ -8,6 +8,31 @@ from django.utils import timezone
 from django.conf import settings
 from hospital.models import Hospital  # adjust if hospital model path differs
 
+class CashAccount(models.Model):
+    ACCOUNT_TYPES = [
+        ('bank', 'Bank Account'),
+        ('cash', 'Cash in Hand'),
+        ('mobile', 'Mobile Money'),
+        ('other', 'Other'),
+    ]
+
+    name = models.CharField(max_length=100, unique=True)
+    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='account_hospital', default=1)
+    account_number = models.CharField(max_length=50, blank=True, null=True)
+    account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPES, default='bank')
+    currency = models.CharField(max_length=10, default='KES')
+    balance = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    done_by = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, related_name='account_added_by')
+
+
+    def __str__(self):
+        return f"{self.name} ({self.currency})"
+
+
 
 class PettyCashEntry(models.Model):
     entry_code = models.CharField(max_length=20, unique=True, editable=False)

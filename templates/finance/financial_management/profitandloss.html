@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Alpine.js for interactivity -->
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+<div class="max-w-6xl mx-auto mt-12 bg-white shadow-lg rounded-lg p-6 text-sm font-sans">
+  <h2 class="text-center text-2xl font-bold mb-1">Income Statement</h2>
+  <p class="text-center text-sm text-gray-600 mb-6">Profit and Loss for the period 01.01.2025 to 31.12.2025</p>
+
+  <div class="divide-y divide-gray-200">
+    <!-- Accordion Item -->
+    <div x-data="{ open: false }" class="py-4">
+      <button @click="open = !open" class="w-full text-left font-semibold text-lg text-blue-700">
+        Sales
+      </button>
+      <div x-show="open" class="mt-2">
+        <div class="flex justify-between text-sm py-1">
+          <span>Total Sales</span>
+          <span class="text-right text-green-700 font-medium">{{ total_all_bills|floatformat:2 }}</span>
+        </div>
+        <div class="flex justify-between text-sm py-1">
+          <span>Pharmacy Sales</span>
+          <span class="text-right text-green-700 font-medium">{{ total_pharmacy_bills|floatformat:2 }}</span>
+        </div>
+        <div class="flex justify-between text-sm py-1">
+          <span>Tests Sales</span>
+          <span class="text-right text-green-700 font-medium">{{ total_test_bills|floatformat:2 }}</span>
+        </div>
+        <div class="flex justify-between text-sm py-1">
+          <span>Consultancy Sales</span>
+          <span class="text-right text-green-700 font-medium">{{ total_consultation_bills|floatformat:2 }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cost of Sales -->
+    <div x-data="{ open: false }" class="py-4">
+      <button @click="open = !open" class="w-full text-left font-semibold text-lg text-blue-700">
+        Cost of Sales
+      </button>
+      <div x-show="open" class="mt-2 space-y-1 text-sm">
+        <div class="flex justify-between"><span>Opening Stock</span><span>1,000.00</span></div>
+        <div class="flex justify-between"><span>Purchases for the year</span><span>100.00</span></div>
+        <div class="flex justify-between"><span>Less: Closing Stock</span><span class="text-red-600">-500.00</span></div>
+        <div class="flex justify-between font-semibold border-t pt-1"><span>Total Cost</span><span>600.00</span></div>
+      </div>
+    </div>
+
+    <!-- Gross Profit -->
+    <div class="py-4">
+      <div class="flex justify-between font-bold text-base text-gray-800">
+        <span>Gross Profit</span>
+        <span class="text-green-700">9,400.00</span>
+      </div>
+    </div>
+
+    <!-- Discount Allowed -->
+    <div x-data="{ open: false }" class="py-4">
+      <button @click="open = !open" class="w-full text-left font-semibold text-lg text-blue-700">
+        Discount Allowed
+      </button>
+      <div x-show="open" class="mt-2 space-y-1 text-sm">
+        <div class="flex justify-between"><span>Total Discounts</span><span>{{ total_discounts|floatformat:2 }}</span></div>
+        <ul class="list-disc pl-6 text-gray-600">
+          <li>New client promo – 0.00</li>
+          <li>Holiday special – 0.00</li>
+          <li>Referral program – 0.00</li>
+        </ul>
+      </div>
+    </div>
+
+     <!-- Receivalbes -->
+    <div x-data="{ open: false }" class="py-4">
+      <button @click="open = !open" class="w-full text-left font-semibold text-lg text-blue-700">
+        Receivables (Pending Insurance)
+      </button>
+      <div x-show="open" class="mt-2">
+        <div class="flex justify-between text-sm py-1">
+          <span>Total Receivables</span>
+          <span class="text-right text-green-700 font-medium">{{ total_insurance_bills|floatformat:2 }}</span>
+        </div>
+        <div class="flex justify-between text-sm py-1">
+          <span>Jubilee</span>
+          <span class="text-right text-green-700 font-medium">NULL</span>
+        </div>
+        <div class="flex justify-between text-sm py-1">
+          <span>SHA/SHIF</span>
+          <span class="text-right text-green-700 font-medium">NULL</span>
+        </div>
+        <div class="flex justify-between text-sm py-1">
+          <span>CIC</span>
+          <span class="text-right text-green-700 font-medium">NULL</span>
+        </div>
+      </div>
+    </div>
+
+  
+
+    <!-- Total Expenses -->
+    <div class="py-4">
+      <div class="flex justify-between font-semibold">
+        <span>Total Expenses</span>
+        <span>741.00</span>
+      </div>
+    </div>
+
+    <!-- Profit Before Interest -->
+    <div class="py-2">
+      <div class="flex justify-between font-bold text-base">
+        <span>Profit Before Interest & Taxes</span>
+        <span class="text-green-700">8,659.00</span>
+      </div>
+    </div>
+
+    <!-- Interest -->
+    <div class="py-2">
+      <div class="flex justify-between text-sm">
+        <span>Interest Expense</span>
+        <span>24.00</span>
+      </div>
+    </div>
+
+    <!-- Profit Before Taxes -->
+    <div class="py-2">
+      <div class="flex justify-between font-bold">
+        <span>Profit Before Taxes</span>
+        <span class="text-green-700">8,635.00</span>
+      </div>
+    </div>
+
+    <!-- Income Taxes -->
+    <div class="py-2">
+      <div class="flex justify-between">
+        <span>Income Taxes</span>
+        <span>2,597.70</span>
+      </div>
+    </div>
+
+    <!-- Net Profit -->
+    <div class="py-4 border-t mt-2 pt-3">
+      <div class="flex justify-between text-green-800 font-bold text-lg">
+        <span>Net Profit after Interest & Taxes</span>
+        <span>6,037.30</span>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="mt-6 pt-3 text-xs text-gray-500 border-t">
+      <strong>Legend:</strong> Debit = Expenses, Credit = Revenue
+    </div>
+  </div>
+</div>
+
+{% endblock %}

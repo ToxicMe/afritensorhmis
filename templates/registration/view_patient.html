@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+{% load mask_filters %}
 
 <div class="max-w-6xl h-full mb-12 mx-auto mt-10">
 
@@ -16,8 +17,8 @@
   <div class="bg-white shadow rounded-lg p-6 mb-8">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 text-sm">
       <div><strong>Full Name:</strong> {{ patient.patient_name }}</div>
-      <div><strong>Email:</strong> {{ patient.email }}</div>
-      <div><strong>Phone:</strong> {{ patient.phone_number }}</div>
+      <div><strong>Email:</strong> {{ patient.email |mask_email }}</div>
+      <div><strong>Phone:</strong> {{ patient.phone_number|mask_phone }}</div>
       <div><strong>Gender:</strong> {{ patient.gender|title }}</div>
       <div><strong>Residence:</strong> {{ patient.residence }}</div>
       <div><strong>County:</strong> {{ patient.county }}</div>

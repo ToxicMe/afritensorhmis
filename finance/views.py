@@ -10,8 +10,60 @@ from django.utils.timezone import now
 from .models import *
 from django.core.paginator import Paginator
 from billing.models import Bill, PaymentReceipt
+from .utils import *
 
 User = get_user_model()
+
+
+
+def accounts_list(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        hospital_id = request.POST.get('hospital')
+        account_number = request.POST.get('account_number')
+        account_type = request.POST.get('account_type')
+        currency = request.POST.get('currency')
+        balance = request.POST.get('balance', 0.00)
+        is_active = request.POST.get('is_active') == 'on'
+
+        try:
+            hospital = Hospital.objects.get(id=hospital_id)
+            CashAccount.objects.create(
+                name=name,
+                hospital=hospital,
+                account_number=account_number,
+                account_type=account_type,
+                currency=currency,
+                balance=balance,
+                is_active=is_active,
+                done_by=request.user
+            )
+            messages.success(request, "Account added successfully!")
+        except Hospital.DoesNotExist:
+            messages.error(request, "Invalid hospital selected.")
+
+        return redirect('cash_accounts_list')
+
+    accounts = CashAccount.objects.all().order_by('-created_at')
+    hospitals = Hospital.objects.all()
+    return render(request, 'finance/cash_office/accounts/accounts_list.html', {
+        'accounts': accounts,
+        'hospitals': hospitals
+    })
+
+
+def accounts_detail(request, pk):
+    account = get_object_or_404(CashAccount, pk=pk)
+    return render(request, 'finance/cash_office/accounts/accounts_detail.html', {'account': account})
+
+def bank_accounts(request):
+   
+    return render(request, 'finance/cash_office/accounts/dashboard.html')
+
+def income_statement(request):
+   
+
+    return render(request, 'finance/financial_management/income_statement.html')
 
 def pending_insurance_receipts(request):
     insurance_receipts = PaymentReceipt.objects.filter(
@@ -344,39 +396,23 @@ def balance_sheet(request):
     return render(request, 'finance/financial_management/balance_sheet.html')
 
 def trial_balance(request):
-    petty_cash_total_debit = PettyCashEntry.objects.filter(entry_type='debit').aggregate(total=Sum('amount'))['total'] or 0
-
-    total_leasehold_value = FixedAsset.objects.filter(
-    asset_class__iexact="LEASEHOLD IMPROVEMENTS"
-    ).aggregate(
-        total=Sum('net_book_value')
-    )['total'] or 0
-
-    total_computers_value = FixedAsset.objects.filter(
-    asset_class__iexact="COMPUTERS"
-    ).aggregate(
-        total=Sum('net_book_value')
-    )['total'] or 0
-        
-    total_net_book_value = FixedAsset.objects.aggregate(total=Sum('net_book_value'))['total'] or 0
-    print(total_net_book_value)
-
-        # Aggregate total insurance bills using custom_amount if set, else amount
-    total_insurance_bills = Bill.objects.filter(status='paid', payment_method='insurance').aggregate(
-        total=Sum(
-            Case(
-                When(custom_amount__isnull=False, then=F('custom_amount')),
-                default=F('amount'),
-                output_field=DecimalField()
-            )
-        )
-    )['total'] or 0  # If no records, default to 0
+    petty_cash_total_debit = get_total_petty_cash_debit()
+    total_pharmacy_bills = get_total_pharmacy_bills()
+    total_leasehold_value = get_total_leasehold_value()
+    total_computers_value = get_total_computers_value()
+    total_net_book_value = get_total_net_book_value()
+    total_insurance_bills = get_total_insurance_bills()
+    total_consultation_bills = get_total_consultation_bills()
+    total_test_bills = get_total_test_bills()
 
     return render(request, 'finance/financial_management/trial_balance.html', {'total_computers_value': total_computers_value, 
                                                                                'total_net_book_value': total_net_book_value, 
                                                                                'total_leasehold_value': total_leasehold_value, 
                                                                                'total_insurance_bills':total_insurance_bills,
                                                                                'petty_cash_total_debit':petty_cash_total_debit,
+                                                                               'total_pharmacy_bills': total_pharmacy_bills,
+                                                                               'total_consultation_bills': total_consultation_bills,
+                                                                               'total_test_bills': total_test_bills,
                                                                                
                                                                                })
 
@@ -428,27 +464,21 @@ def receivables_details(request, bill_id):
         'customer': bill.patient,
     })
 
-def income_statement(request):
-    # Aggregate total insurance bills using custom_amount if set, else amount
-    total_insurance_bills = PaymentReceipt.objects.filter(status='pending', payment_method='insurance').aggregate(
-    total=Sum('amount')
-        )['total'] or 0  # If no records, default to 0
+def profitandloss(request):
+    total_insurance_bills = get_total_insurance_bills()
+    total_all_bills = get_total_all_bills()
+    total_pharmacy_bills = get_total_pharmacy_bills()
+    total_consultation_bills = get_total_consultation_bills()
+    total_test_bills = get_total_test_bills()
 
-      # Total discounts = amount - custom_amount for all bills with custom_amount
-    total_discounts = Bill.objects.filter(
-        custom_amount__isnull=False
-    ).aggregate(
-        total=Sum(
-            ExpressionWrapper(
-                F('amount') - F('custom_amount'),
-                output_field=DecimalField()
-            )
-        )
-    )['total'] or 0
 
-    return render(request, 'finance/financial_management/income_statement.html', {
+
+    return render(request, 'finance/financial_management/profitandloss.html', {
         'total_insurance_bills': total_insurance_bills,
-        'total_discounts': total_discounts,
+        'total_all_bills': total_all_bills,
+        'total_pharmacy_bills': total_pharmacy_bills,
+        'total_consultation_bills': total_consultation_bills,
+        'total_test_bills': total_test_bills,
     })
 
 
