@@ -1,17 +1,28 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from registration.models import Visit
 from accounts.models import CustomUser
-from doctor.models import DoctorNote, PrescriptionNote
+from doctor.models import DoctorNote, PrescriptionNote, ICD10Entry
 from laboratory.models import Test, TestResult, TestResultEntry
 from billing.models import Bill  
 from django.db import transaction
 from django.db.models import Q, Sum, Max
 from billing.utils import create_patient_bill
 from django.contrib import messages
+import requests
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from django.http import JsonResponse
+from doctor.models import ICD10Entry
+from django.core.serializers.json import DjangoJSONEncoder
+# Create your views here.
 
 
-# Create your views here.
-# Create your views here.
+def get_icd10_children(request, parent_id):
+    children = ICD10Entry.objects.filter(parent_id=parent_id).values('id', 'code', 'label', 'kind')
+    return JsonResponse(list(children), safe=False)
+
+
 def doctor_unpaid_bills_list(request):
     bills_by_visit = (
         Bill.objects
@@ -65,59 +76,93 @@ def add_bill_from_note(request, visit_id):
 def doctor(request):
     return render(request, 'doctor/dashboard.html')
 
+def build_icd_hierarchy(entries):
+    """Build a tree structure of ICD-10 entries for frontend dynamic dropdowns."""
+    # Map all entries by ID
+    entry_dict = {
+        e.id: {
+            'id': e.id,
+            'code': e.code,
+            'label': e.label,
+            'kind': e.kind,
+            'parent_id': e.parent_id,
+            'children': []
+        }
+        for e in entries
+    }
+
+    # Build hierarchy by linking children to parents
+    root = []
+    for e in entry_dict.values():
+        if e['parent_id']:
+            parent = entry_dict.get(e['parent_id'])
+            if parent:
+                parent['children'].append(e)
+        else:
+            root.append(e)
+    return root
+
+@csrf_exempt
 @transaction.atomic
 def add_doctor_note(request, visit_id):
     visit = get_object_or_404(Visit, id=visit_id)
     patient = visit.patient
     tests = Test.objects.filter(hospital_available=visit.hospital)
 
-    if request.method == 'POST':
-        doctor_notes = request.POST.get('doctor_notes')
-        selected_test_ids = request.POST.getlist('tests')
+    # Fetch ICD-10 entries
+    icd_entries = ICD10Entry.objects.all()  # Consider AJAX/pagination for large datasets
+    icd10_hierarchy = build_icd_hierarchy(icd_entries)
+    icd10_json = json.dumps(icd10_hierarchy, cls=DjangoJSONEncoder)
 
-        if doctor_notes:
+    error = None
+
+    if request.method == 'POST':
+        doctor_notes_text = request.POST.get('doctor_notes', '').strip()
+        selected_test_ids = [int(i) for i in request.POST.getlist('tests') if i.isdigit()]
+        selected_icd10_ids = [int(i) for i in request.POST.getlist('icd10_codes') if i.isdigit()]
+
+        if not doctor_notes_text:
+            error = "Doctor notes are required."
+        else:
+            # Create DoctorNote
             note = DoctorNote.objects.create(
                 visit=visit,
                 patient=patient,
-                doctor_notes=doctor_notes,
+                doctor_notes=doctor_notes_text,
                 done_by=request.user
             )
 
+            # Attach selected tests and create bills
             if selected_test_ids:
                 selected_tests = Test.objects.filter(id__in=selected_test_ids)
                 note.tests.set(selected_tests)
-
-                # ✅ Create a Bill for each selected test
                 for test in selected_tests:
                     Bill.objects.create(
                         visit=visit,
                         patient=patient,
                         description=f"Test: {test.name}",
                         amount=test.price,
-                        status='pending'  # Default to pending
+                        status='pending'
                     )
 
-            # ✅ Update visit stage
+            # Attach selected ICD-10 codes (multiple)
+            if selected_icd10_ids:
+                selected_icd_entries = ICD10Entry.objects.filter(id__in=selected_icd10_ids)
+                note.icd10_codes.set(selected_icd_entries)
+
+            # Update visit stage
             visit.stage = 'billing_note'
             visit.save()
 
-            return redirect('doctor_visits_list')  # Replace with correct name
-        else:
-            error = "Doctor notes are required."
-            return render(request, 'doctor/doctor_note.html', {
-                'visit': visit,
-                'patient': patient,
-                'tests': tests,
-                'error': error
-            })
+            return redirect('doctor_visits_list')  # Adjust to your URL name
 
     return render(request, 'doctor/doctor_note.html', {
         'visit': visit,
         'patient': patient,
-        'tests': tests
+        'tests': tests,
+        'icd10_codes': icd10_json,  # JSON for template
+        'error': error
     })
-
-
 
 
 def prescription_visits_list(request):
@@ -151,6 +196,7 @@ def view_test_results_for_prescription(request, tracking_code):
 def save_prescription_note(request, tracking_code):
     visit = get_object_or_404(Visit, tracking_code=tracking_code)
 
+    
     if request.method == 'POST':
         note = request.POST.get('doctor_prescription')
         if note:

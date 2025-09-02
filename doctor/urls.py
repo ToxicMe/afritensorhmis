@@ -12,6 +12,9 @@ urlpatterns = [
     path('prescription/save/<str:tracking_code>/', views.save_prescription_note, name='save_prescription_note'),
     path('doctor/note/add-bill/<int:visit_id>/', views.add_bill_from_note, name='add_bill_from_note'),
     path('billing/unpaid/', views.doctor_unpaid_bills_list, name='doctor_unpaid_bills_list'),
+    path('icd10-children/<int:parent_id>/', views.get_icd10_children, name='get_icd10_children'),
+
+
 
 
 

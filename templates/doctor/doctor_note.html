@@ -3,26 +3,23 @@
 {% block content %}
 
 {% if error %}
-<div class="bg-white shadow-[0_3px_10px_-3px_rgba(6,81,237,0.3)] border-l-[6px] border-red-500 text-slate-900 flex items-center w-max max-w-sm p-4 rounded-md mx-auto mt-4"
-     role="alert">
+<div class="mt-12 mb-12">
+<div class="bg-white  shadow-[0_3px_10px_-3px_rgba(6,81,237,0.3)] border-l-[6px] border-red-500 text-slate-900 flex items-center w-max max-w-sm p-4 rounded-md mx-auto mt-4" role="alert">
   <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0 fill-red-500 inline mr-3" viewBox="0 0 32 32">
-    <path
-      d="M16 1a15 15 0 1 0 15 15A15 15 0 0 0 16 1zm6.36 20L21 22.36l-5-4.95-4.95 4.95L9.64 21l4.95-5-4.95-4.95 1.41-1.41L16 14.59l5-4.95 1.41 1.41-5 4.95z"
-      data-original="#ea2d3f" />
+    <path d="M16 1a15 15 0 1 0 15 15A15 15 0 0 0 16 1zm6.36 20L21 22.36l-5-4.95-4.95 4.95L9.64 21l4.95-5-4.95-4.95 1.41-1.41L16 14.59l5-4.95 1.41 1.41-5 4.95z" />
   </svg>
   <span class="text-[15px] font-semibold tracking-wide">{{ error }}</span>
 </div>
 {% endif %}
 
 <div class="max-w-6xl mx-auto mt-10 relative">
-  <!-- ✅ Conditional Add Bill Button -->
+
   {% if visit.type == "minor_surgery" or visit.type == "outpatient_consultation" %}
-    <div class="absolute top-0 right-0">
-      <button type="button" id="openBillModal"
-              class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
-        + Add Bill
-      </button>
-    </div>
+  <div class="absolute top-0 right-0">
+    <button type="button" id="openBillModal" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
+      + Add Bill
+    </button>
+  </div>
   {% endif %}
 
   <h2 class="md:text-4xl text-3xl font-bold mb-6 text-center">
@@ -31,13 +28,44 @@
 
   <form method="POST">
     {% csrf_token %}
-    <div class="space-y-8 max-w-md mx-auto">
+    <div class="space-y-8 max-w-3xl mx-auto">
+
+      <!-- ICD-10 Section -->
+      <div>
+        <label class="mb-2 text-xl text-slate-900 font-medium block">ICD-10 Diagnosis</label>
+        
+        <ul id="searchResults" class="border rounded bg-white max-h-40 overflow-y-auto hidden"></ul>
+
+        <div class="space-y-4 mt-3">
+          <div>
+            <label class="block font-medium">Chapter</label>
+            <select id="chapterSelect" class="w-full p-2 border rounded"></select>
+          </div>
+          <div>
+            <label class="block font-medium">Block</label>
+            <select id="blockSelect" class="w-full p-2 border rounded"></select>
+            <p id="blockSelectWarning" class="text-red-500 text-sm hidden">⚠️ No blocks available for this chapter.</p>
+          </div>
+          <div>
+            <label class="block font-medium">Category</label>
+            <select id="categorySelect" class="w-full p-2 border rounded"></select>
+            <p id="categorySelectWarning" class="text-red-500 text-sm hidden">⚠️ No categories available for this block.</p>
+          </div>
+          <div>
+            <label class="block font-medium">Subcategory (Multiple Allowed)</label>
+            <select id="subcategorySelect" name="icd10_codes" class="w-full p-2 border rounded" multiple size="6"></select>
+            <p class="text-gray-500 text-sm mt-1">Press <strong>Ctrl</strong> (or <strong>Cmd</strong> on Mac) to select multiple or remove selection.</p>
+            <p id="subcategorySelectWarning" class="text-red-500 text-sm hidden">⚠️ No subcategories available for this category.</p>
+          </div>
+        </div>
+
+        <p class="mt-2 text-gray-700"><strong>Selected Path:</strong> <span id="selectedPath" class="text-blue-600"></span></p>
+      </div>
+
       <!-- Doctor Notes -->
       <div>
         <label class="mb-2 text-xl text-slate-900 font-medium block">Doctor Notes</label>
-        <textarea name="doctor_notes"
-                  placeholder="Doctor Notes"
-                  class="pr-4 pl-4 py-3 text-sm text-slate-900 rounded bg-white border border-gray-400 outline-[#333] w-full h-64 resize"></textarea>
+        <textarea name="doctor_notes" placeholder="Doctor Notes" class="pr-4 pl-4 py-3 text-sm text-slate-900 rounded bg-white border border-gray-400 outline-[#333] w-full h-64 resize"></textarea>
       </div>
 
       <!-- Laboratory Tests -->
@@ -47,8 +75,7 @@
           <label><strong>Select Laboratory Tests:</strong></label><br>
           {% for test in tests %}
             <label>
-              <input type="checkbox" name="tests" value="{{ test.id }}">
-              {{ test.name }}
+              <input type="checkbox" name="tests" value="{{ test.id }}"> {{ test.name }}
             </label><br>
           {% empty %}
             <p>No available tests for this hospital.</p>
@@ -56,16 +83,17 @@
         </div>
       </div>
 
-      <!-- Submit Button -->
-      <button type="submit"
-              class="mt-12 px-5 py-2.5 text-[15px] font-medium w-full max-w-[130px] mx-auto block bg-[#007bff] hover:bg-[#006bff] text-white rounded transition-all cursor-pointer">
+      <!-- Submit -->
+      <button type="submit" class="mt-12 px-5 py-2.5 text-[15px] font-medium w-full max-w-[130px] mx-auto block bg-[#007bff] hover:bg-[#006bff] text-white rounded transition-all cursor-pointer">
         Add Note
       </button>
+      <br><br><br><br>
     </div>
   </form>
 </div>
+</div>
 
-<!-- ================= BILL MODAL ================= -->
+<!-- Bill Modal -->
 <div id="billModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
   <div class="bg-white max-w-md w-full p-6 rounded-lg shadow relative">
     <h3 class="text-lg font-semibold text-gray-800 mb-4">Add Patient Bill</h3>
@@ -84,47 +112,131 @@
         <textarea name="reason" class="w-full border px-3 py-2 rounded" rows="3" placeholder="Optional"></textarea>
       </div>
       <div class="flex justify-end space-x-3">
-        <button type="button" id="closeBillModal"
-                class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">
-          Cancel
-        </button>
-        <button type="submit"
-                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-          Add Bill
-        </button>
+        <button type="button" id="closeBillModal" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">Cancel</button>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Bill</button>
       </div>
     </form>
-    <button id="closeBillModalX"
-            class="absolute top-2 right-3 text-gray-500 hover:text-red-600 text-xl">&times;</button>
+    <button id="closeBillModalX" class="absolute top-2 right-3 text-gray-500 hover:text-red-600 text-xl">&times;</button>
   </div>
 </div>
 
-<!-- ================= MODAL SCRIPT ================= -->
+<!-- Scripts -->
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const billModal = document.getElementById("billModal");
-    const openBtn = document.getElementById("openBillModal");
-    const closeBtns = [document.getElementById("closeBillModal"), document.getElementById("closeBillModalX")];
+  const icd10Data = {{ icd10_codes|safe }};
 
-    openBtn?.addEventListener("click", () => {
-      billModal.classList.remove("hidden");
-      billModal.classList.add("flex");
+  function populateDropdown(selectId, items, multiple=false) {
+    const select = document.getElementById(selectId);
+    select.innerHTML = multiple ? '' : `<option value="">-- Select --</option>`;
+    items.forEach(item => {
+      const opt = document.createElement("option");
+      opt.value = item.id;
+      opt.textContent = `${item.code} - ${item.label}`;
+      select.appendChild(opt);
     });
 
-    closeBtns.forEach(btn => {
-      btn?.addEventListener("click", () => {
-        billModal.classList.add("hidden");
-        billModal.classList.remove("flex");
-      });
-    });
+    const warning = document.getElementById(selectId + "Warning");
+    if(warning) warning.classList.toggle("hidden", items && items.length > 0);
+  }
 
-    window.addEventListener("click", (e) => {
-      if (e.target === billModal) {
-        billModal.classList.add("hidden");
-        billModal.classList.remove("flex");
-      }
-    });
+  function updatePath() {
+    const chapter = document.getElementById("chapterSelect").selectedOptions[0]?.text || "";
+    const block = document.getElementById("blockSelect").selectedOptions[0]?.text || "";
+    const category = document.getElementById("categorySelect").selectedOptions[0]?.text || "";
+    const subcategories = Array.from(document.getElementById("subcategorySelect").selectedOptions).map(o => o.text);
+    
+    let pathText = [chapter, block, category].filter(x => x).join(" → ");
+    if(subcategories.length) pathText += " → " + subcategories.join(", ");
+
+    document.getElementById("selectedPath").textContent = pathText;
+  }
+
+  // Populate Chapter Select
+  const chapterSelect = document.getElementById("chapterSelect");
+  chapterSelect.innerHTML = `<option value="">-- Select Chapter --</option>`;
+  icd10Data.forEach(ch => {
+    const opt = document.createElement("option");
+    opt.value = ch.id;
+    opt.textContent = `${ch.code} - ${ch.label}`;
+    chapterSelect.appendChild(opt);
   });
+
+  chapterSelect.addEventListener("change", e => {
+    const chapter = icd10Data.find(ch => ch.id == e.target.value);
+    populateDropdown("blockSelect", chapter?.children || []);
+    populateDropdown("categorySelect", []);
+    populateDropdown("subcategorySelect", [], true);
+    updatePath();
+  });
+
+  document.getElementById("blockSelect").addEventListener("change", e => {
+    const chapter = icd10Data.find(ch => ch.id == chapterSelect.value);
+    const block = chapter?.children.find(b => b.id == e.target.value);
+    populateDropdown("categorySelect", block?.children || []);
+    populateDropdown("subcategorySelect", [], true);
+    updatePath();
+  });
+
+  document.getElementById("categorySelect").addEventListener("change", e => {
+    const chapter = icd10Data.find(ch => ch.id == chapterSelect.value);
+    const block = chapter?.children.find(b => b.id == document.getElementById("blockSelect").value);
+    const category = block?.children.find(c => c.id == e.target.value);
+    populateDropdown("subcategorySelect", category?.children || [], true);
+    updatePath();
+  });
+
+  document.getElementById("subcategorySelect").addEventListener("change", updatePath);
+
+  // Search ICD-10
+  const searchInput = document.getElementById("searchInput");
+  const searchResults = document.getElementById("searchResults");
+  searchInput.addEventListener("input", () => {
+    const query = searchInput.value.toLowerCase();
+    const results = [];
+    function searchNodes(nodes, parents=[]) {
+      nodes.forEach(n => {
+        if (n.code.toLowerCase().includes(query) || n.label.toLowerCase().includes(query)) {
+          results.push({...n, parents});
+        }
+        if (n.children?.length) searchNodes(n.children, [...parents, n]);
+      });
+    }
+    searchNodes(icd10Data);
+    searchResults.innerHTML = "";
+    if (query && results.length) {
+      results.forEach(r => {
+        const li = document.createElement("li");
+        li.className = "p-2 hover:bg-gray-100 cursor-pointer";
+        li.textContent = `${r.code} - ${r.label}`;
+        li.onclick = () => selectPath(r);
+        searchResults.appendChild(li);
+      });
+      searchResults.classList.remove("hidden");
+    } else searchResults.classList.add("hidden");
+  });
+
+  function selectPath(result) {
+    searchResults.classList.add("hidden");
+    searchInput.value = `${result.code} - ${result.label}`;
+    if(result.parents[0]) { chapterSelect.value = result.parents[0].id; chapterSelect.dispatchEvent(new Event("change")); }
+    if(result.parents[1]) { document.getElementById("blockSelect").value = result.parents[1].id; document.getElementById("blockSelect").dispatchEvent(new Event("change")); }
+    if(result.parents[2]) { document.getElementById("categorySelect").value = result.parents[2].id; document.getElementById("categorySelect").dispatchEvent(new Event("change")); }
+    if(result.kind === "subcategory") { 
+      const subSelect = document.getElementById("subcategorySelect");
+      Array.from(subSelect.options).forEach(o => { o.selected = (o.value == result.id); });
+    }
+    updatePath();
+  }
+
+  // Bill Modal
+  const billModal = document.getElementById("billModal");
+  document.getElementById("openBillModal")?.addEventListener("click", () => {
+    billModal.classList.remove("hidden"); billModal.classList.add("flex");
+  });
+  [document.getElementById("closeBillModal"), document.getElementById("closeBillModalX")].forEach(btn => {
+    btn?.addEventListener("click", () => { billModal.classList.add("hidden"); billModal.classList.remove("flex"); });
+  });
+  window.addEventListener("click", e => { if(e.target === billModal){ billModal.classList.add("hidden"); billModal.classList.remove("flex"); } });
 </script>
+
 
 {% endblock %}

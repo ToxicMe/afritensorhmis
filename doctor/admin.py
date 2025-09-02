@@ -4,3 +4,4 @@ from .models import *
 
 admin.site.register(DoctorNote)
 admin.site.register(PrescriptionNote)
+admin.site.register(ICD10Entry)
