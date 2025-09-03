@@ -1,22 +1,9 @@
 {% extends "base.html" %}
-
 {% block content %}
 
-{% if messages %}
-  <div class="my-4">
-    {% for message in messages %}
-      <div class="text-sm p-2 mb-2 rounded 
-                  {% if message.tags == 'error' %}bg-red-100 text-red-700
-                  {% elif message.tags == 'success' %}bg-green-100 text-green-700
-                  {% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-700
-                  {% else %}bg-blue-100 text-blue-700{% endif %}">
-        {{ message }}
-      </div>
-    {% endfor %}
-  </div>
-{% endif %}
-
 <div class="overflow-x-auto">
+  <h2 class="text-2xl font-bold mb-6 text-center">Patients List</h2>
+
   <table class="min-w-full bg-white">
     <thead class="bg-blue-600 whitespace-nowrap">
       <tr>
@@ -28,242 +15,263 @@
         <th class="p-4 text-left text-[13px] font-semibold text-gray-100">Actions</th>
       </tr>
     </thead>
+
     <tbody class="whitespace-nowrap">
       {% for patient in patients %}
       <tr class="hover:bg-gray-50">
         <td class="p-4 text-[15px] text-slate-900 font-medium">{{ patient.hospital.name }}</td>
         <td class="p-4 text-[15px] text-slate-600 font-medium">{{ patient.patient_name }}</td>
         <td class="p-4 text-[15px] text-slate-600 font-medium">{{ patient.gender }}</td>
-<td class="p-4 text-[15px] text-slate-600 font-medium" id="age"
-    data-dob="{{ patient.date_of_birth|date:'Y-m-d' }}">
-  {% if patient.date_of_birth %}
-    {{ patient.date_of_birth|date:"Y-m-d" }} (calculating age...)
-  {% else %}
-    N/A
-  {% endif %}
-</td>
 
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-  const ageCell = document.getElementById("age");
-  if (!ageCell) return;
-
-  // Read DOB from data attribute (YYYY-MM-DD) — safer than embedding raw template into JS string
-  const dob = ageCell.dataset.dob;
-  console.log("DOB from template:", dob); // debugging
-
-  if (!dob) {
-    ageCell.textContent = "N/A";
-    return;
-  }
-
-  // Basic validation & parse
-  const parts = dob.split("-");
-  if (parts.length !== 3) {
-    console.warn("Unexpected DOB format:", dob);
-    ageCell.textContent = dob;
-    return;
-  }
-
-  const year = parseInt(parts[0], 10);
-  const month = parseInt(parts[1], 10) - 1; // JS months are 0-based
-  const day = parseInt(parts[2], 10);
-
-  const birth = new Date(year, month, day);
-  if (isNaN(birth.getTime())) {
-    console.warn("Invalid date parsed:", dob);
-    ageCell.textContent = "N/A";
-    return;
-  }
-
-  const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
-  const m = today.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-    age--;
-  }
-
-  ageCell.textContent = age + " yrs";
-});
-</script>
-
+        <!-- AGE -->
+        <td class="p-4 text-[15px] text-slate-600 font-medium age-cell"
+            data-dob="{{ patient.date_of_birth|date:'Y-m-d' }}">
+          {% if patient.date_of_birth %}
+            {{ patient.date_of_birth|date:"Y-m-d" }} (calculating...)
+          {% else %}
+            N/A
+          {% endif %}
+        </td>
 
         <td class="p-4 text-[15px] text-slate-600 font-medium">{{ patient.date_of_registration }}</td>
+
         <td class="p-4">
           <div class="space-x-2 space-y-2 text-center flex flex-col sm:flex-row sm:items-center sm:justify-center">
-
             <!-- New Visit -->
             <button type="button"
-              onclick="openVisitModal({{ patient.id }})"
+              onclick="openVisitModal({{ patient.id }}, '{{ patient.patient_name|escapejs }}')"
               class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold border-2 border-blue-700 bg-transparent hover:bg-blue-700 text-blue-700 hover:text-white transition">
               New Visit
             </button>
 
-           
-
-            <!-- View Full Info -->
+            <!-- View -->
             <a href="{% url 'view_patient' patient.id %}">
               <button type="button"
                 class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold border-2 border-indigo-600 bg-transparent hover:bg-indigo-600 text-indigo-600 hover:text-white transition">
                 View
               </button>
             </a>
-
           </div>
         </td>
       </tr>
       {% empty %}
       <tr>
-        <td colspan="4" class="text-center py-4 text-gray-500">No patients found.</td>
+        <td colspan="6" class="text-center py-4 text-gray-500">No patients found.</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
 
-<!-- ================= NEW VISIT MODAL ================= -->
-<div id="visitModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
-  <div class="bg-white w-full max-w-md p-6 rounded-lg shadow-lg relative">
 
-    <button id="closeVisitModal" class="absolute top-2 right-4 text-xl text-gray-700 hover:text-red-500">&times;</button>
-
-    <h3 class="text-xl font-semibold text-gray-800 mb-6">Create New Visit</h3>
-
-            <form id="visitForm" method="POST" action="{% url 'create_visit' %}">
-            {% csrf_token %}
-
-            <!-- Patient ID -->
-            <input type="hidden" id="visitPatientId" name="patient_id" value="">
-
-            <!-- Visit Type -->
-            <div class="mb-4">
-              <label class="block text-sm font-medium mb-1">Visit Type</label>
-              <select name="type" class="w-full border px-3 py-2 rounded" required>
-                <option value="outpatient">Outpatient</option>
-                <option value="outpatient_consultation">Consultation</option>
-                <option value="minor_surgery">Minor Surgery</option>
-              </select>
-            </div>
-
-            <!-- Discount Checkbox -->
-            <div class="mb-4">
-              <label class="inline-flex items-center">
-                <input type="checkbox" id="discountedCheckbox" name="discounted" value="yes" class="form-checkbox text-blue-600">
-                <span class="ml-2 text-sm text-gray-700">Discounted</span>
-              </label>
-            </div>
-
-            <!-- Discounted Amount (initially hidden) -->
-            <div class="mb-4 hidden" id="discountAmountContainer">
-              <label class="block text-sm font-medium mb-1">Amount to be billed</label>
-              <input type="number" step="0.01" name="discounted_amount" placeholder="Enter discounted fee"
-                    class="w-full border px-3 py-2 rounded">
-            </div>
-
-            <!-- Discount Reason (initially hidden) -->
-            <div class="mb-4 hidden" id="discountReasonContainer">
-              <label class="block text-sm font-medium mb-1">Reason for Discount</label>
-              <textarea name="discount_reason" rows="2" placeholder="e.g. Welfare support, staff benefit"
-                        class="w-full border px-3 py-2 rounded"></textarea>
-            </div>
-
-            <!-- Submit Button -->
-            <div class="text-right">
-              <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-                Create Visit
-              </button>
-            </div>
-        </form>
-
-
+<!-- ================= ACTIVE VISIT MODAL ================= -->
+<div id="activeVisitModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+    <button type="button" onclick="closeActiveVisitModal()" class="absolute top-2 right-4 text-xl text-gray-700 hover:text-red-500">&times;</button>
+    <h3 class="text-lg font-semibold text-gray-800 mb-3">Active Visit Found</h3>
+    <p id="activeVisitMsg" class="text-gray-600 mb-6">This patient already has an active visit.</p>
+    <div class="flex justify-end gap-2">
+      <a id="activeVisitViewBtn"
+         class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white">
+        View Visit
+      </a>
+      <button type="button" onclick="closeActiveVisitModal()"
+              class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800">
+        Close
+      </button>
+    </div>
   </div>
 </div>
 
-<!-- ================= MODAL SCRIPT ================= -->
+
+<!-- ================= VISIT CREATION MODAL ================= -->
+<div id="visitModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-white w-full max-w-md p-6 rounded-lg shadow-lg relative">
+    <button id="closeVisitModal" type="button" class="absolute top-2 right-4 text-xl text-gray-700 hover:text-red-500">&times;</button>
+    <h3 class="text-xl font-semibold text-gray-800 mb-6">Create New Visit</h3>
+
+    <form id="visitForm" method="POST" action="{% url 'create_visit' %}">
+      {% csrf_token %}
+      <input type="hidden" id="visitPatientId" name="patient_id" value="">
+      <input type="hidden" id="visitPatientName" value="">
+
+      <!-- Visit Type -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Visit Type</label>
+        <select name="type" class="w-full border px-3 py-2 rounded" required>
+          <option value="outpatient">Outpatient</option>
+          <option value="outpatient_consultation">Consultation</option>
+          <option value="minor_surgery">Minor Surgery</option>
+        </select>
+      </div>
+
+      <!-- Discount -->
+      <div class="mb-4">
+        <label class="inline-flex items-center">
+          <input type="checkbox" id="discountedCheckbox" name="discounted" value="on" class="form-checkbox text-blue-600">
+          <span class="ml-2 text-sm text-gray-700">Discounted</span>
+        </label>
+      </div>
+
+      <div class="mb-4 hidden" id="discountAmountContainer">
+        <label class="block text-sm font-medium mb-1">Amount to be billed</label>
+        <input type="number" step="0.01" name="custom_amount" placeholder="Enter discounted/custom fee"
+               class="w-full border px-3 py-2 rounded">
+      </div>
+
+      <div class="mb-4 hidden" id="discountReasonContainer">
+        <label class="block text-sm font-medium mb-1">Reason for Discount</label>
+        <textarea name="discount_reason" rows="2" class="w-full border px-3 py-2 rounded"></textarea>
+      </div>
+
+      <div class="text-right">
+        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+          Create Visit
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- ================= BILL CREATED / PAY NOW MODAL ================= -->
+<div id="payNowModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+    <button type="button" onclick="closePayNowModal()" class="absolute top-2 right-4 text-xl text-gray-700 hover:text-red-500">&times;</button>
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">Bill Created</h3>
+    <p class="text-gray-700 mb-2">A bill was created for <span id="payNowPatientName" class="font-medium"></span>.</p>
+    <p class="text-gray-600 mb-6">Do you want to pay now or later?</p>
+    <div class="flex justify-end gap-3">
+      <button type="button" onclick="closePayNowModal()" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800">Later</button>
+      <a id="confirmPayNow" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white">Pay Now</a>
+    </div>
+  </div>
+</div>
+
+
 <script>
-  const discountedCheckbox = document.getElementById('discountedCheckbox');
-  const amountContainer = document.getElementById('discountAmountContainer');
-  const reasonContainer = document.getElementById('discountReasonContainer');
-
-  discountedCheckbox.addEventListener('change', () => {
-    const isVisible = discountedCheckbox.checked;
-    amountContainer.classList.toggle('hidden', !isVisible);
-    reasonContainer.classList.toggle('hidden', !isVisible);
-  });
-  function openVisitModal(patientId) {
-    document.getElementById("visitPatientId").value = patientId;
-    const modal = document.getElementById("visitModal");
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
-  }
-
-  document.getElementById("closeVisitModal").addEventListener("click", () => {
-    const modal = document.getElementById("visitModal");
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
-  });
-
-  window.addEventListener("click", (e) => {
-    const modal = document.getElementById("visitModal");
-    if (e.target === modal) {
-      modal.classList.add("hidden");
-      modal.classList.remove("flex");
-    }
-  });
-
-  // Submit visit form via AJAX
-  document.getElementById("visitForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const form = this;
-    const formData = new FormData(form);
-
-    fetch(form.action, {
-      method: "POST",
-      headers: {
-        "X-CSRFToken": formData.get("csrfmiddlewaretoken")
-      },
-      body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        alert(data.success);
-        location.reload();
-      } else if (data.warning) {
-        if (confirm(data.warning + " View patient profile?")) {
-          window.location.href = data.redirect_url;
-        }
-      } else if (data.error) {
-        alert("Error: " + data.error);
-      }
-    })
-    .catch(err => {
-      alert("Unexpected error.");
-      console.error(err);
+  // ---------- AGE ----------
+  document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll(".age-cell").forEach(cell => {
+      const dob = cell.dataset.dob;
+      if (!dob) { cell.textContent = "N/A"; return; }
+      const parts = dob.split("-");
+      if (parts.length !== 3) return;
+      const birth = new Date(parts[0], parts[1]-1, parts[2]);
+      if (isNaN(birth)) return;
+      const today = new Date();
+      let age = today.getFullYear() - birth.getFullYear();
+      if (today.getMonth() < birth.getMonth() ||
+          (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) { age--; }
+      cell.textContent = age + " yrs";
     });
   });
 
+  // ---------- DISCOUNT TOGGLE ----------
+  document.addEventListener("DOMContentLoaded", function() {
+    const discountedCheckbox = document.getElementById('discountedCheckbox');
+    const amountContainer = document.getElementById('discountAmountContainer');
+    const reasonContainer = document.getElementById('discountReasonContainer');
+    if (discountedCheckbox) {
+      discountedCheckbox.addEventListener('change', () => {
+        const on = discountedCheckbox.checked;
+        amountContainer.classList.toggle('hidden', !on);
+        reasonContainer.classList.toggle('hidden', !on);
+      });
+    }
+  });
 
-
-  function openVisitModal(patientId) {
+  // ---------- OPEN/CLOSE VISIT MODAL ----------
+  function openVisitModal(patientId, patientName) {
     document.getElementById("visitPatientId").value = patientId;
+    document.getElementById("visitPatientName").value = patientName || "";
     const modal = document.getElementById("visitModal");
     modal.classList.remove("hidden");
     modal.classList.add("flex");
   }
-
-  document.getElementById("closeVisitModal").addEventListener("click", () => {
+  document.getElementById("closeVisitModal")?.addEventListener("click", () => {
     const modal = document.getElementById("visitModal");
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
+    modal.classList.add("hidden"); modal.classList.remove("flex");
   });
 
-  window.addEventListener("click", (e) => {
-    const modal = document.getElementById("visitModal");
-    if (e.target === modal) {
-      modal.classList.add("hidden");
-      modal.classList.remove("flex");
-    }
+  // ---------- ACTIVE VISIT MODAL ----------
+  function closeActiveVisitModal() {
+    const m = document.getElementById("activeVisitModal");
+    m.classList.add("hidden"); m.classList.remove("flex");
+  }
+
+  // ---------- PAY NOW MODAL ----------
+   function buildBillingUrl(patientId) {
+    // Django will render the base URL, then we replace the placeholder with JS
+    const urlTemplate = "{% url 'view_patient_bill' 0 %}";
+    return urlTemplate.replace("0", patientId);
+  }
+
+  function showPayNowModal(patientId, patientName) {
+    const m = document.getElementById("payNowModal");
+    document.getElementById("payNowPatientName").textContent = patientName || "the patient";
+    document.getElementById("confirmPayNow").href = buildBillingUrl(patientId);
+    m.classList.remove("hidden");
+    m.classList.add("flex");
+  }
+  function closePayNowModal() {
+    const m = document.getElementById("payNowModal");
+    m.classList.add("hidden"); m.classList.remove("flex");
+  }
+
+  // ---------- VISIT FORM AJAX SUBMIT ----------
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("visitForm");
+    if (!form) return;
+
+    form.addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const fd = new FormData(form);
+      const csrf = fd.get("csrfmiddlewaretoken");
+      const patientId = fd.get("patient_id");
+      const patientName = document.getElementById("visitPatientName").value || "";
+
+      try {
+        const res = await fetch(form.action, {
+          method: "POST",
+          headers: { "X-CSRFToken": csrf },
+          body: fd
+        });
+
+        const data = await res.json();
+
+        // Close visit modal
+        document.getElementById("visitModal").classList.add("hidden");
+        document.getElementById("visitModal").classList.remove("flex");
+
+        if (data.warning) {
+          // Active visit
+          const m = document.getElementById("activeVisitModal");
+          document.getElementById("activeVisitMsg").textContent = data.warning;
+          const viewBtn = document.getElementById("activeVisitViewBtn");
+          if (data.redirect_url) viewBtn.href = data.redirect_url;
+          m.classList.remove("hidden"); m.classList.add("flex");
+          return;
+        }
+
+        if (data.success) {
+          // Visit + bill created
+          showPayNowModal(patientId, patientName);
+          return;
+        }
+
+        if (data.error) {
+          alert("Error: " + data.error);
+          return;
+        }
+
+        alert("Unexpected response.");
+      } catch (err) {
+        console.error(err);
+        alert("Network or server error.");
+      }
+    });
   });
 </script>
 

@@ -13,7 +13,42 @@ from billing.utils import create_payment_receipt
 from collections import defaultdict
 from datetime import date
 from django.db.models.functions import Concat, Cast
+from django.utils.timezone import localdate
 
+
+def view_patient_bill(request, patient_id):
+    # Ensure it's really a patient
+    patient = get_object_or_404(CustomUser, id=patient_id, account_type="patient")
+
+    # Get latest active visit for this patient
+    visit = Visit.objects.filter(patient=patient).order_by("-date_time").first()
+    if not visit:
+        return render(request, "billing/bill_receipt.html", {
+            "patient": patient,
+            "visit": None,
+            "bills": [],
+            "total_amount": 0,
+            "error": "No visits found for this patient."
+        })
+
+    # Fetch bills created on the same DATE as the visit datetime
+    all_bills = Bill.objects.filter(
+        patient=patient,
+        created_at__date=localdate(visit.date_time)
+    )
+
+    # Pending bills total
+    pending_total = (
+        all_bills.filter(status="pending").aggregate(Sum("amount"))["amount__sum"] or 0
+    )
+
+    context = {
+        "visit": visit,
+        "patient": patient,
+        "bills": all_bills,
+        "total_amount": pending_total,
+    }
+    return render(request, "billing/bill_receipt.html", context)
 
 
 def all_payment_receipts(request):
@@ -118,7 +153,6 @@ def unpaid_bills_list(request):
             patient_last_name=Max('patient__last_name'),
             patient_gender=F('visit__patient__gender'),
             patient_dob=Max('patient__date_of_birth'),
-            #patient_name=patient__first_name + patient_last_name,
             description=Max('description'),
             status=Max('status'),
             transaction_id=Max('transaction_id')

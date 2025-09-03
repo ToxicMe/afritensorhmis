@@ -16,6 +16,52 @@
   </div>
 {% endif %}
 
+{% if request.session.modal_message %}
+<div
+  id="statusModal"
+  class="fixed inset-0 z-50 grid place-content-center bg-black/50 p-4"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
+    <div class="flex items-start justify-between">
+      <h2 id="modalTitle" class="text-xl font-bold 
+          {% if request.session.modal_status == 'success' %}text-green-700{% else %}text-red-700{% endif %}">
+        {% if request.session.modal_status == "success" %}
+          ✅ Success
+        {% else %}
+          ❌ Error
+        {% endif %}
+      </h2>
+      <button
+        type="button"
+        onclick="document.getElementById('statusModal').remove();"
+        class="-me-4 -mt-4 rounded-full p-2 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="mt-4">
+      <p class="text-gray-700">
+        {{ request.session.modal_message }}
+      </p>
+    </div>
+
+    <footer class="mt-6 flex justify-end">
+      <button
+        type="button"
+        onclick="document.getElementById('statusModal').remove();"
+        class="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+      >
+        Close
+      </button>
+    </footer>
+  </div>
+</div>
+{% endif %}
+
+
 
 <h2 class="md:text-4xl text-3xl font-bold mb-6 mt-12 text-center mx-auto w-full">
   STAFF REGISTRATION
@@ -222,6 +268,16 @@
     <button type="submit"
       class="mt-12 px-5 py-2.5 text-[15px] font-medium w-full max-w-[130px] mx-auto block bg-[#007bff] hover:bg-[#006bff] text-white rounded transition-all cursor-pointer">Add user</button>
 </form>
+
+{% if request.session.modal_message %}
+<script>
+  // Auto-close after 4 seconds
+  setTimeout(() => {
+    const modal = document.getElementById("statusModal");
+    if (modal) modal.remove();
+  }, 4000);
+</script>
+{% endif %}
 
   
 {% endblock %}

@@ -58,22 +58,9 @@ def add_user_view(request):
         account_type = request.POST.get('account_type')
         hospital_id = request.POST.get('hospital')
 
-        if not email or not username or not password1 or not password2 or not account_type or not hospital_id:
-            messages.error(request, "Please fill in all required fields.")
-            return render(request, 'accounts/register.html', {'hospitals': hospitals, 'groups': groups})
+       
 
-        if password1 != password2:
-            messages.error(request, "Passwords do not match.")
-            return render(request, 'accounts/register.html', {'hospitals': hospitals, 'groups': groups})
-
-        if CustomUser.objects.filter(email=email).exists():
-            messages.error(request, "A user with this email already exists.")
-            return render(request, 'accounts/register.html', {'hospitals': hospitals, 'groups': groups})
-
-        if CustomUser.objects.filter(username=username).exists():
-            messages.error(request, "Username already taken.")
-            return render(request, 'accounts/register.html', {'hospitals': hospitals, 'groups': groups})
-
+        # ✅ Try to create user
         try:
             user = CustomUser(
                 email=email,
@@ -90,19 +77,20 @@ def add_user_view(request):
                 password=make_password(password1)
             )
             user.save()
-            print(f"User created: {user}")
-            # Assign user to selected group
+
+            # ✅ Assign group
             try:
                 group = Group.objects.get(name=account_type)
                 user.groups.add(group)
             except Group.DoesNotExist:
                 messages.warning(request, "User created, but group not found for assignment.")
 
-            messages.success(request, "User created successfully.")
+            messages.success(request, f"Patient {user.patient_name or user.username} registered successfully.")
             return redirect('patient_list')
 
         except IntegrityError:
-            messages.error(request, "There was an error creating the user.")
-            return render(request, 'accounts/register.html', {'hospitals': hospitals, 'groups': groups})
+            messages.error(request, "There was an error creating the user. Try again.")
+            return redirect('patient_list')
 
+    # GET request → render form
     return render(request, 'accounts/register.html', {'hospitals': hospitals, 'groups': groups})

@@ -1,0 +1,51 @@
+<div class="border rounded-md p-6 shadow-sm bg-white max-w-4xl mx-auto">
+  <!-- Patient Basic Info -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="sm:order-last sm:shrink-0">
+      <img 
+        src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" 
+        alt="John Doe" 
+        class="w-20 h-20 rounded-full object-cover"
+      />
+    </div>
+    <div class="flex-1">
+      <h2 class="text-2xl font-bold text-gray-900">John Doe</h2>
+      <p class="text-sm text-gray-600">Age: 34 | Sex: Male <br>Registration Station: City General Hospital</p>
+    </div>
+  </div>
+
+  <!-- Current Visit Triage -->
+  <div class="mt-4 border-t pt-4">
+    <h3 class="font-semibold text-gray-800">Current Visit (Triage)</h3>
+    <ul class="mt-2 text-gray-700 text-sm space-y-1">
+      <li>Chief Complaint: Fever and headache</li>
+      <li>BP: 120/80 mmHg</li>
+      <li>Temperature: 38°C</li>
+      <li>Pulse: 88 bpm</li>
+      <li>Respiration: 18/min</li>
+    </ul>
+  </div>
+
+  <!-- Previous Visits Dropdown -->
+  <div class="mt-4 border-t pt-4">
+    <button id="toggleVisits" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none">
+      Show Previous Visits
+    </button>
+    <ul id="previousVisits" class="mt-2 space-y-1 hidden">
+      <li><a href="#" class="text-blue-600 hover:underline text-sm">12 Aug 2025 - Outpatient Consultation</a></li>
+      <li><a href="#" class="text-blue-600 hover:underline text-sm">05 Jul 2025 - Minor Surgery</a></li>
+      <li><a href="#" class="text-blue-600 hover:underline text-sm">20 Jun 2025 - Lab Test</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- Toggle Script -->
+<script>
+  const toggleBtn = document.getElementById('toggleVisits');
+  const visitsList = document.getElementById('previousVisits');
+
+  toggleBtn.addEventListener('click', () => {
+    visitsList.classList.toggle('hidden');
+    toggleBtn.textContent = visitsList.classList.contains('hidden') ? 'Show Previous Visits' : 'Hide Previous Visits';
+  });
+</script>
