@@ -23,6 +23,11 @@ class DoctorNote(models.Model):
         on_delete=models.CASCADE,
         related_name='patient_doctor_notes'
     )
+    chief_complains = models.TextField(
+        blank=True,
+        null=True,
+        help_text="List of chief complaints (bullet format)."
+    )
     doctor_notes = models.TextField()
     tests = models.ManyToManyField(
         'laboratory.Test',
@@ -47,6 +52,7 @@ class DoctorNote(models.Model):
     def __str__(self):
         icd_codes = ", ".join([c.code for c in self.icd10_codes.all()])
         return f"Doctor Note for {self.patient} by {self.done_by} on {self.created_at.strftime('%Y-%m-%d %H:%M')} | ICD-10: {icd_codes}"
+
 
         
 

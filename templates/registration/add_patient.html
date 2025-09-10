@@ -28,9 +28,9 @@
     {% csrf_token %}
       <div class="grid sm:grid-cols-2 gap-6">
   
-          <div>
+          <div hidden>
               <label class="mb-2 text-sm text-slate-900 font-medium block">Email</label>
-              <div class="relative flex items-center">
+              <div class="relative  flex items-center">
                 <input type="email"name="email" placeholder="Email"
                   class="px-4 py-3 pr-8 bg-[#f0f1f2] focus:bg-transparent text-black w-full text-sm border border-gray-200 outline-[#007bff] rounded transition-all" />
                 <svg xmlns="http://www.w3.org/2000/svg" fill="#bbb" stroke="#bbb" class="w-[18px] h-[18px] absolute right-4"
@@ -52,7 +52,7 @@
               </div>
             </div>
   
-        <div>
+        <div hidden >
           <label class="mb-2 text-sm text-slate-900 font-medium block">Username</label>
           <div class="relative flex items-center">
             <input type="text" name="username" placeholder="First Name"
@@ -67,7 +67,7 @@
           </div>
         </div>
   
-        <div>
+        <div hidden>
           <label class="mb-2 text-sm text-slate-900 font-medium block"> Password</label>
           <div class="relative flex items-center">
             <input type="password" value="default" name="password1" placeholder="Password"
@@ -83,7 +83,7 @@
   
         
   
-        <div>
+        <div hidden>
           <label class="mb-2 text-sm text-slate-900 font-medium block">Confirm Password</label>
           <div class="relative flex items-center">
             <input type="password" value="default" name="password2" placeholder="Repeat Password"
@@ -103,7 +103,7 @@
       <div>
           <label class="mb-2 text-sm text-slate-900 font-medium block">Full Name</label>
           <div class="relative flex items-center">
-            <input type="text" name="patient_name" placeholder="Full Name"
+            <input type="text" name="patient_name" placeholder="First Name - Middle Name - Last Name"
               class="px-4 py-3 pr-8 bg-[#f0f1f2] focus:bg-transparent text-black w-full text-sm border border-gray-200 outline-[#007bff] rounded transition-all" />
             <svg xmlns="http://www.w3.org/2000/svg" fill="#bbb" stroke="#bbb" class="w-[18px] h-[18px] absolute right-4"
               viewBox="0 0 24 24">
@@ -310,7 +310,7 @@
  
   <button type="submit"
         class="mt-12 px-5  py-2.5 text-[15px] font-medium w-full max-w-[130px] mx-auto block bg-[#007bff] hover:bg-[#006bff] text-white rounded transition-all cursor-pointer">
-        Add user
+        SAVE PATIENT
     </button><br><br><br><br>
       </div>
 

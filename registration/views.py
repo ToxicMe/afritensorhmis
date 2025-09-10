@@ -333,7 +333,13 @@ def create_visit(request):
 
 
 def patient_list(request):
-    patients = CustomUser.objects.filter(account_type='patient').select_related('hospital')
+    # Order patients by most recent first
+    patients = (
+        CustomUser.objects
+        .filter(account_type='patient')
+        .select_related('hospital')
+        .order_by('-id')  # or use '-created_at' if you have that field
+    )
 
     # Check if we need to show the modal
     new_patient_id = request.GET.get('new_patient_id')
@@ -369,24 +375,20 @@ def registration(request):
     default_hospital = request.user.hospital
 
     if request.method == 'POST':
-        email = request.POST.get('email')
-        username = request.POST.get('username')
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
         id_number = request.POST.get('id_number')
 
         if password1 != password2:
             messages.error(request, "Passwords do not match.")
-            return redirect('registration')
+            return redirect('register_patient')
 
         if id_number and CustomUser.objects.filter(id_number=id_number).exists():
             messages.error(request, "A patient with this ID number already exists.")
-            return redirect('registration')
+            return redirect('register_patient')
 
         try:
             user = CustomUser(
-                email=email,
-                username=username,
                 password=make_password(password1),
                 id_number=id_number,
                 account_type='patient',
@@ -410,11 +412,12 @@ def registration(request):
             )
             user.save()
             messages.success(request, "Patient registered successfully.")
+
             # Redirect with patient_id in querystring
             return redirect(f"{reverse('patient_list')}?new_patient_id={user.id}")
 
         except Exception as e:
             messages.error(request, f"Error occurred: {e}")
-            return redirect('registration')
+            return redirect('register_patient')
 
     return render(request, 'registration/add_patient.html', {'default_hospital': default_hospital})

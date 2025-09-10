@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.db import transaction
 from accounts.models import CustomUser
 from .models import *
-from django.db.models import Sum, Max, Q, Value, CharField, F
+from django.db.models import Sum, Max, Q, Value, CharField, F, fields, ExpressionWrapper
 from registration.models import Visit
 from .payment_processors.mpesa import mpesa_pay  # your helper
 from django.db.models import Sum
@@ -13,7 +13,9 @@ from billing.utils import create_payment_receipt
 from collections import defaultdict
 from datetime import date
 from django.db.models.functions import Concat, Cast
-from django.utils.timezone import localdate
+from django.utils.timezone import localdate, now
+from django.db.models.functions import Coalesce
+
 
 
 def view_patient_bill(request, patient_id):
@@ -42,9 +44,19 @@ def view_patient_bill(request, patient_id):
         all_bills.filter(status="pending").aggregate(Sum("amount"))["amount__sum"] or 0
     )
 
+    # ✅ Calculate age
+    patient_age = None
+    if patient.date_of_birth:
+        today = date.today()
+        patient_age = today.year - patient.date_of_birth.year - (
+            (today.month, today.day) < (patient.date_of_birth.month, patient.date_of_birth.day)
+        )
+
     context = {
         "visit": visit,
         "patient": patient,
+        "patient_age": patient_age if patient_age is not None else "N/A",
+        "patient_gender": patient.gender.capitalize() if patient.gender else "N/A",
         "bills": all_bills,
         "total_amount": pending_total,
     }
@@ -75,42 +87,87 @@ def view_payment_receipt(request, receipt_id):
 
     total_amount = bills.aggregate(total=Sum('amount'))['total'] or 0
 
-    return render(request, 'billing/receipt_detail.html', {
+    # ✅ Calculate age
+    patient_age = None
+    if patient.date_of_birth:
+        today = date.today()
+        patient_age = today.year - patient.date_of_birth.year - (
+            (today.month, today.day) < (patient.date_of_birth.month, patient.date_of_birth.day)
+        )
+
+    context = {
         'receipt': receipt,
         'visit': visit,
         'patient': patient,
+        'patient_age': patient_age if patient_age is not None else "N/A",
+        'patient_gender': patient.gender.capitalize() if patient.gender else "N/A",
         'bills': bills,
         'total_amount': total_amount,
-    })
+    }
 
+    return render(request, 'billing/receipt_detail.html', context)
 
 
 
 
 def all_bills(request):
-    # Group by visit and aggregate total amount and latest status
-    bills_by_visit = (
-        Bill.objects.all()
-        .values('visit')
-        .annotate(
-            total_amount=Sum('amount'),
-            latest_date=Max('date'),
-            tracking_code=Max('visit__tracking_code'),
-            patient_id=Max('patient__id'),
-            patient_name=Max('patient__first_name'),
-            patient_username=Max('patient__username'),
-            description=Max('description'),
-            status=Max('status'),
-            transaction_id=Max('transaction_id')  
-        )
-        .order_by('-latest_date')
-    )
-    return render(request, 'billing/unpaid_bills_list.html', {'grouped_bills': bills_by_visit})
+    today = date.today()
+    results = []
+
+    # Group bills by visit manually
+    visits = Bill.objects.values_list("visit", flat=True).distinct()
+
+    for visit_id in visits:
+        bills = Bill.objects.filter(visit_id=visit_id).select_related("patient", "visit")
+
+        if not bills.exists():
+            continue
+
+        total_amount = bills.aggregate(Sum("amount"))["amount__sum"]
+        latest_bill = bills.latest("date")  # get most recent bill
+
+        patient = latest_bill.patient
+        if patient:
+            patient_name = patient.patient_name or "Unknown"
+            patient_gender = patient.gender or "Unknown"
+
+            if patient.date_of_birth:
+                patient_age = (
+                    today.year - patient.date_of_birth.year
+                    - ((today.month, today.day) < (patient.date_of_birth.month, patient.date_of_birth.day))
+                )
+            else:
+                patient_age = "N/A"
+        else:
+            patient_name = "Unknown"
+            patient_gender = "Unknown"
+            patient_age = "N/A"
+
+        results.append({
+            "visit": visit_id,
+            "total_amount": total_amount,
+            "latest_date": latest_bill.date,
+            "tracking_code": latest_bill.visit.tracking_code if latest_bill.visit else None,
+            "patient_name": patient_name,
+            "patient_age": patient_age,
+            "patient_gender": patient_gender,
+            "status": latest_bill.status,
+            "transaction_id": latest_bill.transaction_id,
+        })
+
+    # sort by latest date (descending)
+    results = sorted(results, key=lambda x: x["latest_date"], reverse=True)
+
+    return render(request, "billing/unpaid_bills_list.html", {"grouped_bills": results})
+
+
+
 
 def view_bill(request, transaction_id):
     # Get the bill by transaction_id to extract the visit
     main_bill = get_object_or_404(Bill, transaction_id=transaction_id)
     visit = main_bill.visit
+    patient = main_bill.patient
 
     # Fetch all bills for the same visit
     all_bills = Bill.objects.filter(visit=visit)
@@ -118,13 +175,24 @@ def view_bill(request, transaction_id):
     # Filter only pending bills for the total
     pending_total = all_bills.filter(status='pending').aggregate(Sum('amount'))['amount__sum'] or 0
 
+    # ✅ Calculate age
+    patient_age = None
+    if patient.date_of_birth:
+        today = date.today()
+        patient_age = today.year - patient.date_of_birth.year - (
+            (today.month, today.day) < (patient.date_of_birth.month, patient.date_of_birth.day)
+        )
+
     context = {
         'visit': visit,
-        'patient': main_bill.patient,
+        'patient': patient,
+        'patient_age': patient_age if patient_age is not None else "N/A",
+        'patient_gender': patient.gender.capitalize() if patient.gender else "N/A",
         'bills': all_bills,
         'total_amount': pending_total,
     }
     return render(request, 'billing/bill_receipt.html', context)
+
 
 
 
@@ -149,8 +217,7 @@ def unpaid_bills_list(request):
             latest_date=Max('date'),
             tracking_code=Max('visit__tracking_code'),
             patient_id=Max('patient__id'),
-            patient_first_name=Max('patient__first_name'),
-            patient_last_name=Max('patient__last_name'),
+            patient_name=Max('patient__patient_name'),
             patient_gender=F('visit__patient__gender'),
             patient_dob=Max('patient__date_of_birth'),
             description=Max('description'),

@@ -6,9 +6,9 @@
   <p class="text-sm text-gray-600 mb-4">Date: {{ receipt.date_created|date:"d M Y, H:i" }}</p>
 
   <div class="mb-4">
-    <strong>Patient:</strong> {{ patient.get_full_name|default:patient.username }}<br>
-    <strong>Gender:</strong> {{ patient.get_gender|default:None }}<br>
-    <strong>Age:</strong> {{ patient.get_age|default:None }}<br>
+    <strong>Patient:</strong> {{ patient.patient_name|title }}<br>
+    <strong>Gender:</strong> {{ patient_gender }}<br>
+    <strong>Age:</strong> {{ patient_age }}<br>
     <strong>Visit Code:</strong> {{ visit.tracking_code }}<br>
     <strong>Payment Method:</strong> {{ receipt.get_payment_method_display }}<br>
     <strong>Status:</strong> {{ receipt.get_status_display }}<br>

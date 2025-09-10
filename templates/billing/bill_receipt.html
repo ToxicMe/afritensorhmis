@@ -40,9 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
   <h2 class="text-2xl font-bold mb-4">Bill Receipt</h2>
 
   <div class="mb-6">
-    <p><strong>Patient Name:</strong> {{ patient.get_full_name|default:patient.username }}</p>
-    <p><strong>Gender:</strong> {{ patient.get_gender }}</p>
-    <p><strong>Age:</strong> {{ visit.get_age }}</p>
+    <p><strong>Patient Name:</strong> {{ patient.patient_name|title }}</p>
+    <p><strong>Gender:</strong> {{ patient_gender }}</p>
+    <p><strong>Age:</strong> {{ patient_age }}</p>
     <p><strong>Visit:</strong> {{ visit.tracking_code }}</p>
     <p><strong>Visit Date:</strong> {{ visit.date_time|date:"Y-m-d H:i" }}</p>
   </div>
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <div>
                 <label class="text-slate-900 text-sm mb-2 block">Patient Name</label>
-                <input type="text" value="{{ patient.get_full_name|default:patient.username }}" readonly
+                <input type="text" value="{{ patient.patient_name|title }}" readonly
                     class="px-4 py-3 bg-gray-100 w-full rounded-lg" />
             </div>
 

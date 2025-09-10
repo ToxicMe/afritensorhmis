@@ -9,10 +9,9 @@
       <thead class="bg-gray-100">
         <tr>
           <th class="border px-4 py-2 text-left">Patient Name</th>
-            <th class="border px-4 py-2 text-left">DOB</th>
-            <th class="border px-4 py-2 text-left">Gender</th>
+          <th class="border px-4 py-2 text-left">Age</th>
+          <th class="border px-4 py-2 text-left">Gender</th>
           <th class="border px-4 py-2 text-left">Tracking Code</th>
-          <th class="border px-4 py-2 text-left">Date</th>
           <th class="border px-4 py-2 text-left">Total Amount</th>
           <th class="border px-4 py-2 text-left">Status</th>
           <th class="border px-4 py-2 text-left">Action</th>
@@ -21,11 +20,16 @@
       <tbody>
         {% for bill in grouped_bills %}
         <tr>
-          <td class="border px-4 py-2">{{ bill.patient_name }}</td>
-          <td class="border px-4 py-2">{{ bill.patient_age }} years</td>
-           <td class="border px-4 py-2">{{ bill.patient_gender }}</td>
+          <td class="border px-4 py-2">{{ bill.patient_name|title }}</td>
+          <td class="border px-4 py-2">
+            {% if bill.patient_age != "N/A" %}
+              {{ bill.patient_age }} years
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+          <td class="border px-4 py-2">{{ bill.patient_gender|capfirst }}</td>
           <td class="border px-4 py-2">{{ bill.tracking_code }}</td>
-          <td class="border px-4 py-2">{{ bill.latest_date|date:"Y-m-d H:i" }}</td>
           <td class="border px-4 py-2 font-bold text-black-600">KSh {{ bill.total_amount }}</td>
           <td class="border px-4 py-2 text-red-600 font-semibold">{{ bill.status|capfirst }}</td>
           <td class="border px-4 py-2">

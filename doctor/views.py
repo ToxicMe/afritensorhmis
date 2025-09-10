@@ -15,6 +15,8 @@ import json
 from django.http import JsonResponse
 from doctor.models import ICD10Entry
 from django.core.serializers.json import DjangoJSONEncoder
+from datetime import date
+
 # Create your views here.
 
 
@@ -109,60 +111,76 @@ def add_doctor_note(request, visit_id):
     patient = visit.patient
     tests = Test.objects.filter(hospital_available=visit.hospital)
 
-    # Fetch ICD-10 entries
-    icd_entries = ICD10Entry.objects.all()  # Consider AJAX/pagination for large datasets
+    icd_entries = ICD10Entry.objects.all()
     icd10_hierarchy = build_icd_hierarchy(icd_entries)
     icd10_json = json.dumps(icd10_hierarchy, cls=DjangoJSONEncoder)
 
+    triage = visit.triages.order_by("-timestamp").first()
+    previous_visits = Visit.objects.filter(patient=patient).exclude(id=visit.id).order_by("-date_time")
+
+    success = False
     error = None
 
     if request.method == 'POST':
         doctor_notes_text = request.POST.get('doctor_notes', '').strip()
+        chief_complains_text = request.POST.get('chief_complains', '').strip()
         selected_test_ids = [int(i) for i in request.POST.getlist('tests') if i.isdigit()]
         selected_icd10_ids = [int(i) for i in request.POST.getlist('icd10_codes') if i.isdigit()]
 
-        if not doctor_notes_text:
-            error = "Doctor notes are required."
-        else:
-            # Create DoctorNote
-            note = DoctorNote.objects.create(
-                visit=visit,
-                patient=patient,
-                doctor_notes=doctor_notes_text,
-                done_by=request.user
-            )
+    if not doctor_notes_text:
+        error = "Doctor notes are required."
+    else:
+        # Create DoctorNote
+        note = DoctorNote.objects.create(
+            visit=visit,
+            patient=patient,
+            chief_complains=chief_complains_text,
+            doctor_notes=doctor_notes_text,
+            done_by=request.user
+        )
 
-            # Attach selected tests and create bills
-            if selected_test_ids:
-                selected_tests = Test.objects.filter(id__in=selected_test_ids)
-                note.tests.set(selected_tests)
-                for test in selected_tests:
-                    Bill.objects.create(
-                        visit=visit,
-                        patient=patient,
-                        description=f"Test: {test.name}",
-                        amount=test.price,
-                        status='pending'
-                    )
+        # Attach selected tests and create bills
+        if selected_test_ids:
+            selected_tests = Test.objects.filter(id__in=selected_test_ids)
+            note.tests.set(selected_tests)
+            for test in selected_tests:
+                Bill.objects.create(
+                    visit=visit,
+                    patient=patient,
+                    description=f"Test: {test.name}",
+                    amount=test.price,
+                    status='pending'
+                )
 
-            # Attach selected ICD-10 codes (multiple)
-            if selected_icd10_ids:
-                selected_icd_entries = ICD10Entry.objects.filter(id__in=selected_icd10_ids)
-                note.icd10_codes.set(selected_icd_entries)
+        # Attach selected ICD-10 codes
+        if selected_icd10_ids:
+            selected_icd_entries = ICD10Entry.objects.filter(id__in=selected_icd10_ids)
+            note.icd10_codes.set(selected_icd_entries)
 
-            # Update visit stage
-            visit.stage = 'billing_note'
-            visit.save()
+        # Update visit stage
+        visit.stage = 'billing_note'
+        visit.save()
 
-            return redirect('doctor_visits_list')  # Adjust to your URL name
+        return redirect('doctor_visits_list')
 
+    # 🚨 if error, return with user inputs preserved
     return render(request, 'doctor/doctor_note.html', {
         'visit': visit,
         'patient': patient,
+        'triage': triage,
+        'previous_visits': previous_visits,
         'tests': tests,
-        'icd10_codes': icd10_json,  # JSON for template
-        'error': error
+        'icd10_codes': icd10_json,
+        'error': error,
+        'form_data': {
+            'chief_complains': chief_complains_text,
+            'doctor_notes': doctor_notes_text,
+            'selected_tests': selected_test_ids,
+            'selected_icd10': selected_icd10_ids
+        }
     })
+
+
 
 
 def prescription_visits_list(request):
@@ -236,10 +254,15 @@ def doctor_visits_list(request):
             'error': 'No hospital associated with your account.'
         })
 
-    visits = Visit.objects.filter(
-        Q(stage='doctor') | Q(stage='minor_surgery') | Q(stage='consultation'),
-        hospital=user.hospital
-    ).order_by('updated_on')  # oldest first
+    # Fetch visits for this hospital in the relevant stages
+    visits = (
+        Visit.objects.filter(
+            Q(stage='doctor') | Q(stage='minor_surgery') | Q(stage='consultation'),
+            hospital=user.hospital
+        )
+        .select_related("patient", "hospital")   # optimize queries
+        .order_by("updated_on")                  # oldest first
+    )
 
     return render(request, 'doctor/doctor_visits_list.html', {
         'visits': visits
