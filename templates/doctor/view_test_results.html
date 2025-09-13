@@ -5,6 +5,36 @@
   <h2 class="text-2xl font-semibold mb-4">Test Results for {{ visit.patient.get_full_name|default:visit.patient.username }}</h2>
 
   <div class="mb-6">
+    <p>
+      <strong>Age:</strong> 
+      <span id="age-display"
+            data-dob="{{ visit.patient.date_of_birth|date:'Y-m-d' }}">
+        Loading...
+      </span>
+    </p>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const ageSpan = document.getElementById("age-display");
+        const dobString = ageSpan.getAttribute("data-dob");
+
+        if (dobString && dobString !== "None") {
+          const dob = new Date(dobString);
+          const today = new Date();
+          let age = today.getFullYear() - dob.getFullYear();
+          const m = today.getMonth() - dob.getMonth();
+
+          if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+            age--;
+          }
+
+          ageSpan.textContent = age + " years";
+        } else {
+          ageSpan.textContent = "N/A";
+        }
+      });
+    </script>
+    <p><strong>Gender:</strong> {{ visit.patient.gender }}</p>
     <p hidden><strong>Tracking Code:</strong> {{ visit.tracking_code }}</p>
     <p><strong>Visit Date:</strong> {{ visit.date_time|date:"Y-m-d H:i" }}</p>
     <p><strong>Hospital:</strong> {{ visit.hospital.name }}</p>

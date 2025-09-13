@@ -1,27 +1,93 @@
 {% extends 'base.html' %}
 {% block content %}
-{% load custom_filters %}
 
-<div class="max-w-3xl mx-auto p-6 mt-10  shadow rounded">
-    <h2 class="text-xl font-bold mb-4">Doctor Note for {{ note.patient.get_full_name|default:note.patient.username }}</h2>
-  <p><strong>Doctor:</strong> {{ note.done_by.get_full_name|default:note.done_by.username }}</p>
-  <p><strong>Date:</strong> {{ note.created_at|date:"Y-m-d H:i" }}</p>
-  <p class="mt-4"><strong>Note:</strong></p>
-  <textarea class="px-70 bg-gray-100 rounded" value="">{{ note.doctor_notes }}</textarea>
+{% if messages %}
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      {% for message in messages %}
+        {% if message.tags == 'error' %}
+          if (confirm("❌ {{ message|escapejs }}\n\nDo you want to review the error details?")) {
+            // Stay on the same page
+          } else {
+            window.location.href = "{% url 'laboratory_visits_list' %}";
+          }
+        {% elif message.tags == 'success' %}
+          alert("✅ {{ message|escapejs }}");
+          window.location.href = "{% url 'laboratory_visits_list' %}";
+        {% else %}
+          alert("ℹ️ {{ message|escapejs }}");
+        {% endif %}
+      {% endfor %}
+    });
+  </script>
+{% endif %}
 
-  <form method="POST" action="{% url 'submit_test_findings' note.id %}" class="mt-6">
+
+
+<div class="max-w-3xl mx-auto p-6 mt-10 shadow rounded">
+  <h2 class="text-xl font-bold mb-4">
+    Doctor Note for {{ note.visit.patient.patient_name| title }}
+  </h2>
+
+  <p><strong>Gender:</strong> {{ note.visit.patient.gender|default:"N/A" }}</p>
+
+  <p><strong>Age:</strong>
+    {% if age %}
+      {{ age }}
+    {% else %}
+      N/A
+    {% endif %}
+  </p>
+
+  <p class="mt-4"><strong>Note:</strong> {{ note.doctor_notes }}</p>
+
+  <form method="POST" action="{% url 'submit_test_findings' note.id %}" class="mt-8 bg-white shadow rounded-lg p-6">
     {% csrf_token %}
-    <h3 class="text-lg font-semibold mb-2">Test Findings</h3>
-    {% for test in tests %}
-    <div class="mb-4">
-      <label class="block font-medium">{{ test.name }}</label>
-      <textarea name="finding_{{ test.id }}" class="w-full  h-64  border rounded p-2" rows="2" placeholder="Enter findings..."></textarea>
-    </div>
-    {% endfor %}
-    <button type="submit"
-      class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Submit Findings</button>
-  </form>
-</div>
+    
+    <h3 class="text-2xl font-semibold mb-6 border-b pb-2">🔬 Laboratory Test Findings</h3>
 
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="border px-4 py-2 text-left">Test</th>
+            <th class="border px-4 py-2 text-left">Findings / Results</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for test in tests %}
+          <tr class="hover:bg-gray-50">
+            <td class="border px-4 py-2 font-medium">{{ test.name }}</td>
+            <td class="border px-4 py-2">
+              <textarea 
+                name="finding_{{ test.id }}" 
+                class="w-full border rounded-md p-2 focus:ring focus:ring-blue-300" 
+                rows="3"
+                placeholder="Enter findings..."></textarea>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="2" class="text-center py-4 text-gray-500">No tests were attached to this note.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-6">
+      <label for="remarks" class="block font-semibold mb-2">General Remarks (Optional)</label>
+      <textarea id="remarks" name="remarks" rows="4" class="w-full border rounded-md p-2 focus:ring focus:ring-blue-300" placeholder="Enter any additional observations..."></textarea>
+    </div>
+
+    <div class="mt-8 flex justify-end">
+      <button type="submit"
+        class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition">
+        ✅ Submit Findings
+      </button>
+    </div>
+  </form>
+
+</div>
 
 {% endblock %}

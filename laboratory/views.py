@@ -5,6 +5,10 @@ from registration.models import Visit
 from django.utils import timezone
 from accounts.models import CustomUser
 from doctor.views import *
+from django.contrib import messages
+from datetime import date
+from django.db.models import Q
+
 # Create your views here.
 
 
@@ -21,26 +25,35 @@ def submit_test_findings(request, note_id):
     patient = note.patient
 
     if request.method == 'POST':
-        test_result = TestResult.objects.create(
-            visit=visit,
-            patient=patient,
-            done_by=request.user
-        )
-
-        for test in note.tests.all():
-            result_text = request.POST.get(f'finding_{test.id}', '')
-            TestResultEntry.objects.create(
-                test_result=test_result,
-                test=test,
-                result=result_text
+        try:
+            # Create the main test result record
+            test_result = TestResult.objects.create(
+                visit=visit,
+                patient=patient,
+                done_by=request.user
             )
 
-        # Optionally update the visit stage
-        visit.stage = 'prescription'
-        visit.save()
+            # Loop through attached tests
+            for test in note.tests.all():
+                result_text = request.POST.get(f'finding_{test.id}', '')
+                TestResultEntry.objects.create(
+                    test_result=test_result,
+                    test=test,
+                    result=result_text
+                )
 
-        return redirect(lab_visits_list)  # Adjust to wherever you want
+            # Update visit stage
+            visit.stage = 'prescription'
+            visit.save()
 
+            messages.success(request, "✅ Test findings saved successfully.")
+            return redirect('laboratory_visits_list')  # Use the correct named URL
+
+        except Exception as e:
+            messages.error(request, f"❌ Error saving test findings: {e}")
+            return redirect('view_doctor_note', visit_id=visit.id)
+
+    # If not POST, just go back
     return redirect('view_doctor_note', visit_id=visit.id)
 
 
@@ -57,11 +70,24 @@ def lab_visits_list(request):
             'error': 'No hospital associated with your account.'
         })
 
-    visits = Visit.objects.filter(
+    visits_qs = Visit.objects.filter(
         stage='laboratory',
         hospital=user.hospital,
         doctor_notes__isnull=False  # Only visits that have doctor notes
     ).distinct().order_by('updated_on')
+
+    # Prepare structured data
+    visits = []
+    for v in visits_qs:
+        visits.append({
+            "id": v.id,
+            "code": v.tracking_code,
+            "name": v.patient.get_full_name() if hasattr(v.patient, "get_full_name") else v.patient.username,
+            "age": v.patient.age if hasattr(v.patient, "age") else None,
+            "gender": v.patient.gender if hasattr(v.patient, "gender") else "N/A",
+            "hospital": v.hospital.name,
+            "date": v.date_time,
+        })
 
     return render(request, 'laboratory/laboratory_visits_list.html', {
         'visits': visits

@@ -11,11 +11,13 @@ from django.contrib import messages
 import requests
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.db import transaction
 import json
 from django.http import JsonResponse
 from doctor.models import ICD10Entry
 from django.core.serializers.json import DjangoJSONEncoder
 from datetime import date
+from triage.models import Triage
 
 # Create your views here.
 
@@ -111,15 +113,25 @@ def add_doctor_note(request, visit_id):
     patient = visit.patient
     tests = Test.objects.filter(hospital_available=visit.hospital)
 
+    # ✅ Fetch ICD-10 hierarchy as JSON
     icd_entries = ICD10Entry.objects.all()
     icd10_hierarchy = build_icd_hierarchy(icd_entries)
     icd10_json = json.dumps(icd10_hierarchy, cls=DjangoJSONEncoder)
 
+    # ✅ Fetch latest triage for this visit
     triage = visit.triages.order_by("-timestamp").first()
+
+    # ✅ Fetch previous visits for patient (exclude current one)
     previous_visits = Visit.objects.filter(patient=patient).exclude(id=visit.id).order_by("-date_time")
 
-    success = False
     error = None
+    success = None
+    form_data = {
+        "doctor_notes": "",
+        "chief_complains": "",
+        "tests": [],
+        "icd10_codes": []
+    }
 
     if request.method == 'POST':
         doctor_notes_text = request.POST.get('doctor_notes', '').strip()
@@ -127,43 +139,62 @@ def add_doctor_note(request, visit_id):
         selected_test_ids = [int(i) for i in request.POST.getlist('tests') if i.isdigit()]
         selected_icd10_ids = [int(i) for i in request.POST.getlist('icd10_codes') if i.isdigit()]
 
-    if not doctor_notes_text:
-        error = "Doctor notes are required."
-    else:
-        # Create DoctorNote
-        note = DoctorNote.objects.create(
-            visit=visit,
-            patient=patient,
-            chief_complains=chief_complains_text,
-            doctor_notes=doctor_notes_text,
-            done_by=request.user
-        )
+        # Preserve form data for retry
+        form_data = {
+            "doctor_notes": doctor_notes_text,
+            "chief_complains": chief_complains_text,
+            "tests": selected_test_ids,
+            "icd10_codes": selected_icd10_ids
+        }
 
-        # Attach selected tests and create bills
-        if selected_test_ids:
-            selected_tests = Test.objects.filter(id__in=selected_test_ids)
-            note.tests.set(selected_tests)
-            for test in selected_tests:
-                Bill.objects.create(
-                    visit=visit,
-                    patient=patient,
-                    description=f"Test: {test.name}",
-                    amount=test.price,
-                    status='pending'
-                )
+        if not doctor_notes_text:
+            error = "Doctor notes are required."
+        else:
+            # Create DoctorNote
+            note = DoctorNote.objects.create(
+                visit=visit,
+                patient=patient,
+                doctor_notes=doctor_notes_text,
+                chief_complains=chief_complains_text,
+                done_by=request.user
+            )
 
-        # Attach selected ICD-10 codes
-        if selected_icd10_ids:
-            selected_icd_entries = ICD10Entry.objects.filter(id__in=selected_icd10_ids)
-            note.icd10_codes.set(selected_icd_entries)
+            # Attach selected tests and create bills
+            if selected_test_ids:
+                selected_tests = Test.objects.filter(id__in=selected_test_ids)
+                note.tests.set(selected_tests)
+                for test in selected_tests:
+                    Bill.objects.create(
+                        visit=visit,
+                        patient=patient,
+                        description=f"Test: {test.name}",
+                        amount=test.price,
+                        status='pending'
+                    )
 
-        # Update visit stage
-        visit.stage = 'billing_note'
-        visit.save()
+            # Attach selected ICD-10 codes
+            if selected_icd10_ids:
+                selected_icd_entries = ICD10Entry.objects.filter(id__in=selected_icd10_ids)
+                note.icd10_codes.set(selected_icd_entries)
 
-        return redirect('doctor_visits_list')
+            # Update visit stage
+            visit.stage = 'billing_note'
+            visit.save()
 
-    # 🚨 if error, return with user inputs preserved
+            success = "Doctor note saved successfully."
+
+            return render(request, 'doctor/doctor_note.html', {
+                'visit': visit,
+                'patient': patient,
+                'triage': triage,
+                'previous_visits': previous_visits,
+                'tests': tests,
+                'icd10_codes': icd10_json,
+                'error': error,
+                'success': success,
+                'form_data': form_data
+            })
+
     return render(request, 'doctor/doctor_note.html', {
         'visit': visit,
         'patient': patient,
@@ -172,14 +203,9 @@ def add_doctor_note(request, visit_id):
         'tests': tests,
         'icd10_codes': icd10_json,
         'error': error,
-        'form_data': {
-            'chief_complains': chief_complains_text,
-            'doctor_notes': doctor_notes_text,
-            'selected_tests': selected_test_ids,
-            'selected_icd10': selected_icd10_ids
-        }
+        'success': success,
+        'form_data': form_data
     })
-
 
 
 
@@ -238,10 +264,20 @@ def save_prescription_note(request, tracking_code):
 def view_doctor_note(request, visit_id):
     note = get_object_or_404(DoctorNote, visit_id=visit_id)
     tests = note.tests.all()
+    patient = note.visit.patient
+
+    # calculate age
+    age = None
+    if patient.date_of_birth:
+        today = date.today()
+        age = today.year - patient.date_of_birth.year - (
+            (today.month, today.day) < (patient.date_of_birth.month, patient.date_of_birth.day)
+        )
 
     return render(request, 'laboratory/view_doctor_note.html', {
         'note': note,
-        'tests': tests
+        'tests': tests,
+        'age': age,
     })
 
 
