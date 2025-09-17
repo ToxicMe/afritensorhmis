@@ -2,32 +2,25 @@
 
 {% block content %}
 <div class="max-w-6xl mx-auto mt-6">
-  <h2 class="text-2xl font-semibold mb-4">Test Results for {{ visit.patient.get_full_name|default:visit.patient.username }}</h2>
+  <h2 class="text-2xl font-semibold mb-4">
+    Test Results for {{ visit.patient.get_full_name|default:visit.patient.username }}
+  </h2>
 
+  <!-- Patient Info -->
   <div class="mb-6">
-    <p>
-      <strong>Age:</strong> 
-      <span id="age-display"
-            data-dob="{{ visit.patient.date_of_birth|date:'Y-m-d' }}">
-        Loading...
-      </span>
+    <p><strong>Age:</strong> 
+      <span id="age-display" data-dob="{{ visit.patient.date_of_birth|date:'Y-m-d' }}">Loading...</span>
     </p>
-
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         const ageSpan = document.getElementById("age-display");
         const dobString = ageSpan.getAttribute("data-dob");
-
         if (dobString && dobString !== "None") {
           const dob = new Date(dobString);
           const today = new Date();
           let age = today.getFullYear() - dob.getFullYear();
           const m = today.getMonth() - dob.getMonth();
-
-          if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
-            age--;
-          }
-
+          if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
           ageSpan.textContent = age + " years";
         } else {
           ageSpan.textContent = "N/A";
@@ -35,17 +28,15 @@
       });
     </script>
     <p><strong>Gender:</strong> {{ visit.patient.gender }}</p>
-    <p hidden><strong>Tracking Code:</strong> {{ visit.tracking_code }}</p>
     <p><strong>Visit Date:</strong> {{ visit.date_time|date:"Y-m-d H:i" }}</p>
     <p><strong>Hospital:</strong> {{ visit.hospital.name }}</p>
   </div>
 
+  <!-- Test Results -->
   {% if test_results %}
     {% for result in test_results %}
       <div class="mb-6 border p-4 bg-gray-50 rounded">
-        <h3 hidden class="text-lg font-semibold mb-2">Test Results Recorded By: {{ result.done_by.get_full_name|default:result.done_by.username }}</h3>
         <p class="text-sm text-gray-500 mb-2">Recorded at: {{ result.created_at|date:"Y-m-d H:i" }}</p>
-
         <table class="min-w-full bg-white border border-gray-200 text-sm">
           <thead class="bg-gray-100">
             <tr>
@@ -55,10 +46,10 @@
           </thead>
           <tbody>
             {% for entry in result.entries.all %}
-            <tr>
-              <td class="py-2 px-3 border-b">{{ entry.test.name }}</td>
-              <td class="py-2 px-3 border-b">{{ entry.result }}</td>
-            </tr>
+              <tr>
+                <td class="py-2 px-3 border-b">{{ entry.test.name }}</td>
+                <td class="py-2 px-3 border-b">{{ entry.result }}</td>
+              </tr>
             {% endfor %}
           </tbody>
         </table>
@@ -68,15 +59,125 @@
     <p class="text-gray-500">No test results available for this visit.</p>
   {% endif %}
 
-  <form method="POST" action="{% url 'save_prescription_note' visit.tracking_code %}" class="mt-6">
-    {% csrf_token %}
-    <div class="mb-4">
-      <label for="doctor_prescription" class="block font-semibold mb-1">Prescription Note / Findings</label>
-      <textarea name="doctor_prescription" id="doctor_prescription" rows="5" class="w-full border px-3 py-2 rounded" required></textarea>
-    </div>
-    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm">
-      Save Prescription
-    </button>
-  </form>
+  <!-- Button to open prescription popup -->
+  <button id="openModal"
+    class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm">
+    + Add Prescription
+  </button>
 </div>
+
+<!-- Prescription Modal -->
+<div id="prescriptionModal"
+  class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative">
+
+    <!-- Close Button -->
+    <button id="closeModal"
+      class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+
+    <h3 class="text-lg font-semibold mb-4">New Prescription</h3>
+
+    <form method="POST" action="{% url 'save_prescription_note' visit.tracking_code %}">
+      {% csrf_token %}
+
+      <!-- Doctor's Note -->
+      <div class="mb-4">
+        <label for="doctor_prescription" class="block font-semibold mb-1">Prescription Note / Findings</label>
+        <textarea name="doctor_prescription" id="doctor_prescription" rows="5"
+          class="w-full border px-3 py-2 rounded" required></textarea>
+      </div>
+
+      <!-- Product Selection -->
+      <h4 class="text-md font-semibold mb-2">Add Medicines</h4>
+      <div id="product-container" class="space-y-3">
+        <div class="product-row flex gap-3 items-center">
+          <select name="products[]" class="product-select w-1/2 border rounded p-2">
+            <option value="">-- Select Product --</option>
+            {% for product in products %}
+              <option value="{{ product.id }}">{{ product.name }} (Stock: {{ product.quantity }})</option>
+            {% endfor %}
+          </select>
+          <input type="number" name="quantities[]" placeholder="Qty" min="1" class="w-20 border rounded p-2" />
+          <input type="text" name="descriptions[]" placeholder="Description" class="flex-1 border rounded p-2" />
+          <button type="button" class="remove-row text-red-600 font-bold">X</button>
+        </div>
+      </div>
+
+      <!-- Add Row Button -->
+      <button type="button" id="add-row"
+        class="mt-3 px-3 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700">
+        + Add Another Medicine
+      </button>
+
+      <!-- Submit -->
+      <div class="mt-6">
+        <button type="submit"
+          class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm">
+          Save Prescription
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<!-- jQuery + Select2 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+  function activateSelect2() {
+    $('.product-select').select2({
+      placeholder: "-- Select Product --",
+      allowClear: true,
+      width: '100%'
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    activateSelect2();
+
+    // Modal controls
+    const modal = document.getElementById("prescriptionModal");
+    document.getElementById("openModal").addEventListener("click", () => {
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    });
+    document.getElementById("closeModal").addEventListener("click", () => {
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    });
+
+    // Add Row Button
+    document.getElementById("add-row").addEventListener("click", function () {
+      let container = document.getElementById("product-container");
+      let newRow = container.querySelector(".product-row").cloneNode(true);
+
+      // Clear values
+      newRow.querySelectorAll("input, select").forEach(el => el.value = "");
+      container.appendChild(newRow);
+
+      // Re-apply Select2
+      $(newRow).find(".product-select").select2({
+        placeholder: "-- Select Product --",
+        allowClear: true,
+        width: '100%'
+      });
+
+      // Bind remove
+      newRow.querySelector(".remove-row").addEventListener("click", function () {
+        newRow.remove();
+      });
+    });
+
+    // Remove initial row
+    document.querySelectorAll(".remove-row").forEach(btn => {
+      btn.addEventListener("click", function () {
+        btn.closest(".product-row").remove();
+      });
+    });
+  });
+</script>
 {% endblock %}

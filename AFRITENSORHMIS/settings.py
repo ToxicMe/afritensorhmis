@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 import os
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -293,28 +294,13 @@ JAZZMIN_SETTINGS = {
 
 
 
-# The Mpesa environment to use
-# Possible values: sandbox, production
-MPESA_ENVIRONMENT='sandbox'
-# Credentials for the daraja app
-MPESA_CONSUMER_KEY='kFFyn9AvM0nAcIhH8AizCuOM3Y2IJX7Lo19K6ja9CVQchjEX'
-MPESA_CONSUMER_SECRET='nSQESv8sRrGFZtVV8uw39uRkQcJaQgm4CXtDu50PDUZoG6rXz3r1sIGf01ALxZ0Y'
-#Shortcode to use for transactions. For sandbox use the Shortcode 1
-MPESA_SHORTCODE='174379'
-# Shortcode to use for Lipa na MPESA Online (MPESA Express) transactions
-# This is only used on sandbox, do not set this variable in production
-# For sandbox use the Lipa na MPESA Online Shorcode provided on test
-MPESA_EXPRESS_SHORTCODE='174379'
-# Type of shortcode
-# Possible values:
-# - paybill (For Paybill)
-# - till_number (For Buy Goods Till Number)
-MPESA_SHORTCODE_TYPE='till_number'
-# Lipa na MPESA Online passkey
-# Sandbox passkey is available on test credentials page
-# Production passkey is sent via email once you go live
-MPESA_PASSKEY='bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'
-# Username for initiator (to be used in B2C, B2B, AccountBalance and
-MPESA_INITIATOR_USERNAME='initiator_username'
-# Plaintext password for initiator (to be used in B2C, B2B, AccountBalance
-MPESA_INITIATOR_SECURITY_CREDENTIAL='Fps+44uV23MXH9fkecANAfrgrREJ92IYewvO++B3I0RdUytmP18VnMIPC6S2w50HALQ3Lxzi+vLJpV6EHNoQTiOhKkEikR0TS3AriJ1IQN4TfoQLAfgNY9m6zjS+1CbXl2OilBu0uskkI6ITVeegfDLTGtPGYwtwsWjucqTFyzDy17/Q3jd0i3Lq6JNuqGRAuS/KCFVNEhvPz89N+YnCObVDYpuZBJ5RInoTCFVqu9TkgXUQiVG2iQXs2dOsaMZrdG9Myh6cyS79DbaFGwQG7mHHtToXYwMF2c3tEm14wOsdIPIshahouIBaH+AIE0qVdPAP6tktXknAc3OHanBOyA=='
+# Mpesa settings
+MPESA_ENVIRONMENT = os.getenv("MPESA_ENVIRONMENT", "sandbox")
+MPESA_CONSUMER_KEY = os.getenv("MPESA_CONSUMER_KEY")
+MPESA_CONSUMER_SECRET = os.getenv("MPESA_CONSUMER_SECRET")
+MPESA_SHORTCODE = os.getenv("MPESA_SHORTCODE")
+MPESA_EXPRESS_SHORTCODE = os.getenv("MPESA_EXPRESS_SHORTCODE")
+MPESA_SHORTCODE_TYPE = os.getenv("MPESA_SHORTCODE_TYPE")
+MPESA_PASSKEY = os.getenv("MPESA_PASSKEY")
+MPESA_INITIATOR_USERNAME = os.getenv("MPESA_INITIATOR_USERNAME")
+MPESA_INITIATOR_SECURITY_CREDENTIAL = os.getenv("MPESA_INITIATOR_SECURITY_CREDENTIAL")

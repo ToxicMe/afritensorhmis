@@ -3,6 +3,27 @@ from registration.models import Visit
 from accounts.models import CustomUser
 from django.utils import timezone
 from decimal import Decimal
+from django.http import HttpResponse
+from django_daraja.mpesa.core import MpesaClient
+
+def mpesa_pay(phone_number, amount, account_reference="REF123", transaction_desc="Payment"):
+    """
+    Triggers an M-Pesa STK Push Prompt to the customer's phone.
+    """
+    cl = MpesaClient()
+    callback_url = "https://api.darajambili.com/express-payment"  # Replace with your callback endpoint
+
+    response = cl.stk_push(
+        phone_number,
+        amount,
+        account_reference,
+        transaction_desc,
+        callback_url
+    )
+    return response 
+
+
+
 
 def create_bill(visit_id, patient_id, description, amount, payment_method=None):
     try:

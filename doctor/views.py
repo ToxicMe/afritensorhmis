@@ -9,6 +9,7 @@ from django.db.models import Q, Sum, Max
 from billing.utils import create_patient_bill
 from django.contrib import messages
 import requests
+from pharmacy.models import *
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
@@ -230,9 +231,15 @@ def prescription_visits_list(request):
 def view_test_results_for_prescription(request, tracking_code):
     visit = get_object_or_404(Visit, tracking_code=tracking_code)
     test_results = visit.test_results.prefetch_related('entries__test')
+
+    # ✅ Fetch products belonging to the hospital of this visit
+    products = Product.objects.filter(consignment__pharmacy__hospital_name=visit.hospital)
+
+
     return render(request, 'doctor/view_test_results.html', {
         'visit': visit,
-        'test_results': test_results
+        'test_results': test_results,
+        'products': products,  # ✅ passed to template
     })
 
 
@@ -240,25 +247,57 @@ def view_test_results_for_prescription(request, tracking_code):
 def save_prescription_note(request, tracking_code):
     visit = get_object_or_404(Visit, tracking_code=tracking_code)
 
-    
     if request.method == 'POST':
         note = request.POST.get('doctor_prescription')
-        if note:
-            PrescriptionNote.objects.create(
-                visit=visit,
-                patient=visit.patient,
-                doctor_prescription=note,
-                done_by=request.user
-            )
-            visit.stage = 'pharmacy'  # Optionally update stage
-            visit.save()
-            return redirect(prescription_visits_list)  # Or wherever you want to go after
-        else:
+
+        if not note:
             return render(request, 'doctor/view_test_results.html', {
                 'visit': visit,
                 'test_results': visit.test_results.all(),
                 'error': 'Prescription note is required.'
             })
+
+        # Create the note
+        prescription_note = PrescriptionNote.objects.create(
+            visit=visit,
+            patient=visit.patient,
+            doctor_prescription=note,
+            done_by=request.user
+        )
+
+        # Handle multiple product entries
+        product_ids = request.POST.getlist('product')
+        quantities = request.POST.getlist('quantity')
+        descriptions = request.POST.getlist('description')
+
+        for i in range(len(product_ids)):
+            if product_ids[i] and quantities[i]:
+                try:
+                    product = Product.objects.get(id=product_ids[i])
+                    PrescriptionProduct.objects.create(
+                        prescription_note=prescription_note,
+                        product=product,
+                        quantity=int(quantities[i]),
+                        description=descriptions[i] if descriptions[i] else ""
+                    )
+                except Product.DoesNotExist:
+                    continue
+
+        # Update stage
+        visit.stage = 'pharmacy'
+        visit.save()
+
+        messages.success(request, "Prescription note saved successfully.")
+        return redirect('prescription_visits_list')
+
+    # For GET - render form with products
+    products = Product.objects.filter(consignment__pharmacy__hospital=visit.hospital)  
+    return render(request, 'doctor/add_prescription.html', {
+        'visit': visit,
+        'products': products
+    })
+
+
 
 
 def view_doctor_note(request, visit_id):

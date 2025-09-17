@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Sum, Max
 from django.contrib import messages
 from django.db import transaction
-from accounts.models import CustomUser
+from accounts.models import CustomUser, InsuranceInformation
 from .models import *
 from django.db.models import Sum, Max, Q, Value, CharField, F, fields, ExpressionWrapper
 from registration.models import Visit
@@ -15,6 +15,7 @@ from datetime import date
 from django.db.models.functions import Concat, Cast
 from django.utils.timezone import localdate, now
 from django.db.models.functions import Coalesce
+
 
 
 
@@ -183,6 +184,9 @@ def view_bill(request, transaction_id):
             (today.month, today.day) < (patient.date_of_birth.month, patient.date_of_birth.day)
         )
 
+    # ✅ Fetch insurance information linked to this patient (via user)
+    patient_insurances = InsuranceInformation.objects.filter(user=visit.patient)
+
     context = {
         'visit': visit,
         'patient': patient,
@@ -190,6 +194,7 @@ def view_bill(request, transaction_id):
         'patient_gender': patient.gender.capitalize() if patient.gender else "N/A",
         'bills': all_bills,
         'total_amount': pending_total,
+        'patient_insurances': patient_insurances,  # 👈 Pass insurance to template
     }
     return render(request, 'billing/bill_receipt.html', context)
 
@@ -256,7 +261,7 @@ def mark_bills_paid(request, tracking_code):
         messages.warning(request, "There are no pending bills to update.")
         return redirect(request.META.get("HTTP_REFERER", "/"))
 
-    total_amount = pending_bills.aggregate(total=Sum('amount'))['total'] or 1
+    total_amount = int(pending_bills.aggregate(total=Sum('amount'))['total'] or 1)
 
     # Handle Mpesa payment
     if payment_method == "mpesa":

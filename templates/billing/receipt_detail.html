@@ -1,48 +1,385 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
 {% block content %}
 
-<div class="max-w-4xl mx-auto mt-10 bg-white shadow rounded p-6">
-  <h2 class="text-xl font-bold mb-2">Receipt {{ receipt.receipt_id }}</h2>
-  <p class="text-sm text-gray-600 mb-4">Date: {{ receipt.date_created|date:"d M Y, H:i" }}</p>
+<!-- Loader Overlay -->
+<div id="paymentLoader" class="hidden fixed inset-0 bg-black bg-opacity-40 z-[1100] flex items-center justify-center">
+  <div class="bg-white p-6 rounded-lg shadow-md text-center">
+    <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+    </svg>
+    <p class="text-sm text-gray-700 font-medium">Processing Payment, please wait...</p>
+  </div>
+</div>
 
-  <div class="mb-4">
-    <strong>Patient:</strong> {{ patient.patient_name|title }}<br>
-    <strong>Gender:</strong> {{ patient_gender }}<br>
-    <strong>Age:</strong> {{ patient_age }}<br>
-    <strong>Visit Code:</strong> {{ visit.tracking_code }}<br>
-    <strong>Payment Method:</strong> {{ receipt.get_payment_method_display }}<br>
-    <strong>Status:</strong> {{ receipt.get_status_display }}<br>
+<div id="receipt-section" class="max-w-6xl mx-auto p-6 mt-12 bg-white shadow rounded relative print:p-0 print:shadow-none print:mt-0 print:max-w-full">
+
+  <!-- Hidden on Print -->
+  <div class="absolute top-4 right-4 no-print">
+    <button onclick="printReceipt()" class="bg-blue-800 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded shadow">
+      Print PDF
+    </button>
   </div>
 
-  <table class="w-full table-auto border text-sm mt-4">
+  <h2 class="text-2xl font-bold mb-4">Bill Receipt</h2>
+
+  <div class="mb-6">
+    <p><strong>Patient Name:</strong> {{ patient.patient_name|title }}</p>
+    <p><strong>Gender:</strong> {{ patient_gender }}</p>
+    <p><strong>Age:</strong> {{ patient_age }}</p>
+    <p><strong>Visit:</strong> {{ visit.tracking_code }}</p>
+    <p><strong>Visit Date:</strong> {{ visit.date_time|date:"Y-m-d H:i" }}</p>
+  </div>
+
+  <table class="w-full table-auto border border-gray-300 text-sm mb-6">
     <thead class="bg-gray-100">
       <tr>
-        <th class="border px-3 py-2 text-left">Description</th>
-        <th class="border px-3 py-2 text-right">Amount</th>
+        <th class="border px-4 py-2 text-left">Date</th>
+        <th class="border px-4 py-2 text-left">Description</th>
+        <th class="border px-4 py-2 text-left">Amount (KSh)</th>
+        <th class="border px-4 py-2 text-left">Status</th>
+        <th class="border px-4 py-2 text-left"></th>
       </tr>
     </thead>
     <tbody>
       {% for bill in bills %}
       <tr>
-        <td class="border px-3 py-2">{{ bill.description }}</td>
-        <td class="border px-3 py-2 text-right">{{ total_amount|floatformat:2 }}
-</td>
+        <td class="border px-4 py-2">{{ bill.date|date:"Y-m-d H:i" }}</td>
+        <td class="border px-4 py-2">{{ bill.description }}</td>
+        <td class="border px-4 py-2">
+          {% if bill.discounted %}
+            <span class="text-green-700 font-semibold">KSh {{ bill.discounted_amount }}</span>
+          {% else %}
+            KSh {{ bill.amount }}
+          {% endif %}
+        </td>
+        <td class="border px-4 py-2">{{ bill.status|capfirst }}</td>
+        <td class="border px-4 py-2">
+          <a href="" class="text-blue-600 hover:underline">Dispute</a>
+        </td>
       </tr>
       {% endfor %}
     </tbody>
-    <tfoot>
-      <tr class="font-bold">
-        <td class="border px-3 py-2 text-right">Total</td>
-        <td class="border px-3 py-2 text-right">
-          {{ total_amount|floatformat:2 }}
-        </td>
-      </tr>
-    </tfoot>
   </table>
 
-  <div class="mt-4 text-center">
-    <a href="{% url 'all_payment_receipts' %}" class="text-blue-600 hover:underline">← Back to Receipts</a>
+  <div class="text-right mt-6">
+    <p class="text-lg font-bold text-green-700">Total Amount: KSh {{ total_amount }}</p>
+  </div>
+
+  <!-- Pay Button (Hidden on Print) -->
+  <div class="text-right mt-6 mb-6 no-print">
+    <button id="openModal" type="button"
+        class="mt-4 mx-auto block px-4 py-2 rounded-lg text-white text-sm font-medium border-none outline-none tracking-wide bg-blue-600 hover:bg-blue-700 active:bg-blue-600">PAY</button>
   </div>
 </div>
+
+<!-- MODAL -->
+<div id="modal" class="hidden">
+  <div class="fixed inset-0 p-4 flex justify-center items-center w-full h-full z-[1000] 
+              before:fixed before:inset-0 before:w-full before:h-full before:bg-[rgba(0,0,0,0.5)] overflow-auto">
+    <div class="w-full max-w-lg bg-white shadow-lg rounded-lg p-8 relative">
+      <div class="flex items-center">
+        <h3 class="text-blue-600 text-xl font-semibold flex-1">Payment Details</h3>
+        <svg id="closeIcon" xmlns="http://www.w3.org/2000/svg"
+            class="w-3.5 h-3.5 ml-2 cursor-pointer shrink-0 fill-gray-400 hover:fill-red-500"
+            viewBox="0 0 320.591 320.591">
+          <path d="M30.391 318.583a30.37 30.37 0 0 1-21.56-7.288c-11.774-11.844-11.774-30.973 0-42.817L266.643 10.665c12.246-11.459 31.462-10.822 42.921 1.424 10.362 11.074 10.966 28.095 1.414 39.875L51.647 311.295a30.366 30.366 0 0 1-21.256 7.288z"></path>
+          <path d="M287.9 318.583a30.37 30.37 0 0 1-21.257-8.806L8.83 51.963C-2.078 39.225-.595 20.055 12.143 9.146c11.369-9.736 28.136-9.736 39.504 0l259.331 257.813c12.243 11.462 12.876 30.679 1.414 42.922-.456.487-.927.958-1.414 1.414a30.368 30.368 0 0 1-23.078 7.288z"></path>
+        </svg>
+      </div>
+
+      <form method="post" action="{% url 'mark_bills_paid' visit.tracking_code %}" id="paymentForm" class="space-y-6 mt-8">
+        {% csrf_token %}
+        <input type="hidden" name="payment_method" id="selectedPaymentMethod" value="cash" />
+
+        <div>
+          <label class="text-slate-900 text-sm mb-2 block">Visit ID</label>
+          <input type="text" value="{{ visit.tracking_code }}" readonly class="px-4 py-3 bg-gray-100 w-full rounded-lg" />
+        </div>
+
+        <div>
+          <label class="text-slate-900 text-sm mb-2 block">Patient Name</label>
+          <input type="text" value="{{ patient.patient_name|title }}" readonly class="px-4 py-3 bg-gray-100 w-full rounded-lg" />
+        </div>
+
+        <div>
+          <label class="text-slate-900 text-sm mb-2 block">Date</label>
+          <input type="text" value="{{ visit.date_time|date:'Y-m-d H:i' }}" readonly class="px-4 py-3 bg-gray-100 w-full rounded-lg" />
+        </div>
+
+       <!-- Payment Method Dropdown -->
+        <div class="relative w-max mt-6 mb-6 mx-auto">
+          <button type="button" id="dropdownToggle"
+              class="px-5 py-2.5 rounded-sm text-white bg-blue-600 hover:bg-blue-700 text-sm font-medium flex items-center">
+              Choose Payment Method
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3 fill-white inline ml-3" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" d="M11.99997 18.1669a2.38 2.38 0 0 1-1.68266-.69733l-9.52-9.52a2.38 2.38 0 1 1 3.36532-3.36532l7.83734 7.83734 7.83734-7.83734a2.38 2.38 0 1 1 3.36532 3.36532l-9.52 9.52a2.38 2.38 0 0 1-1.68266.69734z" clip-rule="evenodd"/>
+              </svg>
+          </button>
+
+          <ul id="dropdownMenu" class="hidden absolute z-50 bg-white shadow-lg py-2 rounded-sm mt-2 min-w-[180px]">
+            <li class="dropdown-item py-2.5 px-4 hover:bg-slate-100 cursor-pointer" data-method="mpesa">Mpesa</li>
+            <li class="dropdown-item py-2.5 px-4 hover:bg-slate-100 cursor-pointer" data-method="insurance">Insurance</li>
+            <li class="dropdown-item py-2.5 px-4 hover:bg-slate-100 cursor-pointer" data-method="cash">Cash</li>
+            <li class="dropdown-item py-2.5 px-4 hover:bg-slate-100 cursor-pointer" data-method="other">Others</li>
+          </ul>
+        </div>
+
+        <div>
+          <label class="text-slate-900 text-sm mb-2 block">Phone Number</label>
+          <input type="tel" value="{{ patient.phone_number }}" readonly class="px-4 py-3 bg-gray-100 w-full rounded-lg" />
+        </div>
+        <!-- Modal Buttons -->
+        <div class="flex justify-end gap-4 mt-8">
+          <button id="closeButton" type="button" class="px-6 py-3 rounded-lg text-slate-900 bg-gray-200 hover:bg-gray-300">Cancel</button>
+          <button type="submit" class="px-6 py-3 rounded-lg text-white bg-blue-600 hover:bg-blue-700">Pay</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- Insurance Popup -->
+<div id="insurancePopup" class="hidden fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,0.4)] z-[1200]">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-[420px] relative">
+    <h3 class="text-lg font-semibold mb-4">Select Insurance</h3>
+
+    <!-- Insurance Multi-Select -->
+    <div class="mb-4">
+      <label for="insuranceSelect" class="block text-sm font-medium text-gray-700 mb-2">
+        Available Insurances
+      </label>
+      <select id="insuranceSelect" name="insurance_ids" 
+              class="w-full border rounded p-2 h-32" multiple>
+        {% for record in patient_insurances %}
+          <option value="{{ record.id }}">
+            {{ record.insurance_provider.name }} 
+            ({{ record.scheme_type|title }}) 
+            - Card: {{ record.card_number }}
+          </option>
+        {% empty %}
+          <option disabled>No insurance available for this patient</option>
+        {% endfor %}
+      </select>
+      <p class="text-xs text-gray-500 mt-1">Hold <kbd>Ctrl</kbd> (Windows) or <kbd>Cmd</kbd> (Mac) to select multiple.</p>
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex justify-end gap-4">
+      <button type="button" id="cancelInsurance" 
+              class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">Cancel</button>
+      <button type="button" id="confirmInsurance" 
+              class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Confirm</button>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Hidden input to store selected insurance -->
+<input type="hidden" name="selected_insurance" id="selectedInsurance" />
+
+
+<!-- Mpesa Number Popup -->
+<div id="mpesaPopup" class="hidden fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,0.5)] z-[1100]">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-[350px]">
+    <h3 class="text-lg font-semibold mb-4">Enter Mpesa Number</h3>
+    <input type="tel" id="mpesaNumber" name="mpesa_number" value="+254" placeholder="e.g. 07XXXXXXXX"
+           class="w-full border rounded p-2 mb-4" />
+    <div class="flex justify-end gap-4">
+      <button type="button" id="cancelMpesa" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">Cancel</button>
+      <button type="button" id="confirmMpesa" class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script>
+
+  document.addEventListener("DOMContentLoaded", () => {
+  const insurancePopup = document.getElementById("insurancePopup");
+  const insuranceSelect = document.getElementById("insuranceSelect");
+  const selectedInsuranceInput = document.getElementById("selectedInsurance");
+
+  // Open insurance popup when clicked in dropdown
+  document.querySelector('[data-method="insurance"]').addEventListener("click", () => {
+    insurancePopup.classList.remove("hidden");
+  });
+
+  // Cancel button
+  document.getElementById("cancelInsurance").addEventListener("click", () => {
+    insurancePopup.classList.add("hidden");
+  });
+
+  // Confirm insurance selection
+  document.getElementById("confirmInsurance").addEventListener("click", () => {
+    const selected = insuranceSelect.value;
+    if (!selected) {
+      alert("Please select an insurance.");
+      return;
+    }
+
+    selectedInsuranceInput.value = selected; // store in hidden input
+    insurancePopup.classList.add("hidden");
+
+    // Update dropdown button text
+    document.getElementById("dropdownToggle").innerHTML = 
+      `Insurance: ${insuranceSelect.options[insuranceSelect.selectedIndex].text}
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-3 fill-white inline ml-3" viewBox="0 0 24 24">
+        <path fill-rule="evenodd" d="M11.99997 18.1669a2.38 2.38 0 0 1-1.68266-.69733l-9.52-9.52a2.38 2.38 0 1 1 3.36532-3.36532l7.83734 7.83734 7.83734-7.83734a2.38 2.38 0 1 1 3.36532 3.36532l-9.52 9.52a2.38 2.38 0 0 1-1.68266.69734z" clip-rule="evenodd"/>`;
+  });
+});
+
+ document.addEventListener("DOMContentLoaded", () => {
+    const toggle = document.getElementById("dropdownToggle");
+    const menu = document.getElementById("dropdownMenu");
+
+    toggle.addEventListener("click", () => {
+      menu.classList.toggle("hidden");
+    });
+
+    // Handle item selection
+    document.querySelectorAll(".dropdown-item").forEach(item => {
+      item.addEventListener("click", () => {
+        toggle.innerHTML = `${item.textContent}
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-3 fill-white inline ml-3" viewBox="0 0 24 24">
+            <path fill-rule="evenodd" d="M11.99997 18.1669a2.38 2.38 0 0 1-1.68266-.69733l-9.52-9.52a2.38 2.38 0 1 1 3.36532-3.36532l7.83734 7.83734 7.83734-7.83734a2.38 2.38 0 1 1 3.36532 3.36532l-9.52 9.52a2.38 2.38 0 0 1-1.68266.69734z" clip-rule="evenodd"/>
+          </svg>`;
+        menu.classList.add("hidden");
+        console.log("Selected method:", item.dataset.method); // you can send this value to your form
+      });
+    });
+
+    // Close dropdown if clicked outside
+    document.addEventListener("click", (event) => {
+      if (!toggle.contains(event.target) && !menu.contains(event.target)) {
+        menu.classList.add("hidden");
+      }
+    });
+  });
+
+ document.addEventListener("DOMContentLoaded", function () {
+    const dropdownToggle = document.getElementById("dropdownToggle");
+    const dropdownMenu = document.getElementById("dropdownMenu");
+    const paymentMethodInput = document.getElementById("selectedPaymentMethod");
+
+    const mpesaPopup = document.getElementById("mpesaPopup");
+    const confirmMpesa = document.getElementById("confirmMpesa");
+    const cancelMpesa = document.getElementById("cancelMpesa");
+    const mpesaNumberInput = document.getElementById("mpesaNumber");
+
+    dropdownToggle.addEventListener("click", () => {
+      dropdownMenu.classList.toggle("hidden");
+    });
+
+    document.querySelectorAll(".dropdown-item").forEach(item => {
+      item.addEventListener("click", function () {
+        const method = this.dataset.method;
+        paymentMethodInput.value = method;
+        dropdownToggle.innerText = this.innerText;
+
+        dropdownMenu.classList.add("hidden");
+
+        if (method === "mpesa") {
+          mpesaPopup.classList.remove("hidden");
+        }
+      });
+    });
+
+    cancelMpesa.addEventListener("click", () => {
+      mpesaPopup.classList.add("hidden");
+    });
+
+    confirmMpesa.addEventListener("click", () => {
+      if (mpesaNumberInput.value.trim() === "") {
+        alert("Please enter a valid Mpesa number");
+      } else {
+        // add number to hidden input inside form
+        let hiddenInput = document.createElement("input");
+        hiddenInput.type = "hidden";
+        hiddenInput.name = "mpesa_number";
+        hiddenInput.value = mpesaNumberInput.value;
+        document.getElementById("paymentForm").appendChild(hiddenInput);
+
+        mpesaPopup.classList.add("hidden");
+        alert("Mpesa number saved. Proceed to pay.");
+      }
+    });
+  });
+
+function printReceipt() {
+  window.print();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  let modal = document.getElementById('modal');
+  let openModalBtn = document.getElementById('openModal');
+  let closeModalBtns = [document.getElementById('closeIcon'), document.getElementById('closeButton')];
+  let paymentForm = document.getElementById('paymentForm');
+  let loader = document.getElementById('paymentLoader');
+
+  function showModal() { modal.classList.remove('hidden'); }
+  function hideModal() { modal.classList.add('hidden'); }
+
+  openModalBtn.addEventListener('click', showModal);
+  closeModalBtns.forEach(btn => { if (btn) btn.addEventListener('click', hideModal); });
+
+  // Close modal when clicking dark background
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal) hideModal();
+  });
+
+  // Show loader when submitting form
+  if (paymentForm) {
+    paymentForm.addEventListener('submit', () => {
+      loader.classList.remove('hidden');
+      hideModal();
+    });
+  }
+
+  // Payment dropdown logic
+  const dropdownToggle = document.getElementById('dropdownToggle');
+  const dropdownMenu = document.getElementById('dropdownMenu');
+  const hiddenInput = document.getElementById('selectedPaymentMethod');
+
+  dropdownToggle.addEventListener('click', (event) => {
+    event.stopPropagation();
+    dropdownMenu.classList.toggle('hidden');
+  });
+
+  document.querySelectorAll('.dropdown-item').forEach(item => {
+    item.addEventListener('click', () => {
+      hiddenInput.value = item.getAttribute('data-method');
+      dropdownToggle.innerHTML = `Payment: ${item.textContent} <svg xmlns="http://www.w3.org/2000/svg" class="w-3 fill-white inline ml-3" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M11.99997 18.1669a2.38 2.38 0 0 1-1.68266-.69733l-9.52-9.52a2.38 2.38 0 1 1 3.36532-3.36532l7.83734 7.83734 7.83734-7.83734a2.38 2.38 0 1 1 3.36532 3.36532l-9.52 9.52a2.38 2.38 0 0 1-1.68266.69734z" clip-rule="evenodd"/></svg>`;
+      dropdownMenu.classList.add('hidden');
+    });
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!dropdownMenu.contains(event.target) && event.target !== dropdownToggle) {
+      dropdownMenu.classList.add('hidden');
+    }
+  });
+});
+</script>
+
+<!-- Print styles -->
+<style>
+  @media print {
+    body * { visibility: hidden; }
+    #receipt-section, #receipt-section * { visibility: visible; }
+    #receipt-section {
+      position: absolute;
+      left: 0; top: 0;
+      width: 100%;
+      margin: 0; padding: 0;
+      box-shadow: none;
+    }
+    .no-print { display: none !important; }
+    html, body { margin: 0; padding: 0; overflow: hidden; background: white; }
+  }
+</style>
 
 {% endblock %}
