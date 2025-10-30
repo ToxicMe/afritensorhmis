@@ -6,12 +6,27 @@ from decimal import Decimal
 from django.http import HttpResponse
 from django_daraja.mpesa.core import MpesaClient
 
+def normalize_phone_number(phone_number: str) -> str:
+    """Convert phone number into Safaricom's required format 2547XXXXXXXX."""
+    phone_number = phone_number.strip().replace(" ", "")
+    
+    if phone_number.startswith("+"):
+        phone_number = phone_number[1:]  # remove leading +
+    if phone_number.startswith("0"):
+        phone_number = "254" + phone_number[1:]
+    
+    return phone_number
+
 def mpesa_pay(phone_number, amount, account_reference="REF123", transaction_desc="Payment"):
     """
     Triggers an M-Pesa STK Push Prompt to the customer's phone.
     """
     cl = MpesaClient()
     callback_url = "https://api.darajambili.com/express-payment"  # Replace with your callback endpoint
+
+     # normalize
+    phone_number = normalize_phone_number(phone_number)
+    amount = int(amount)  # ensure integer
 
     response = cl.stk_push(
         phone_number,
