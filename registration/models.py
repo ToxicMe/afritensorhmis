@@ -1,7 +1,8 @@
 from django.db import models
 from django.utils import timezone
 from django.utils.crypto import get_random_string
-
+from django.conf import settings
+from doctor.models import DoctorNote
 class Visit(models.Model):
     STAGE_CHOICES = [
         ('triage', 'Triage'),
@@ -17,6 +18,8 @@ class Visit(models.Model):
         ('pharmacy', 'Pharmacy'),
         ('inpatient', 'Inpatient'),
         ('discharged', 'Discharged'),
+        ('referral', 'Referral'),
+        ('admitted', 'Admitted'),
     ]
     VISIT_TYPE = [
         ('inpatient', 'Inpatient'),
@@ -45,3 +48,36 @@ class Visit(models.Model):
 
     def __str__(self):
         return f"Visit #{self.id} ({self.tracking_code}) - {self.patient} at {self.hospital} on {self.date_time.strftime('%Y-%m-%d %H:%M')}"
+
+class Referral(models.Model):
+    patient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="referrals"
+    )
+    visit = models.ForeignKey(
+        Visit,
+        on_delete=models.CASCADE,
+        related_name="referrals"
+    )
+    doctor_note = models.ForeignKey(
+        "doctor.DoctorNote",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    reason = models.TextField()
+    referred_to_hospital = models.CharField(max_length=255)
+
+    referred_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="referrals_made"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)  # ✅ Optional but recommended
+
+    def __str__(self):
+        return f"Referral for {self.patient} to {self.referred_to_hospital}"

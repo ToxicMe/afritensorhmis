@@ -22,6 +22,7 @@ from accounts import views as accounts_views  # import your login view directly
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
+    path('ward/', include('ward.urls')),
     path('hospital/', include('hospital.urls')),
     path('companies/', include('companies.urls')),
     path('registration/', include('registration.urls')),

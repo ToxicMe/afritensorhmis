@@ -22,9 +22,6 @@ from django.db.models import Count
 import json
 from datetime import timedelta
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear
-
-
-
 from django.shortcuts import render
 from django.utils import timezone
 from datetime import timedelta
@@ -36,6 +33,68 @@ from django.db.models import Count
 from django.utils import timezone
 from datetime import timedelta
 import json
+
+
+def submit_referral(request):
+    if request.method == "POST":
+        visit_id = request.POST.get("visit")
+        reason = request.POST.get("reason")
+        referred_to = request.POST.get("referred_to_hospital")
+        doctor_note_id = request.POST.get("doctor_note")
+
+        visit = get_object_or_404(Visit, id=visit_id)
+
+        Referral.objects.create(
+            patient=visit.patient,
+            visit=visit,
+            reason=reason,
+            referred_to_hospital=referred_to,
+            doctor_note_id=doctor_note_id if doctor_note_id else None,
+            referred_by=request.user
+        )
+
+        
+        return redirect(refferable_list)
+
+    # Update visit stage to 'doctor'
+        visit.stage = 'referral'
+        visit.save()
+        messages.success(request, "Referral submitted successfully.")
+
+    return redirect(refferable_list)
+
+def refferable_list(request):
+    user = request.user
+
+    # Ensure user belongs to a hospital
+    if not hasattr(user, 'hospital') or not user.hospital:
+        return render(request, 'referrals/referable_visits_list.html', {
+            'visits': [],
+            'error': 'No hospital associated with your account.'
+        })
+
+    # Fetch visits that are NOT discharged and are under the user's hospital
+    visits_qs = Visit.objects.filter(
+        hospital=user.hospital
+    ).exclude(stage="discharged").order_by("-updated_on")
+
+    visits = []
+    for v in visits_qs:
+        latest_note = v.doctor_notes.order_by("-created_at").first()
+        visits.append({
+            "id": v.id,
+            "tracking_code": v.tracking_code,
+            "name": v.patient.get_full_name() if hasattr(v.patient, "get_full_name") else v.patient.username,
+            "age": v.patient.age if hasattr(v.patient, "age") else None,
+            "gender": v.patient.gender if hasattr(v.patient, "gender") else "N/A",
+            "visit_type": v.type if hasattr(v, "type") else "N/A",
+            "date": v.date_time,
+            "latest_doctor_note": latest_note,
+        })
+
+    return render(request, 'registration/refferable_list.html', {
+        'visits': visits
+    })
 
 def main_dashboard(request):
     period = request.GET.get('period', 'day')  # day, week, month, year
@@ -267,7 +326,7 @@ def create_visit(request):
         stage_map = {
             'outpatient': 'billing',
             'outpatient_consultation': 'consultation',
-            'inpatient': 'inpatient',
+            'inpatient': 'admitted',
             'minor_surgery': 'minor_surgery',
         }
         initial_stage = stage_map.get(visit_type, 'billing')

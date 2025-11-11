@@ -13,6 +13,9 @@ urlpatterns = [
     path('visit/<str:tracking_code>/', views.visit_detail, name='visit_detail'),
     path('insurance/remove/<int:insurance_id>/', views.remove_insurance_info, name='remove_insurance_info'),
     path('', views.main_dashboard, name='main_dashboard'),
+    path('refferable-visits/', views.refferable_list, name='refferable_visits_list'),
+    path("referrals/submit/", views.submit_referral, name="submit_referral"),
+
 
 
 

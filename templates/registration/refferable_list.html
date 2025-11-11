@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="text-xl font-bold mb-4 mt-6">Referable Patients</h2>
+
+{% if error %}
+<p style="color:red;">{{ error }}</p>
+{% endif %}
+
+<div class="overflow-x-auto">
+  <table class="min-w-full bg-white border border-gray-300">
+    <thead class="bg-blue-600 text-gray-100">
+      <tr>
+        <th class="py-2 px-4 border-b text-left">Visit ID</th>
+        <th class="py-2 px-4 border-b text-left">Patient Name</th>
+        <th class="py-2 px-4 border-b text-left">Age</th>
+        <th class="py-2 px-4 border-b text-left">Gender</th>
+        <th class="py-2 px-4 border-b text-left">Visit Type</th>
+        <th class="py-2 px-4 border-b text-left">Date of Visit</th>
+        <th class="py-2 px-4 border-b text-left">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for v in visits %}
+      <tr class="hover:bg-gray-50">
+        <td class="py-2 px-4 border-b">{{ v.tracking_code }}</td>
+        <td class="py-2 px-4 border-b">{{ v.name|title }}</td>
+        <td class="py-2 px-4 border-b">{{ v.age }} years</td>
+        <td class="py-2 px-4 border-b capitalize">{{ v.gender }}</td>
+        <td class="py-2 px-4 border-b capitalize">{{ v.visit_type }}</td>
+        <td class="py-2 px-4 border-b">{{ v.date|date:"Y-m-d H:i" }}</td>
+
+        <td class="py-2 px-4 border-b">
+          <button type="button"
+            onclick="openModal(
+              '{{ v.id }}',
+              '{{ v.tracking_code }}',
+              '{{ v.name|escapejs }}',
+              '{% if v.latest_doctor_note %}{{ v.latest_doctor_note.id }}{% endif %}',
+              '{% if v.latest_doctor_note %}{{ v.latest_doctor_note.note|escapejs }}{% else %}No doctor note available{% endif %}'
+            )"
+            class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-semibold cursor-pointer border-2 border-blue-700 outline-none hover:bg-blue-700 hover:text-white text-blue-700 transition-all duration-300">
+            Refer Patient
+          </button>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="text-center py-4 text-gray-500">No referable visits available.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- ✅ MODAL FORM -->
+<div id="referralModal" class="hidden fixed inset-0 bg-black bg-opacity-50 items-center justify-center">
+  <div class="bg-white p-6 rounded shadow-lg w-96">
+    <h3 class="text-lg font-bold mb-4">Refer Patient</h3>
+
+    <form method="POST" action="{% url 'submit_referral' %}">
+      {% csrf_token %}
+
+      <input type="hidden" id="visit_id" name="visit">
+      <input type="hidden" id="doctor_note_id" name="doctor_note">
+
+      <p><strong>Visit Code:</strong> <span id="visitCode"></span></p>
+      <p><strong>Patient:</strong> <span id="patientName"></span></p>
+
+      <label class="block mt-3 font-semibold">Doctor Note</label>
+      <textarea id="doctorNoteDisplay" class="w-full border rounded px-3 py-2 bg-gray-100" readonly></textarea>
+
+      <label class="block mt-3 font-semibold">Reason for Referral</label>
+      <textarea name="reason" class="w-full border rounded px-3 py-2" required></textarea>
+
+      <label class="block mt-3 font-semibold">Referred To Hospital</label>
+      <input type="text" name="referred_to_hospital" class="w-full border rounded px-3 py-2" required>
+
+      <div class="flex justify-end mt-4 gap-3">
+        <button type="button" onclick="closeModal()" class="px-4 py-2 rounded bg-gray-400 text-white">Cancel</button>
+        <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openModal(visitId, visitCode, patientName, doctorNoteId, doctorNoteText) {
+  document.getElementById("visit_id").value = visitId;
+  document.getElementById("visitCode").innerText = visitCode;
+  document.getElementById("patientName").innerText = patientName;
+  document.getElementById("doctor_note_id").value = doctorNoteId || "";
+  document.getElementById("doctorNoteDisplay").value = doctorNoteText || "No doctor note available";
+
+  document.getElementById("referralModal").classList.remove("hidden");
+  document.getElementById("referralModal").classList.add("flex");
+}
+
+function closeModal() {
+  document.getElementById("referralModal").classList.add("hidden");
+  document.getElementById("referralModal").classList.remove("flex");
+}
+</script>
+
+{% endblock %}
