@@ -6,8 +6,8 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-3xl font-bold text-gray-800">Petty Cash Journal</h1>
-      <p class="text-sm text-gray-500 mt-1">Track petty cash inflows and outflows</p>
+      <h1 class="text-3xl font-bold text-gray-800">Journal</h1>
+      <p class="text-sm text-gray-500 mt-1">Cash inflows and outflows</p>
     </div>
     <button id="openModalBtn"
       class="bg-blue-600 text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-blue-700 transition">
@@ -18,7 +18,7 @@
   <!-- Modal Form -->
   <div id="addEntryModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 items-center justify-center">
     <div class="bg-white w-full max-w-xl rounded-lg shadow-lg p-6 relative">
-      <h2 class="text-lg font-bold mb-4 text-gray-800">Add Petty Cash Entry</h2>
+      <h2 class="text-lg font-bold mb-4 text-gray-800">Add Journal Entry</h2>
       <form method="post" action="{% url 'add_petty_cash_entry' %}">
         {% csrf_token %}
         <div class="grid grid-cols-2 gap-4">
@@ -55,6 +55,14 @@
           <div>
             <label class="text-sm text-gray-600">Reference</label>
             <input type="text" name="reference" class="w-full border rounded px-3 py-2">
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">Category</label>
+            <select name="entry_type" required class="w-full border rounded px-3 py-2">
+              <option value="">Select</option>
+              <option value="debit">Receivable</option>
+              <option value="credit">Payable</option>
+            </select>
           </div>
           <div>
             <label class="text-sm text-gray-600">Entry Type</label>
