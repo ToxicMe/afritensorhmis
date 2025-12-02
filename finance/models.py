@@ -9,17 +9,12 @@ from django.conf import settings
 from hospital.models import Hospital  # adjust if hospital model path differs
 
 class CashAccount(models.Model):
-    ACCOUNT_TYPES = [
-        ('bank', 'Bank Account'),
-        ('cash', 'Cash in Hand'),
-        ('mobile', 'Mobile Money'),
-        ('other', 'Other'),
-    ]
+    
 
     name = models.CharField(max_length=100, unique=True)
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='account_hospital', default=1)
     account_number = models.CharField(max_length=50, blank=True, null=True)
-    account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPES, default='bank')
+    account_type = models.CharField(max_length=500, unique=True)
     currency = models.CharField(max_length=10, default='KES')
     balance = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
     is_active = models.BooleanField(default=True)
@@ -35,23 +30,19 @@ class CashAccount(models.Model):
 
 
 class PettyCashEntry(models.Model):
-    entry_code = models.CharField(max_length=20, unique=True, editable=False)
-    date = models.DateField(default=now)
-    description = models.TextField()
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    paid_to = models.CharField(max_length=255)
-    approved_by = models.CharField(max_length=255)
-    received_by = models.CharField(max_length=255, blank=True)
-    reference = models.CharField(max_length=255, blank=True, null=True)
-
     ENTRY_TYPE_CHOICES = [
         ('debit', 'Debit'),   # cash in
         ('credit', 'Credit'), # cash out
     ]
+    entry_code = models.CharField(max_length=20, unique=True, editable=False)
+    ledger_account = models.ForeignKey('CashAccount', on_delete=models.SET_NULL, null=True, blank=True, related_name='petty_ledger_entry')
+    date = models.DateTimeField(auto_now_add=True)
+    description = models.TextField()
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    reference = models.CharField(max_length=255, blank=True, null=True)
     entry_type = models.CharField(max_length=6, choices=ENTRY_TYPE_CHOICES)
     done_by = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, related_name='petty_added_by')
 
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-date']

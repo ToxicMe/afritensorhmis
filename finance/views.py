@@ -92,13 +92,16 @@ def view_petty_cash_entry(request, entry_id):
 
 def add_petty_cash_entry(request):
     if request.method == "POST":
+
+        ledger_account_id = request.POST.getlist("ledger_account")[0]
+        ledger_account = CashAccount.objects.filter(id=int(ledger_account_id)).first()
+
+
         entry = PettyCashEntry(
+            ledger_account=ledger_account,
             date=request.POST.get("date"),
             description=request.POST.get("description"),
             amount=request.POST.get("amount"),
-            paid_to=request.POST.get("paid_to"),
-            approved_by=request.POST.get("approved_by"),
-            received_by=request.POST.get("received_by"),
             reference=request.POST.get("reference"),
             entry_type=request.POST.get("entry_type"),
             done_by=request.user
@@ -107,11 +110,13 @@ def add_petty_cash_entry(request):
         return redirect('petty_cash') 
 
 def petty_cash(request):
-    users = User.objects.exclude(account_type='Patient')  
+    users = User.objects.exclude(account_type='Patient')
+    cash_accounts_list = CashAccount.objects.all( )
+    suppliers_list = Supplier.objects.all( )  
 
     entries = PettyCashEntry.objects.all().order_by('-date')
 
-    return render(request, 'finance/cash_office/petty_cash_journal.html',{'entries': entries,  'users': users})
+    return render(request, 'finance/cash_office/petty_cash_journal.html',{'entries': entries,  'users': users, 'cash_accounts_list': cash_accounts_list, 'suppliers_list': suppliers_list})
 
 def add_fixed_asset(request):
     hospitals = Hospital.objects.all()
@@ -362,59 +367,27 @@ def cash_flow(request):
     return render(request, 'finance/financial_management/cash_flow.html')
 
 def general_ledger(request):
-    if request.method == 'POST':
-        date = request.POST.get('date')
-        account_number = request.POST.get('account_number')
-        description = request.POST.get('description')
-        amount = request.POST.get('amount')
-        entry_type = request.POST.get('entry_type')
-        text = request.POST.get('text')
-        reference = request.POST.get('reference')
+    entries = PettyCashEntry.objects.all().order_by('-date')
 
-    try:
-        entry = LedgerEntry.objects.create(
-                date=date,
-                account_number=account_number,
-                description=description,
-                amount=amount,
-                entry_type=entry_type,
-                text=text,
-                reference=reference,
-                entry_by=request.user
-            )
-        entry.save()
-        messages.success(request, "Ledger entry saved successfully.")
-        return redirect('general_ledger')  # Adjust to match your URL name
-    except Exception as e:
-        messages.error(request, f"Error saving entry: {str(e)}")
-
-    # For GET request, fetch existing entries
-    entries = LedgerEntry.objects.all()
+    
     return render(request, 'finance/financial_management/general_ledger.html',{'entries':entries})
 
 def balance_sheet(request):
     return render(request, 'finance/financial_management/balance_sheet.html')
 
 def trial_balance(request):
-    petty_cash_total_debit = get_total_petty_cash_debit()
-    total_pharmacy_bills = get_total_pharmacy_bills()
-    total_leasehold_value = get_total_leasehold_value()
-    total_computers_value = get_total_computers_value()
-    total_net_book_value = get_total_net_book_value()
-    total_insurance_bills = get_total_insurance_bills()
-    total_consultation_bills = get_total_consultation_bills()
-    total_test_bills = get_total_test_bills()
+    
 
-    return render(request, 'finance/financial_management/trial_balance.html', {'total_computers_value': total_computers_value, 
-                                                                               'total_net_book_value': total_net_book_value, 
-                                                                               'total_leasehold_value': total_leasehold_value, 
-                                                                               'total_insurance_bills':total_insurance_bills,
-                                                                               'petty_cash_total_debit':petty_cash_total_debit,
-                                                                               'total_pharmacy_bills': total_pharmacy_bills,
-                                                                               'total_consultation_bills': total_consultation_bills,
-                                                                               'total_test_bills': total_test_bills,
-                                                                               
-                                                                               })
+    accounts_summary = CashAccount.objects.annotate(
+        total_debit=Sum('petty_ledger_entry__amount', filter=Q(petty_ledger_entry__entry_type='debit')),
+        total_credit=Sum('petty_ledger_entry__amount', filter=Q(petty_ledger_entry__entry_type='credit')),
+            ).annotate(
+                computed_balance=F('total_debit') - F('total_credit')
+            )
+
+
+
+    return render(request, 'finance/financial_management/trial_balance.html',  {'accounts': accounts_summary})
 
 
 def receivables(request):

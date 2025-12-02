@@ -9,7 +9,7 @@
       <h1 class="text-3xl font-bold text-gray-800">General Ledger</h1>
       <p class="text-sm text-gray-500 mt-1">A detailed log of all financial transactions</p>
     </div>
-    <button id="openModalBtn"
+    <button hidden id="openModalBtn"
       class="bg-blue-600 text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-blue-700 transition">
       + Add Entry
     </button>
@@ -73,11 +73,11 @@
     <table class="min-w-full border text-sm text-gray-800 mt-6">
       <thead class="bg-blue-600 text-white">
         <tr>
-          <th class="py-2 px-3 border">GL Account</th>
-          <th class="py-2 px-3 border">Account Description</th>
+          <th class="py-2 px-3 border">Date</th>
+          <th class="py-2 px-3 border">Description</th>
+          <th class="py-2 px-3 border">Ledger Account</th>
           <th class="py-2 px-3 border">Debit</th>
           <th class="py-2 px-3 border">Credit</th>
-          <th class="py-2 px-3 border">Text</th>
           <th class="py-2 px-3 border">Reference</th>
           <th class="py-2 px-3 border">Entry done by</th>
         </tr>
@@ -85,17 +85,18 @@
       <tbody>
         {% for entry in entries %}
         <tr>
-          <td class="border px-3 py-2">{{ entry.account_number }}</td>
+          <td class="border px-3 py-2">{{ entry.date }}</td>
           <td class="border px-3 py-2">{{ entry.description }}</td>
+          <td class="border px-3 py-2">{{ entry.ledger_account }}</td>
           <td class="border px-3 py-2 text-right">
             {% if entry.entry_type == 'debit' %}{{ entry.amount|floatformat:2 }}{% else %}—{% endif %}
           </td>
           <td class="border px-3 py-2 text-right">
             {% if entry.entry_type == 'credit' %}{{ entry.amount|floatformat:2 }}{% else %}—{% endif %}
           </td>
-          <td class="border px-3 py-2">{{ entry.text }}</td>
+         
           <td class="border px-3 py-2">{{ entry.reference }}</td>
-          <td class="border px-3 py-2">{{ entry.entry_by.get_full_name|default:entry.entry_by.username }}</td>
+          <td class="border px-3 py-2"></td>
         </tr>
         {% empty %}
         <tr><td colspan="7" class="text-center py-4 text-gray-400">No entries yet</td></tr>

@@ -22,60 +22,44 @@
       <form method="post" action="{% url 'add_petty_cash_entry' %}">
         {% csrf_token %}
         <div class="grid grid-cols-2 gap-4">
+           <div >
+            <label class="text-sm text-gray-600">Ledger Account<span class="text-red-600 font-bold"><sup>required</sup></span></label>
+            <select name="ledger_account" class="select2 w-full border rounded px-3 py-2" required>
+              <option value="">Select </option>
+              {% for cashaccount in cash_accounts_list %}
+                <option value="{{ cashaccount.id }}">{{ cashaccount.name }}-{{cashaccount.balance}}-{{cashaccount.hospital}}</option>
+              {% endfor %}
+            </select>
+          </div>
+
           <div>
-            <label class="text-sm text-gray-600">Date</label>
+            <label class="text-sm text-gray-600">Date<span class="text-red-600 font-bold"><sup>required</sup></span></label>
             <input type="date" name="date" required class="w-full border rounded px-3 py-2">
           </div>
+
+           <div class="col-span-2">
+            <label class="text-sm text-gray-600">Description<span class="text-red-600 font-bold"><sup>required</sup></span></label>
+            <textarea name="description" required class="w-full border rounded px-3 py-2"></textarea>
+          </div>
+
           <div>
-            <label class="text-sm text-gray-600">Amount</label>
+            <label class="text-sm text-gray-600">Amount<span class="text-red-600 font-bold"><sup>required</sup></span></label>
             <input type="number" step="0.01" name="amount" required class="w-full border rounded px-3 py-2">
           </div>
           <div>
-            <label class="text-sm text-gray-600">Paid To</label>
-            <input type="text" name="paid_to" required class="w-full border rounded px-3 py-2">
+            <label class="text-sm text-gray-600">Reference<span class="text-red-600 font-bold"><sup>required</sup></span></label>
+            <textarea type="text" name="reference" class="w-full border rounded px-3 py-2"></textarea>
           </div>
           <div>
-            <label class="text-sm text-gray-600">Approved By</label>
-            <select name="approved_by" class="select2 w-full border rounded px-3 py-2" required>
-              <option value="">Select approver</option>
-              {% for user in users %}
-                <option value="{{ user.get_full_name }}">{{ user.get_full_name }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div>
-            <label class="text-sm text-gray-600">Received By</label>
-            <select name="received_by" class="select2 w-full border rounded px-3 py-2">
-              <option value="">Select receiver</option>
-              {% for user in users %}
-                <option value="{{ user.get_full_name }}">{{ user.get_full_name }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div>
-            <label class="text-sm text-gray-600">Reference</label>
-            <input type="text" name="reference" class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="text-sm text-gray-600">Category</label>
-            <select name="entry_type" required class="w-full border rounded px-3 py-2">
-              <option value="">Select</option>
-              <option value="debit">Receivable</option>
-              <option value="credit">Payable</option>
-            </select>
-          </div>
-          <div>
-            <label class="text-sm text-gray-600">Entry Type</label>
+            <label class="text-sm text-gray-600">Entry Type<span class="text-red-600 font-bold"><sup>required</sup></span></label>
             <select name="entry_type" required class="w-full border rounded px-3 py-2">
               <option value="">Select</option>
               <option value="debit">Debit (Cash In)</option>
               <option value="credit">Credit (Cash Out)</option>
             </select>
           </div>
-          <div class="col-span-2">
-            <label class="text-sm text-gray-600">Description</label>
-            <textarea name="description" required class="w-full border rounded px-3 py-2"></textarea>
-          </div>
+       
+         
         </div>
 
         <div class="mt-6 flex justify-end gap-4">
@@ -92,28 +76,39 @@
     <table class="min-w-full border text-sm text-gray-800 mt-6">
       <thead class="bg-blue-600 text-white">
         <tr>
-          <th class="py-2 px-3 border">Voucher</th>
+          <th class="py-2 px-3 border">No</th>
+          <th class="py-2 px-3 border">Ledger Account</th>
           <th class="py-2 px-3 border">Date</th>
-          <th class="py-2 px-3 border">Paid To</th>
-          <th class="py-2 px-3 border">Approved By</th>
+          <th class="py-2 px-3 border"> Description</th>
           <th class="py-2 px-3 border">Amount</th>
-          <th class="py-2 px-3 border">Type</th>
-          <th class="py-2 px-3 border">Done By</th>
+          <th class="py-2 px-3 border">Reference</th>
+          <th class="py-2 px-3 border">Credit</th>
+          <th class="py-2 px-3 border">Debit</th>
           <th class="py-2 px-3 border text-center">Action</th>
         </tr>
       </thead>
       <tbody>
         {% for entry in entries %}
         <tr>
-          <td class="border px-3 py-2">{{ entry.entry_code }}</td>
-          <td class="border px-3 py-2">{{ entry.date }}</td>
-          <td class="border px-3 py-2">{{ entry.paid_to }}</td>
-          <td class="border px-3 py-2">{{ entry.approved_by }}</td>
-          <td class="border px-3 py-2 text-right">{{ entry.amount|floatformat:2 }}</td>
-          <td class="border px-3 py-2 capitalize">{{ entry.entry_type }}</td>
-          <td class="border px-3 py-2">{{ entry.done_by.get_full_name }}</td>
+          <td class="border px-3 py-2">{{ entry.id }}</td>
+          <td class="border px-3 py-2">{{ entry.ledger_account }}-{{entry.ledger_account.currency}}</td>
+          
+          <td class="border px-3 py-2 text-right">{{ entry.date }}</td>
+          <td class="border px-3 py-2">{{ entry.description }}</td>
+          <td class="border px-3 py-2">{{ entry.amount|floatformat:2  }}</td>
+          <td class="border px-3 py-2 capitalize">{{ entry.reference }}</td>
+          <td class="border px-3 py-2 text-right">
+            {% if entry.entry_type == 'debit' %}{{ entry.amount|floatformat:2 }}{% else %}—{% endif %}
+          </td>
+          <td class="border px-3 py-2 text-right">
+            {% if entry.entry_type == 'credit' %}{{ entry.amount|floatformat:2 }}{% else %}—{% endif %}
+          </td>
+          
           <td class="border px-3 py-2 text-center">
             <a href="{% url 'view_petty_cash_entry' entry.id %}" class="text-blue-600 hover:underline text-sm">View</a>
+          </td>
+          <td class="border px-3 py-2 text-center">
+            <a href="{% url 'view_petty_cash_entry' entry.id %}" class="text-blue-600 hover:underline text-sm"></a>
           </td>
         </tr>
         {% empty %}
