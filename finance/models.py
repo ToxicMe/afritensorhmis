@@ -15,6 +15,8 @@ class CashAccount(models.Model):
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='account_hospital', default=1)
     account_number = models.CharField(max_length=50, blank=True, null=True)
     account_type = models.CharField(max_length=500, unique=True)
+    sub_account_type = models.CharField(max_length=100, blank=True, null=True)
+    financial_statement_category = models.CharField(max_length=100, blank=True, null=True)
     currency = models.CharField(max_length=10, default='KES')
     balance = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
     is_active = models.BooleanField(default=True)
@@ -34,13 +36,22 @@ class PettyCashEntry(models.Model):
         ('debit', 'Debit'),   # cash in
         ('credit', 'Credit'), # cash out
     ]
-    entry_code = models.CharField(max_length=20, unique=True, editable=False)
-    ledger_account = models.ForeignKey('CashAccount', on_delete=models.SET_NULL, null=True, blank=True, related_name='petty_ledger_entry')
     date = models.DateTimeField(auto_now_add=True)
+    Document_date = models.DateField(default=now)
+    Document_type = models.CharField(max_length=50, blank=True, null=True)
+    Document_no = models.CharField(max_length=50, blank=True, null=True)
+    External_document_no = models.CharField(max_length=50, blank=True, null=True)
+    Acc_type = models.CharField(max_length=50, blank=True, null=True)
+    Acc_no = models.CharField(max_length=50, blank=True, null=True)
+    ledger_account = models.CharField(max_length=255)
     description = models.TextField()
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    reference = models.CharField(max_length=255, blank=True, null=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
     entry_type = models.CharField(max_length=6, choices=ENTRY_TYPE_CHOICES)
+    reference = models.CharField(max_length=100, blank=True, null=True)
+    entry_code = models.CharField(max_length=20, unique=True, blank=True, null=True)
+
+
+   
     done_by = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, related_name='petty_added_by')
 
 

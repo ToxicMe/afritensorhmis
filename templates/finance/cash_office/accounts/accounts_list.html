@@ -2,10 +2,10 @@
 {% block content %}
 <div class="container mx-auto p-6">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">Cash Accounts</h1>
+        <h1 class="text-2xl font-bold">Accounts</h1>
         <button onclick="document.getElementById('addAccountModal').classList.remove('hidden')"
             class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-            Add Account
+            Create Account
         </button>
     </div>
 
@@ -47,18 +47,70 @@
 <div id="addAccountModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
     <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-bold">Add Cash Account</h2>
+            <h2 class="text-lg font-bold">Create Account</h2>
             <button onclick="document.getElementById('addAccountModal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700">&times;</button>
         </div>
 
         <form method="POST" class="space-y-4">
             {% csrf_token %}
+            
             <div>
-                <label class="block text-sm font-medium">Title</label>
+                <label class="block text-sm font-medium">
+                    Title
+                    <span class="text-red-600"><sup>*</sup></span>
+                </label>
                 <input type="text" name="name" required class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm">
             </div>
+            
+        <div>
+            <label class="block text-sm font-medium">Accounts
+                <span class="text-red-600"><sup>*</sup></span>
+            </label>
+            <select name="category" required
+                class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm px-3 py-2">
+                <option value="">Select Category</option>
+                <option value="1XX">1XX — Assets</option>
+                <option value="2XX">2XX — Liabilities</option>
+                <option value="3XX">3XX — Equity</option>
+                <option value="4XX">4XX — Expenses</option>
+                <option value="5XX">5XX — Revenue</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium">Sub Accounts
+                <span class="text-red-600"><sup>*</sup></span>
+            </label>
+            <select name="category" required
+                class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm px-3 py-2">
+                <option value="">Select Category</option>
+                <option value="1XX">Current Assets</option>
+                <option value="2XX">Fixed Assets</option>
+                <option value="3XX">Current Liabilities</option>
+                <option value="4XX">Equity</option>
+                <option value="5XX">Expenses</option>
+                <option value="6XX">Revenue</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium">Financial Statement
+                <span class="text-red-600"><sup>*</sup></span>
+            </label>
+            <select name="category" required
+                class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm px-3 py-2">
+                <option value="">Balance Sheet</option>
+                <option value="1XX">Income Statement</option>
+                
+            </select>
+        </div>
+
+       
             <div>
-                <label class="block text-sm font-medium">Hospital</label>
+                <label class="block text-sm font-medium">
+                    Hospital
+                    <span class="text-red-600"><sup>*</sup></span>
+                </label>
                 <select name="hospital" required class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm">
                     {% for hospital in hospitals %}
                     <option value="{{ hospital.id }}">{{ hospital.name }}</option>
@@ -66,11 +118,17 @@
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium">Account Number</label>
+                <label class="block text-sm font-medium">
+                    Account Number
+                    <span class="text-red-600"><sup>*</sup></span>
+                </label>
                 <input type="text" name="account_number" class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm">
             </div>
             <div>
-                <label class="block text-sm font-medium">Description</label>
+                <label class="block text-sm font-medium">
+                    Description
+                    <span class="text-red-600"><sup>*</sup></span>
+                </label>
                 <textarea type="text" name="account_type" required class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm"></textarea>
             </div>
             <div>
