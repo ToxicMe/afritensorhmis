@@ -15,8 +15,11 @@
             <thead class="bg-blue-600">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase">Name</th>
-                    <!--<th class="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase">Type</th>-->
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase">Balance</th>
+                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase">Acc No</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-100 ">Category</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-100 ">Financial Statement</th>
+                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase">Hospital</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase">Description</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase">Currency</th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-100 uppercase">Actions</th>
                 </tr>
@@ -25,8 +28,11 @@
                 {% for account in accounts %}
                 <tr>
                     <td class="px-6 py-4">{{ account.name }}</td>
-                    <!--<td class="px-6 py-4">{{ account.get_account_type_display }}</td>-->
-                    <td class="px-6 py-4">{{ account.balance }}</td>
+                    <td class="px-6 py-4">{{ account.no }}</td>
+                   <td class="px-6 py-4">{{ account.category }} ({{account.sub_category}})</td>
+                   <td class="px-6 py-4">{{ account.financial_statement_category }}</td>
+                   <td class="px-6 py-4">{{ account.hospital }}</td>
+                   <td class="px-6 py-4">{{ account.description }}</td>
                     <td class="px-6 py-4">{{ account.currency }}</td>
                     <td class="px-6 py-4 text-right">
                         <a href="{% url 'cash_account_detail' account.id %}" 
@@ -69,27 +75,26 @@
             <select name="category" required
                 class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm px-3 py-2">
                 <option value="">Select Category</option>
-                <option value="1XX">1XX — Assets</option>
-                <option value="2XX">2XX — Liabilities</option>
-                <option value="3XX">3XX — Equity</option>
-                <option value="4XX">4XX — Expenses</option>
-                <option value="5XX">5XX — Revenue</option>
+                <option value="1XX — Assets">1XX — Assets</option>
+                <option value="2XX — Liabilities">2XX — Liabilities</option>
+                <option value="3XX — Equity">3XX — Equity</option>
+                <option value="4XX — Expenses">4XX — Expenses</option>
+                <option value="5XX — Revenue">5XX — Revenue</option>
             </select>
         </div>
 
-        <div>
-            <label class="block text-sm font-medium">Sub Accounts
+         <div>
+            <label class="block text-sm font-medium">Sub-Accounts
                 <span class="text-red-600"><sup>*</sup></span>
             </label>
-            <select name="category" required
+            <select name="sub_category" required
                 class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm px-3 py-2">
                 <option value="">Select Category</option>
-                <option value="1XX">Current Assets</option>
-                <option value="2XX">Fixed Assets</option>
-                <option value="3XX">Current Liabilities</option>
-                <option value="4XX">Equity</option>
-                <option value="5XX">Expenses</option>
-                <option value="6XX">Revenue</option>
+                <option value="1XX — Assets">1XX — Assets</option>
+                <option value="2XX — Liabilities">2XX — Liabilities</option>
+                <option value="3XX — Equity">3XX — Equity</option>
+                <option value="4XX — Expenses">4XX — Expenses</option>
+                <option value="5XX — Revenue">5XX — Revenue</option>
             </select>
         </div>
 
@@ -97,10 +102,10 @@
             <label class="block text-sm font-medium">Financial Statement
                 <span class="text-red-600"><sup>*</sup></span>
             </label>
-            <select name="category" required
+            <select name="financial_statement" required
                 class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm px-3 py-2">
-                <option value="">Balance Sheet</option>
-                <option value="1XX">Income Statement</option>
+                <option value="Balance Sheet">Balance Sheet</option>
+                <option value="Income Statement">Income Statement</option>
                 
             </select>
         </div>
@@ -129,7 +134,7 @@
                     Description
                     <span class="text-red-600"><sup>*</sup></span>
                 </label>
-                <textarea type="text" name="account_type" required class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm"></textarea>
+                <textarea type="text" name="account_description" required class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm"></textarea>
             </div>
             <div>
                 <label class="block text-sm font-medium">Currency</label>

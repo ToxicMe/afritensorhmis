@@ -19,22 +19,26 @@ User = get_user_model()
 def accounts_list(request):
     if request.method == 'POST':
         name = request.POST.get('name')
+        category = request.POST.get('category')
+        sub_category = request.POST.get('sub_category')
+        financial_statement = request.POST.get('financial_statement')
         hospital_id = request.POST.get('hospital')
         account_number = request.POST.get('account_number')
-        account_type = request.POST.get('account_type')
+        description = request.POST.get('description')
         currency = request.POST.get('currency')
-        balance = request.POST.get('balance', 0.00)
         is_active = request.POST.get('is_active') == 'on'
 
         try:
             hospital = Hospital.objects.get(id=hospital_id)
             CashAccount.objects.create(
                 name=name,
+                category=category,
+                sub_category=sub_category,
+                financial_statement_category=financial_statement,
                 hospital=hospital,
                 account_number=account_number,
-                account_type=account_type,
+                description=description,
                 currency=currency,
-                balance=balance,
                 is_active=is_active,
                 done_by=request.user
             )
@@ -111,12 +115,19 @@ def add_petty_cash_entry(request):
 
 def petty_cash(request):
     users = User.objects.exclude(account_type='Patient')
-    cash_accounts_list = CashAccount.objects.all( )
-    suppliers_list = Supplier.objects.all( )  
+    cash_accounts_list = CashAccount.objects.all()
+    suppliers_list = Supplier.objects.all()
+    entries = PettyCashEntry.objects.all().order_by('-posting_date')
 
-    entries = PettyCashEntry.objects.all().order_by('-date')
+    context = {
+        'entries': entries,
+        'users': users,
+        'cash_accounts_list': cash_accounts_list,
+        'suppliers_list': suppliers_list
+    }
 
-    return render(request, 'finance/cash_office/petty_cash_journal.html',{'entries': entries,  'users': users, 'cash_accounts_list': cash_accounts_list, 'suppliers_list': suppliers_list})
+    return render(request, 'finance/cash_office/petty_cash_journal.html', context)
+
 
 def add_fixed_asset(request):
     hospitals = Hospital.objects.all()

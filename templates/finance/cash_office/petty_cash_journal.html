@@ -6,7 +6,7 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-3xl font-bold text-gray-800">Journal</h1>
+      <h1 class="text-3xl font-bold text-gray-800">Petty Cash Journal</h1>
       <p class="text-sm text-gray-500 mt-1">Cash inflows and outflows</p>
     </div>
     <button id="openModalBtn"
@@ -22,102 +22,133 @@
       <form method="post" action="{% url 'add_petty_cash_entry' %}">
         {% csrf_token %}
         <div class="grid grid-cols-2 gap-4">
-           <div >
-            <label class="text-sm text-gray-600">Ledger Account<span class="text-red-600 font-bold"><sup>required</sup></span></label>
-            <select name="ledger_account" class="select2 w-full border rounded px-3 py-2" required>
-              <option value="">Select </option>
+
+          <!-- Debit Ledger -->
+          <div>
+            <label class="text-sm text-gray-600">Debit Ledger Account<span class="text-red-600"><sup>*</sup></span></label>
+            <select name="debit_ledger_account" class="select2 w-full border rounded px-3 py-2" required>
+              <option value="">Select</option>
               {% for cashaccount in cash_accounts_list %}
-                <option value="{{ cashaccount.id }}">{{ cashaccount.name }}-{{cashaccount.balance}}-{{cashaccount.hospital}}</option>
+                <option value="{{ cashaccount.name }}">{{ cashaccount.name }} - {{ cashaccount.balance }} - {{ cashaccount.hospital }}</option>
               {% endfor %}
             </select>
           </div>
 
+          <!-- Credit Ledger -->
           <div>
-            <label class="text-sm text-gray-600"> Posting Date<span class="text-red-600 font-bold"><sup>required</sup></span></label>
-            <input type="date" name="date" required class="w-full border rounded px-3 py-2">
+            <label class="text-sm text-gray-600">Credit Ledger Account<span class="text-red-600"><sup>*</sup></span></label>
+            <select name="credit_ledger_account" class="select2 w-full border rounded px-3 py-2" required>
+              <option value="">Select</option>
+              {% for cashaccount in cash_accounts_list %}
+                <option value="{{ cashaccount.name }}">{{ cashaccount.name }} - {{ cashaccount.balance }} - {{ cashaccount.hospital }}</option>
+              {% endfor %}
+            </select>
           </div>
 
-          <div>
-            <label class="text-sm text-gray-600"> Document Date<span class="text-red-600 font-bold"><sup>required</sup></span></label>
-            <input type="date" name="date" required class="w-full border rounded px-3 py-2">
+          <!-- Posting Date -->
+          <div class="col-span-2">
+            <label class="text-sm text-gray-600">Posting Date & Time <span class="text-red-600"><sup>*</sup></span></label>
+            <input type="datetime-local" name="posting_date" id="posting-datetime" required class="w-full border rounded px-3 py-2">
           </div>
 
+          <!-- Document Date -->
           <div>
-            <label class="text-sm text-gray-600"> Document Type<span class="text-red-600 font-bold"><sup>required</sup></span></label>
-            <input type="date" name="date" required class="w-full border rounded px-3 py-2">
+            <label class="text-sm text-gray-600">Document Date <span class="text-red-600"><sup>*</sup></span></label>
+            <input type="date" name="Document_date" required class="w-full border rounded px-3 py-2">
           </div>
 
+          <!-- Document Type -->
           <div>
-            <label class="text-sm text-gray-600"> Document No<span class="text-red-600 font-bold"><sup>required</sup></span></label>
-            <input type="date" name="date" required class="w-full border rounded px-3 py-2">
+            <label class="text-sm text-gray-600">Document Type</label>
+            <input type="text" name="Document_type" class="w-full border rounded px-3 py-2">
           </div>
 
+          <!-- Document No -->
           <div>
-            <label class="text-sm text-gray-600">External Document No<span class="text-red-600 font-bold"><sup>required</sup></span></label>
-            <input type="date" name="date" required class="w-full border rounded px-3 py-2">
+            <label class="text-sm text-gray-600">Document No</label>
+            <input type="text" name="Document_no" class="w-full border rounded px-3 py-2">
           </div>
 
+          <!-- External Document No -->
           <div>
-            <label class="text-sm text-gray-600"> Acc Type<span class="text-red-600 font-bold"><sup>required</sup></span></label>
-            <input type="date" name="date" required class="w-full border rounded px-3 py-2">
+            <label class="text-sm text-gray-600">External Document No</label>
+            <input type="text" name="External_document_no" class="w-full border rounded px-3 py-2">
           </div>
 
+          <!-- Account Type -->
           <div>
-            <label class="text-sm text-gray-600"> Acc No<span class="text-red-600 font-bold"><sup>required</sup></span></label>
-            <input type="date" name="date" required class="w-full border rounded px-3 py-2">
+            <label class="text-sm text-gray-600">Account Type</label>
+            <input type="text" name="Acc_type" class="w-full border rounded px-3 py-2">
           </div>
 
-           <div class="col-span-2">
-            <label class="text-sm text-gray-600">Description<span class="text-red-600 font-bold"><sup>required</sup></span></label>
-            <textarea name="description" required class="w-full border rounded px-3 py-2"></textarea>
+          <!-- Account No -->
+          <div>
+            <label class="text-sm text-gray-600">Account No</label>
+            <input type="text" name="Acc_no" class="w-full border rounded px-3 py-2">
           </div>
 
-          <div>
-            <label class="text-sm text-gray-600">Debit Amount<span class="text-red-600 font-bold"><sup>required</sup></span></label>
-            <input type="number" step="0.01" name="amount" required class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="text-sm text-gray-600">Credit Amount<span class="text-red-600 font-bold"><sup>required</sup></span></label>
-            <input type="number" step="0.01" name="amount" required class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="text-sm text-gray-600"> Balance Acc Type<span class="text-red-600 font-bold"><sup>required</sup></span></label>
-            <input type="date" name="date" required class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="text-sm text-gray-600"> Balance Acc No<span class="text-red-600 font-bold"><sup>required</sup></span></label>
-            <input type="date" name="date" required class="w-full border rounded px-3 py-2">
+          <!-- Description -->
+          <div class="col-span-2">
+            <label class="text-sm text-gray-600">Description</label>
+            <textarea name="description" class="w-full border rounded px-3 py-2"></textarea>
           </div>
 
+          <!-- Debit Amount -->
           <div>
-            <label class="text-sm text-gray-600"> Branch Code<span class="text-red-600 font-bold"><sup>required</sup></span></label>
-            <input type="date" name="date" required class="w-full border rounded px-3 py-2">
+            <label class="text-sm text-gray-600">Debit Amount</label>
+            <input type="number" step="0.01" name="debit_amount" class="w-full border rounded px-3 py-2">
           </div>
 
+          <!-- Credit Amount -->
           <div>
-            <label class="text-sm text-gray-600"> Dept Code<span class="text-red-600 font-bold"><sup>required</sup></span></label>
-            <input type="date" name="date" required class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="text-sm text-gray-600"> Line No<span class="text-red-600 font-bold"><sup>required</sup></span></label>
-            <input type="date" name="date" required class="w-full border rounded px-3 py-2">
+            <label class="text-sm text-gray-600">Credit Amount</label>
+            <input type="number" step="0.01" name="credit_amount" class="w-full border rounded px-3 py-2">
           </div>
 
+          <!-- Balance Account Type -->
           <div>
-            <label class="text-sm text-gray-600">Entry Type<span class="text-red-600 font-bold"><sup>required</sup></span></label>
-            <select name="entry_type" required class="w-full border rounded px-3 py-2">
+            <label class="text-sm text-gray-600">Balance Account Type</label>
+            <input type="text" name="balance_acc_type" class="w-full border rounded px-3 py-2">
+          </div>
+
+          <!-- Balance Account No -->
+          <div>
+            <label class="text-sm text-gray-600">Balance Account No</label>
+            <input type="text" name="balance_acc_no" class="w-full border rounded px-3 py-2">
+          </div>
+
+          <!-- Branch Code -->
+          <div>
+            <label class="text-sm text-gray-600">Branch Code</label>
+            <input type="text" name="branch_code" class="w-full border rounded px-3 py-2">
+          </div>
+
+          <!-- Department Code -->
+          <div>
+            <label class="text-sm text-gray-600">Department Code</label>
+            <input type="text" name="department_code" class="w-full border rounded px-3 py-2">
+          </div>
+
+          <!-- Line No -->
+          <div>
+            <label class="text-sm text-gray-600">Line No</label>
+            <input type="text" name="line_no" class="w-full border rounded px-3 py-2">
+          </div>
+
+          <!-- Entry Type -->
+          <div>
+            <label class="text-sm text-gray-600">Entry Type</label>
+            <select name="entry_type" class="w-full border rounded px-3 py-2">
               <option value="">Select</option>
               <option value="debit">Debit (Cash In)</option>
               <option value="credit">Credit (Cash Out)</option>
             </select>
           </div>
-       
-         
+
         </div>
 
         <div class="mt-6 flex justify-end gap-4">
-          <button type="button" id="cancelModalBtn"
-            class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+          <button type="button" id="cancelModalBtn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
           <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Save</button>
         </div>
       </form>
@@ -136,7 +167,7 @@
           <th class="py-2 px-3 border">External Document No</th>
           <th class="py-2 px-3 border">Acc Type</th>
           <th class="py-2 px-3 border">Acc No</th>
-          <th class="py-2 px-3 border"> Description</th>
+          <th class="py-2 px-3 border">Description</th>
           <th class="py-2 px-3 border">Debit Amount</th>
           <th class="py-2 px-3 border">Credit Amount</th>
           <th class="py-2 px-3 border">Bal Acc Type</th>
@@ -144,50 +175,36 @@
           <th class="py-2 px-3 border">Branch Code</th>
           <th class="py-2 px-3 border">Dept Code</th>
           <th class="py-2 px-3 border">Line No</th>
-
-
-
-          
           <th class="py-2 px-3 border text-center">Action</th>
         </tr>
       </thead>
       <tbody>
+        {% for entry in entries %}
         <tr>
-          <td class="border px-3 py-2"></td>
-          <td class="border px-3 py-2"></td>
-          
-          <td class="border px-3 py-2 text-right"></td>
-          <td class="border px-3 py-2"></td>
-          <td class="border px-3 py-2"></td>
-          <td class="border px-3 py-2 capitalize"></td>
-          <td class="border px-3 py-2 text-right">
-            
-          </td>
-          <td class="border px-3 py-2 text-right">
-          </td>
-          <td class="border px-3 py-2"></td>
-          <td class="border px-3 py-2"></td>
-          <td class="border px-3 py-2"></td>
-          <td class="border px-3 py-2"></td>
-          <td class="border px-3 py-2"></td>
-          <td class="border px-3 py-2"></td>
-          <td class="border px-3 py-2"></td>
-
-          
-          
+          <td class="border px-3 py-2">{{ entry.posting_date|date:"Y-m-d H:i" }}</td>
+          <td class="border px-3 py-2">{{ entry.Document_date|date:"Y-m-d" }}</td>
+          <td class="border px-3 py-2">{{ entry.Document_type|default:"-" }}</td>
+          <td class="border px-3 py-2">{{ entry.Document_no|default:"-" }}</td>
+          <td class="border px-3 py-2">{{ entry.External_document_no|default:"-" }}</td>
+          <td class="border px-3 py-2 capitalize">{{ entry.Acc_type|default:"-" }}</td>
+          <td class="border px-3 py-2 text-right">{{ entry.Acc_no|default:"-" }}</td>
+          <td class="border px-3 py-2">{{ entry.description|default:"-" }}</td>
+          <td class="border px-3 py-2 text-right">{{ entry.debit_amount|default_if_none:0|floatformat:2 }}</td>
+          <td class="border px-3 py-2 text-right">{{ entry.credit_amount|default_if_none:0|floatformat:2 }}</td>
+          <td class="border px-3 py-2">{{ entry.balance_acc_type|default:"-" }}</td>
+          <td class="border px-3 py-2">{{ entry.balance_acc_no|default:"-" }}</td>
+          <td class="border px-3 py-2">{{ entry.branch_code|default:"-" }}</td>
+          <td class="border px-3 py-2">{{ entry.department_code|default:"-" }}</td>
+          <td class="border px-3 py-2">{{ entry.line_no|default:"-" }}</td>
           <td class="border px-3 py-2 text-center">
-            <a href="" class="text-blue-600 hover:underline text-sm">View</a>
+            <a href="#" class="text-blue-600 hover:underline text-sm">View</a>
           </td>
-          <td class="border px-3 py-2 text-center">
-            <a href="" class="text-blue-600 hover:underline text-sm"></a>
-          </td>
-          
         </tr>
-        
+        {% empty %}
         <tr>
-          <td colspan="8" class="text-center py-4 text-gray-500">No entries found.</td>
+          <td colspan="16" class="text-center py-4">No entries found.</td>
         </tr>
-        
+        {% endfor %}
       </tbody>
     </table>
   </div>
@@ -210,6 +227,7 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
+  // Modal open/close
   const openModalBtn = document.getElementById("openModalBtn");
   const cancelModalBtn = document.getElementById("cancelModalBtn");
   const modal = document.getElementById("addEntryModal");
@@ -218,21 +236,31 @@
     modal.classList.remove("hidden");
     modal.classList.add("flex");
   });
-
   cancelModalBtn.addEventListener("click", () => {
     modal.classList.add("hidden");
     modal.classList.remove("flex");
   });
-
-  window.addEventListener("click", function (e) {
+  window.addEventListener("click", e => {
     if (e.target === modal) {
       modal.classList.add("hidden");
       modal.classList.remove("flex");
     }
   });
 
+  // Select2
   $(document).ready(function () {
     $('.select2').select2({ width: '100%' });
+  });
+
+  // Autofill current datetime
+  window.addEventListener("DOMContentLoaded", function () {
+    const dtInput = document.getElementById("posting-datetime");
+    const now = new Date();
+    const formatted = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+                          .toISOString().slice(0,16);
+    dtInput.value = formatted;
+    dtInput.min = formatted;
+    dtInput.dispatchEvent(new Event('change'));
   });
 </script>
 

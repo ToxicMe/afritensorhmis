@@ -14,13 +14,12 @@ class CashAccount(models.Model):
     name = models.CharField(max_length=100, unique=True)
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='account_hospital', default=1)
     account_number = models.CharField(max_length=50, blank=True, null=True)
-    account_type = models.CharField(max_length=500, unique=True)
-    sub_account_type = models.CharField(max_length=100, blank=True, null=True)
+    category = models.CharField(max_length=500, unique=True)
+    sub_category = models.CharField(max_length=100, blank=True, null=True)
     financial_statement_category = models.CharField(max_length=100, blank=True, null=True)
     currency = models.CharField(max_length=10, default='KES')
     balance = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
     is_active = models.BooleanField(default=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     done_by = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, related_name='account_added_by')
@@ -29,6 +28,8 @@ class CashAccount(models.Model):
     def __str__(self):
         return f"{self.name} ({self.currency})"
 
+   
+
 
 
 class PettyCashEntry(models.Model):
@@ -36,41 +37,59 @@ class PettyCashEntry(models.Model):
         ('debit', 'Debit'),   # cash in
         ('credit', 'Credit'), # cash out
     ]
-    date = models.DateTimeField(auto_now_add=True)
-    Document_date = models.DateField(default=now)
-    Document_type = models.CharField(max_length=50, blank=True, null=True)
-    Document_no = models.CharField(max_length=50, blank=True, null=True)
-    External_document_no = models.CharField(max_length=50, blank=True, null=True)
-    Acc_type = models.CharField(max_length=50, blank=True, null=True)
-    Acc_no = models.CharField(max_length=50, blank=True, null=True)
-    ledger_account = models.CharField(max_length=255)
-    description = models.TextField()
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-    entry_type = models.CharField(max_length=6, choices=ENTRY_TYPE_CHOICES)
-    reference = models.CharField(max_length=100, blank=True, null=True)
-    entry_code = models.CharField(max_length=20, unique=True, blank=True, null=True)
 
+    # Ledger accounts
+    debit_ledger_account = models.CharField(max_length=300)
+    credit_ledger_account = models.CharField(max_length=300)
 
-   
-    done_by = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, related_name='petty_added_by')
+    # Dates
+    posting_date = models.DateTimeField(auto_now_add=True)
+    document_date = models.DateField(default=now)
 
+    # Document details
+    document_type = models.CharField(max_length=80, blank=True, null=True)
+    document_no = models.CharField(max_length=80, blank=True, null=True)
+    external_document_no = models.CharField(max_length=80, blank=True, null=True)
+
+    # Account info
+    acc_type = models.CharField(max_length=80, blank=True, null=True)
+    acc_no = models.CharField(max_length=80, blank=True, null=True)
+    balance_acc_type = models.CharField(max_length=150)
+    balance_acc_no = models.CharField(max_length=150)
+
+    # Description
+    description = models.TextField(max_length=500, blank=True, null=True)
+
+    # Amounts
+    debit_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0)
+    credit_amount = models.DecimalField(max_digits=20, decimal_places=2, default=0)
+
+    # Additional info
+    branch_code = models.CharField(max_length=150, blank=True, null=True)
+    department_code = models.CharField(max_length=150, blank=True, null=True)
+    line_no = models.CharField(max_length=150, blank=True, null=True)
+
+    # User
+    done_by = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='petty_added_by'
+    )
+
+    # Entry type
+    entry_type = models.CharField(
+        max_length=10,
+        choices=ENTRY_TYPE_CHOICES,
+        default='debit'
+    )
 
     class Meta:
-        ordering = ['-date']
-
-    def save(self, *args, **kwargs):
-        if not self.entry_code:
-            last_entry = PettyCashEntry.objects.order_by('-id').first()
-            if last_entry and last_entry.entry_code.startswith('PT-'):
-                last_number = int(last_entry.entry_code.split('-')[1])
-                new_number = f"{last_number + 1:04d}"
-            else:
-                new_number = "0001"
-            self.entry_code = f"PT-{new_number}"
-        super().save(*args, **kwargs)
+        ordering = ['-posting_date']
 
     def __str__(self):
-        return self.entry_code
+        return f"{self.document_no} - {self.acc_type} - {self.debit_amount} / {self.credit_amount}"
     
 
 class LedgerEntry(models.Model):
