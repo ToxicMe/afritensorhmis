@@ -23,6 +23,7 @@ def accounts_list(request):
         sub_category = request.POST.get('sub_category')
         financial_statement = request.POST.get('financial_statement')
         hospital_id = request.POST.get('hospital')
+        balance = request.POST.get('balance') or 0.00
         account_number = request.POST.get('account_number')
         description = request.POST.get('description')
         currency = request.POST.get('currency')
@@ -36,6 +37,7 @@ def accounts_list(request):
                 sub_category=sub_category,
                 financial_statement_category=financial_statement,
                 hospital=hospital,
+                balance=balance,
                 account_number=account_number,
                 description=description,
                 currency=currency,
@@ -96,37 +98,72 @@ def view_petty_cash_entry(request, entry_id):
 
 def add_petty_cash_entry(request):
     if request.method == "POST":
-
-        ledger_account_id = request.POST.getlist("ledger_account")[0]
-        ledger_account = CashAccount.objects.filter(id=int(ledger_account_id)).first()
-
-
         entry = PettyCashEntry(
-            ledger_account=ledger_account,
-            date=request.POST.get("date"),
-            description=request.POST.get("description"),
-            amount=request.POST.get("amount"),
-            reference=request.POST.get("reference"),
-            entry_type=request.POST.get("entry_type"),
-            done_by=request.user
+            debit_ledger_account = request.POST.get("debit_ledger_account"),
+            credit_ledger_account = request.POST.get("credit_ledger_account"),
+            posting_date = request.POST.get("posting_date") or None,
+            document_date = request.POST.get("Document_date") or None,
+            document_type = request.POST.get("Document_type"),
+            document_no = request.POST.get("Document_no"),
+            external_document_no = request.POST.get("External_document_no"),
+            acc_type = request.POST.get("Acc_type"),
+            acc_no = request.POST.get("Acc_no"),
+            balance_acc_type = request.POST.get("balance_acc_type"),
+            balance_acc_no = request.POST.get("balance_acc_no"),
+            description = request.POST.get("description"),
+            debit_amount = request.POST.get("debit_amount") or 0,
+            credit_amount = request.POST.get("credit_amount") or 0,
+            branch_code = request.POST.get("branch_code"),
+            department_code = request.POST.get("department_code"),
+            line_no = request.POST.get("line_no"),
+           
+            done_by = request.user
         )
         entry.save()
-        return redirect('petty_cash') 
+        return redirect('petty_cash')
+
 
 def petty_cash(request):
     users = User.objects.exclude(account_type='Patient')
     cash_accounts_list = CashAccount.objects.all()
     suppliers_list = Supplier.objects.all()
+    
     entries = PettyCashEntry.objects.all().order_by('-posting_date')
 
+    # Convert entries to dicts
+    entry_dicts = []
+    for e in entries:
+        entry_dicts.append({
+            'id': e.id,
+            'posting_date': e.posting_date.strftime('%Y-%m-%d %H:%M'),
+            'document_date': e.document_date.strftime('%Y-%m-%d'),
+            'document_type': e.document_type,
+            'document_no': e.document_no,
+            'external_document_no': e.external_document_no,
+            'debit_ledger_account': e.debit_ledger_account,
+            'credit_ledger_account': e.credit_ledger_account,
+            'acc_type': e.acc_type,
+            'acc_no': e.acc_no,
+            'balance_acc_type': e.balance_acc_type,
+            'balance_acc_no': e.balance_acc_no,
+            'description': e.description,
+            'debit_amount': float(e.debit_amount),
+            'credit_amount': float(e.credit_amount),
+            'branch_code': e.branch_code,
+            'department_code': e.department_code,
+            'line_no': e.line_no,
+           
+            'done_by': e.done_by.username if e.done_by else '-'
+        })
+
     context = {
-        'entries': entries,
+        'entries': entry_dicts,
         'users': users,
         'cash_accounts_list': cash_accounts_list,
         'suppliers_list': suppliers_list
     }
-
     return render(request, 'finance/cash_office/petty_cash_journal.html', context)
+
 
 
 def add_fixed_asset(request):

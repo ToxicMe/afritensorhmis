@@ -17,6 +17,7 @@ class CashAccount(models.Model):
     category = models.CharField(max_length=500, unique=True)
     sub_category = models.CharField(max_length=100, blank=True, null=True)
     financial_statement_category = models.CharField(max_length=100, blank=True, null=True)
+    description = models.TextField(max_length=500, blank=True, null=True)
     currency = models.CharField(max_length=10, default='KES')
     balance = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
     is_active = models.BooleanField(default=True)
@@ -78,12 +79,6 @@ class PettyCashEntry(models.Model):
         related_name='petty_added_by'
     )
 
-    # Entry type
-    entry_type = models.CharField(
-        max_length=10,
-        choices=ENTRY_TYPE_CHOICES,
-        default='debit'
-    )
 
     class Meta:
         ordering = ['-posting_date']

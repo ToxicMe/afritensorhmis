@@ -6,7 +6,7 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-3xl font-bold text-gray-800">Petty Cash Journal</h1>
+      <h1 class="text-3xl font-bold text-gray-800">Cash Journal</h1>
       <p class="text-sm text-gray-500 mt-1">Cash inflows and outflows</p>
     </div>
     <button id="openModalBtn"
@@ -15,7 +15,7 @@
     </button>
   </div>
 
-  <!-- Modal Form -->
+  <!-- Add Entry Modal -->
   <div id="addEntryModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 items-center justify-center">
     <div class="bg-white w-full max-w-xl rounded-lg shadow-lg p-6 relative">
       <h2 class="text-lg font-bold mb-4 text-gray-800">Add Journal Entry</h2>
@@ -48,7 +48,7 @@
           <!-- Posting Date -->
           <div class="col-span-2">
             <label class="text-sm text-gray-600">Posting Date & Time <span class="text-red-600"><sup>*</sup></span></label>
-            <input type="datetime-local" name="posting_date" id="posting-datetime" required class="w-full border rounded px-3 py-2">
+            <input type="datetime-local" name="posting_date" id="posting-datetime" readonly required class="w-full border rounded px-3 py-2">
           </div>
 
           <!-- Document Date -->
@@ -129,21 +129,14 @@
             <input type="text" name="department_code" class="w-full border rounded px-3 py-2">
           </div>
 
-          <!-- Line No -->
+          <!-- Line No (auto-generated) -->
           <div>
             <label class="text-sm text-gray-600">Line No</label>
-            <input type="text" name="line_no" class="w-full border rounded px-3 py-2">
+            <input type="text" name="line_no" id="line_no" class="w-full border rounded px-3 py-2" readonly>
           </div>
 
           <!-- Entry Type -->
-          <div>
-            <label class="text-sm text-gray-600">Entry Type</label>
-            <select name="entry_type" class="w-full border rounded px-3 py-2">
-              <option value="">Select</option>
-              <option value="debit">Debit (Cash In)</option>
-              <option value="credit">Credit (Cash Out)</option>
-            </select>
-          </div>
+          
 
         </div>
 
@@ -155,57 +148,64 @@
     </div>
   </div>
 
-  <!-- Table -->
+  <!-- Petty Cash Entries Table -->
   <div class="overflow-x-auto">
     <table class="min-w-full border text-sm text-gray-800 mt-6">
-      <thead class="bg-blue-600 text-white">
-        <tr>
-          <th class="py-2 px-3 border">Posting Date</th>
-          <th class="py-2 px-3 border">Document Date</th>
-          <th class="py-2 px-3 border">Document Type</th>
-          <th class="py-2 px-3 border">Document No</th>
-          <th class="py-2 px-3 border">External Document No</th>
-          <th class="py-2 px-3 border">Acc Type</th>
-          <th class="py-2 px-3 border">Acc No</th>
-          <th class="py-2 px-3 border">Description</th>
-          <th class="py-2 px-3 border">Debit Amount</th>
-          <th class="py-2 px-3 border">Credit Amount</th>
-          <th class="py-2 px-3 border">Bal Acc Type</th>
-          <th class="py-2 px-3 border">Bal Acc No</th>
-          <th class="py-2 px-3 border">Branch Code</th>
-          <th class="py-2 px-3 border">Dept Code</th>
-          <th class="py-2 px-3 border">Line No</th>
-          <th class="py-2 px-3 border text-center">Action</th>
-        </tr>
-      </thead>
-      <tbody>
+        <thead class="bg-blue-600 text-white">
+            <tr>
+                <th class="py-2 px-3 border">Posting Date</th>
+                <th class="py-2 px-3 border">Document Date</th>
+                <th class="py-2 px-3 border">Document Type</th>
+                <th class="py-2 px-3 border">Document No</th>
+                <th class="py-2 px-3 border">External Doc No</th>
+                <th class="py-2 px-3 border">Acc Type</th>
+                <th class="py-2 px-3 border">Acc No</th>
+                <th class="py-2 px-3 border">Description</th>
+                <th class="py-2 px-3 border text-right">Debit</th>
+                <th class="py-2 px-3 border text-right">Credit</th>
+                <th class="py-2 px-3 border">Balance Acc Type</th>
+                <th class="py-2 px-3 border">Balance Acc No</th>
+                <th class="py-2 px-3 border">Branch Code</th>
+                <th class="py-2 px-3 border">Dept Code</th>
+                <th class="py-2 px-3 border">Line No</th>
+                <th class="py-2 px-3 border text-center">Action</th>
+            </tr>
+        </thead>
+        <tbody>
         {% for entry in entries %}
         <tr>
-          <td class="border px-3 py-2">{{ entry.posting_date|date:"Y-m-d H:i" }}</td>
-          <td class="border px-3 py-2">{{ entry.Document_date|date:"Y-m-d" }}</td>
-          <td class="border px-3 py-2">{{ entry.Document_type|default:"-" }}</td>
-          <td class="border px-3 py-2">{{ entry.Document_no|default:"-" }}</td>
-          <td class="border px-3 py-2">{{ entry.External_document_no|default:"-" }}</td>
-          <td class="border px-3 py-2 capitalize">{{ entry.Acc_type|default:"-" }}</td>
-          <td class="border px-3 py-2 text-right">{{ entry.Acc_no|default:"-" }}</td>
-          <td class="border px-3 py-2">{{ entry.description|default:"-" }}</td>
-          <td class="border px-3 py-2 text-right">{{ entry.debit_amount|default_if_none:0|floatformat:2 }}</td>
-          <td class="border px-3 py-2 text-right">{{ entry.credit_amount|default_if_none:0|floatformat:2 }}</td>
-          <td class="border px-3 py-2">{{ entry.balance_acc_type|default:"-" }}</td>
-          <td class="border px-3 py-2">{{ entry.balance_acc_no|default:"-" }}</td>
-          <td class="border px-3 py-2">{{ entry.branch_code|default:"-" }}</td>
-          <td class="border px-3 py-2">{{ entry.department_code|default:"-" }}</td>
-          <td class="border px-3 py-2">{{ entry.line_no|default:"-" }}</td>
-          <td class="border px-3 py-2 text-center">
-            <a href="#" class="text-blue-600 hover:underline text-sm">View</a>
-          </td>
+            <td class="border px-3 py-1">{{ entry.posting_date }}</td>
+            <td class="border px-3 py-1">{{ entry.document_date }}</td>
+            <td class="border px-3 py-1">{{ entry.document_type|default:"-" }}</td>
+            <td class="border px-3 py-1">{{ entry.document_no|default:"-" }}</td>
+            <td class="border px-3 py-1">{{ entry.external_document_no|default:"-" }}</td>
+            <td class="border px-3 py-1">{{ entry.acc_type|default:"-" }}</td>
+            <td class="border px-3 py-1">{{ entry.acc_no|default:"-" }}</td>
+            <td class="border px-3 py-1">{{ entry.description|default:"-" }}</td>
+            <td class="border px-3 py-1 text-right">{{ entry.debit_amount|floatformat:2 }}</td>
+            <td class="border px-3 py-1 text-right">{{ entry.credit_amount|floatformat:2 }}</td>
+            <td class="border px-3 py-1">{{ entry.balance_acc_type|default:"-" }}</td>
+            <td class="border px-3 py-1">{{ entry.balance_acc_no|default:"-" }}</td>
+            <td class="border px-3 py-1">{{ entry.branch_code|default:"-" }}</td>
+            <td class="border px-3 py-1">{{ entry.department_code|default:"-" }}</td>
+            <td class="border px-3 py-1">{{ entry.line_no|default:"-" }}</td>
+            <td class="border px-3 py-1 text-center">
+                <button type="button"
+                        class="text-blue-600 hover:underline text-xs view-entry-btn"
+                        data-entry-id="{{ entry.id }}">
+                    View
+                </button>
+                <script type="application/json" id="entry_{{ entry.id }}">
+                    {{ entry|safe|json_script:"entry_" }}
+                </script>
+            </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="16" class="text-center py-4">No entries found.</td>
+            <td colspan="16" class="text-center py-4 text-gray-500">No petty cash entries yet.</td>
         </tr>
         {% endfor %}
-      </tbody>
+        </tbody>
     </table>
   </div>
 
@@ -221,6 +221,19 @@
 
 </div>
 
+<!-- Entry Details Modal -->
+<div id="entryDetailsModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 items-center justify-center">
+  <div class="bg-white w-full max-w-lg rounded-lg shadow-lg p-6 relative">
+    <h2 class="text-lg font-bold mb-4 text-gray-800">Petty Cash Entry Details</h2>
+    <div id="entryDetailsContent" class="text-sm text-gray-800 space-y-1"></div>
+    <div class="mt-6 flex justify-end">
+      <button type="button" id="closeEntryModal" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -231,36 +244,69 @@
   const openModalBtn = document.getElementById("openModalBtn");
   const cancelModalBtn = document.getElementById("cancelModalBtn");
   const modal = document.getElementById("addEntryModal");
-
-  openModalBtn.addEventListener("click", () => {
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
-  });
-  cancelModalBtn.addEventListener("click", () => {
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
-  });
-  window.addEventListener("click", e => {
-    if (e.target === modal) {
-      modal.classList.add("hidden");
-      modal.classList.remove("flex");
-    }
-  });
+  openModalBtn.addEventListener("click", () => { modal.classList.remove("hidden"); modal.classList.add("flex"); });
+  cancelModalBtn.addEventListener("click", () => { modal.classList.add("hidden"); modal.classList.remove("flex"); });
+  window.addEventListener("click", e => { if (e.target === modal) { modal.classList.add("hidden"); modal.classList.remove("flex"); } });
 
   // Select2
-  $(document).ready(function () {
-    $('.select2').select2({ width: '100%' });
-  });
+  $(document).ready(function () { $('.select2').select2({ width: '100%' }); });
 
   // Autofill current datetime
   window.addEventListener("DOMContentLoaded", function () {
     const dtInput = document.getElementById("posting-datetime");
     const now = new Date();
-    const formatted = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-                          .toISOString().slice(0,16);
+    const formatted = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0,16);
     dtInput.value = formatted;
     dtInput.min = formatted;
-    dtInput.dispatchEvent(new Event('change'));
+  });
+
+  // Auto-generate line number
+  function generateLineNo() {
+    const lineNo = 'LN-' + Math.floor(100000 + Math.random() * 900000);
+    document.getElementById('line_no').value = lineNo;
+  }
+  document.addEventListener('DOMContentLoaded', generateLineNo);
+
+  // Entry Details Modal
+  const entryModal = document.getElementById('entryDetailsModal');
+  const entryContent = document.getElementById('entryDetailsContent');
+  const closeBtn = document.getElementById('closeEntryModal');
+
+  document.querySelectorAll('.view-entry-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const entryId = this.dataset.entryId;
+        const entryData = JSON.parse(document.getElementById('entry_' + entryId).textContent);
+
+        entryContent.innerHTML = `
+            <p><strong>Posting Date:</strong> ${entryData.posting_date}</p>
+            <p><strong>Document Date:</strong> ${entryData.document_date}</p>
+            <p><strong>Document Type:</strong> ${entryData.document_type || '-'}</p>
+            <p><strong>Document No:</strong> ${entryData.document_no || '-'}</p>
+            <p><strong>External Doc No:</strong> ${entryData.external_document_no || '-'}</p>
+            <p><strong>Debit Ledger:</strong> ${entryData.debit_ledger_account}</p>
+            <p><strong>Credit Ledger:</strong> ${entryData.credit_ledger_account}</p>
+            <p><strong>Acc Type:</strong> ${entryData.acc_type || '-'}</p>
+            <p><strong>Acc No:</strong> ${entryData.acc_no || '-'}</p>
+            <p><strong>Description:</strong> ${entryData.description || '-'}</p>
+            <p><strong>Debit Amount:</strong> ${parseFloat(entryData.debit_amount).toFixed(2)}</p>
+            <p><strong>Credit Amount:</strong> ${parseFloat(entryData.credit_amount).toFixed(2)}</p>
+            <p><strong>Balance Acc Type:</strong> ${entryData.balance_acc_type}</p>
+            <p><strong>Balance Acc No:</strong> ${entryData.balance_acc_no}</p>
+            <p><strong>Branch Code:</strong> ${entryData.branch_code || '-'}</p>
+            <p><strong>Department Code:</strong> ${entryData.department_code || '-'}</p>
+            <p><strong>Line No:</strong> ${entryData.line_no || '-'}</p>
+            
+            <p><strong>Done By:</strong> ${entryData.done_by}</p>
+        `;
+
+        entryModal.classList.remove('hidden');
+        entryModal.classList.add('flex');
+    });
+  });
+
+  closeBtn.addEventListener('click', () => {
+    entryModal.classList.add('hidden');
+    entryModal.classList.remove('flex');
   });
 </script>
 

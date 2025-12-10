@@ -20,7 +20,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-100 ">Financial Statement</th>
                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase">Hospital</th>
                       <th class="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase">Description</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase">Currency</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase">Balance</th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-100 uppercase">Actions</th>
                 </tr>
             </thead>
@@ -28,12 +28,12 @@
                 {% for account in accounts %}
                 <tr>
                     <td class="px-6 py-4">{{ account.name }}</td>
-                    <td class="px-6 py-4">{{ account.no }}</td>
-                   <td class="px-6 py-4">{{ account.category }} ({{account.sub_category}})</td>
+                    <td class="px-6 py-4">{{account.account_number}}</td>
+                   <td class="px-6 py-4">{{ account.category }}{{account.sub_category}}</td>
                    <td class="px-6 py-4">{{ account.financial_statement_category }}</td>
                    <td class="px-6 py-4">{{ account.hospital }}</td>
                    <td class="px-6 py-4">{{ account.description }}</td>
-                    <td class="px-6 py-4">{{ account.currency }}</td>
+                    <td class="px-6 py-4">{{account.balance}} {{ account.currency }}</td>
                     <td class="px-6 py-4 text-right">
                         <a href="{% url 'cash_account_detail' account.id %}" 
                            class="text-blue-600 hover:underline">View More</a>
@@ -69,34 +69,99 @@
             </div>
             
         <div>
-            <label class="block text-sm font-medium">Accounts
-                <span class="text-red-600"><sup>*</sup></span>
-            </label>
-            <select name="category" required
-                class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm px-3 py-2">
-                <option value="">Select Category</option>
-                <option value="1XX — Assets">1XX — Assets</option>
-                <option value="2XX — Liabilities">2XX — Liabilities</option>
-                <option value="3XX — Equity">3XX — Equity</option>
-                <option value="4XX — Expenses">4XX — Expenses</option>
-                <option value="5XX — Revenue">5XX — Revenue</option>
-            </select>
-        </div>
+    <label class="block text-sm font-medium">Category <span class="text-red-600">*</span></label>
+    <select name="category" id="categorySelect" required
+        class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm px-3 py-2">
+        <option value="">Select Category</option>
+    </select>
+</div>
 
-         <div>
-            <label class="block text-sm font-medium">Sub-Accounts
-                <span class="text-red-600"><sup>*</sup></span>
-            </label>
-            <select name="sub_category" required
-                class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm px-3 py-2">
-                <option value="">Select Category</option>
-                <option value="1XX — Assets">1XX — Assets</option>
-                <option value="2XX — Liabilities">2XX — Liabilities</option>
-                <option value="3XX — Equity">3XX — Equity</option>
-                <option value="4XX — Expenses">4XX — Expenses</option>
-                <option value="5XX — Revenue">5XX — Revenue</option>
-            </select>
-        </div>
+<div>
+    <label class="block text-sm font-medium">Sub-Accounts <span class="text-red-600">*</span></label>
+    <select name="sub_category" id="subcategorySelect" required
+        class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm px-3 py-2">
+        <option value="">Select Sub Category</option>
+    </select>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const accounts = {
+        "100": {
+            name: "Assets",
+            subs: [
+                { code: "101", name: "Checking" },
+                { code: "102", name: "Petty Cash" },
+                { code: "103", name: "Inventory" },
+                { code: "104", name: "Accounts Receivable" }
+            ]
+        },
+        "200": {
+            name: "Liabilities",
+            subs: [
+                { code: "201", name: "Payroll" },
+                { code: "202", name: "Insurance" },
+                { code: "203", name: "Rent" },
+                { code: "204", name: "Equipment" },
+                { code: "205", name: "Cost of Goods Sold (COGS)" }
+            ]
+        },
+        "300": {
+            name: "Equity",
+            subs: [
+                { code: "301", name: "Payroll Tax Liabilities" },
+                { code: "302", name: "Sales Tax Collected" },
+                { code: "303", name: "Credit Memo Liability" },
+                { code: "304", name: "Accounts Payable" }
+            ]
+        },
+        "400": {
+            name: "Expenses",
+            subs: [
+                { code: "401", name: "Owner’s Equity" },
+                { code: "402", name: "Common Stock" },
+                { code: "403", name: "Retained Earnings" }
+            ]
+        },
+        "500": {
+            name: "Revenue",
+            subs: [
+                { code: "501", name: "Product Sales" },
+                { code: "502", name: "Earned Interest" },
+                { code: "503", name: "Miscellaneous Income" }
+            ]
+        }
+    };
+
+    const categorySelect = document.getElementById("categorySelect");
+    const subcategorySelect = document.getElementById("subcategorySelect");
+
+    // Add main categories
+    for (const code in accounts) {
+        const option = document.createElement("option");
+        option.value = code;
+        option.textContent = `${code} — ${accounts[code].name}`;
+        categorySelect.appendChild(option);
+    }
+
+    // Filter subcategories when category changes
+    categorySelect.addEventListener("change", function () {
+        const selectedCode = this.value;
+        subcategorySelect.innerHTML = '<option value="">Select Sub Category</option>';
+
+        if (accounts[selectedCode]) {
+            accounts[selectedCode].subs.forEach(sub => {
+                const option = document.createElement("option");
+                option.value = sub.code;
+                option.textContent = `${sub.code} — ${sub.name}`;
+                subcategorySelect.appendChild(option);
+            });
+        }
+    });
+});
+</script>
+
 
         <div>
             <label class="block text-sm font-medium">Financial Statement
@@ -134,7 +199,11 @@
                     Description
                     <span class="text-red-600"><sup>*</sup></span>
                 </label>
-                <textarea type="text" name="account_description" required class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm"></textarea>
+                <textarea type="text" name="description" required class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm"></textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-medium">Initial Balance</label>
+                <input type="text" name="balance" class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm">
             </div>
             <div>
                 <label class="block text-sm font-medium">Currency</label>
