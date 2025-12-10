@@ -40,8 +40,21 @@ class PettyCashEntry(models.Model):
     ]
 
     # Ledger accounts
-    debit_ledger_account = models.CharField(max_length=300)
-    credit_ledger_account = models.CharField(max_length=300)
+    
+    debit_ledger_account = models.ForeignKey(
+        CashAccount,
+        on_delete=models.CASCADE,
+        related_name='debit_entries',  # <--- unique related_name
+        blank=True,
+        null=True
+    )
+    credit_ledger_account = models.ForeignKey(
+        CashAccount,
+        on_delete=models.CASCADE,
+        related_name='credit_entries',  # <--- unique related_name
+        blank=True,
+        null=True
+    )
 
     # Dates
     posting_date = models.DateTimeField(auto_now_add=True)

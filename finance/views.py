@@ -98,26 +98,38 @@ def view_petty_cash_entry(request, entry_id):
 
 def add_petty_cash_entry(request):
     if request.method == "POST":
+        # Fetch CashAccount instances
+        debit_account_name = request.POST.get("debit_ledger_account")
+        credit_account_name = request.POST.get("credit_ledger_account")
+
+        debit_account = CashAccount.objects.filter(name=debit_account_name).first()
+        credit_account = CashAccount.objects.filter(name=credit_account_name).first()
+
+        if not debit_account or not credit_account:
+            # Handle missing account
+            messages.error(request, "Invalid debit or credit account selected.")
+            return redirect('petty_cash')
+
+        # Create entry
         entry = PettyCashEntry(
-            debit_ledger_account = request.POST.get("debit_ledger_account"),
-            credit_ledger_account = request.POST.get("credit_ledger_account"),
-            posting_date = request.POST.get("posting_date") or None,
-            document_date = request.POST.get("Document_date") or None,
-            document_type = request.POST.get("Document_type"),
-            document_no = request.POST.get("Document_no"),
-            external_document_no = request.POST.get("External_document_no"),
-            acc_type = request.POST.get("Acc_type"),
-            acc_no = request.POST.get("Acc_no"),
-            balance_acc_type = request.POST.get("balance_acc_type"),
-            balance_acc_no = request.POST.get("balance_acc_no"),
-            description = request.POST.get("description"),
-            debit_amount = request.POST.get("debit_amount") or 0,
-            credit_amount = request.POST.get("credit_amount") or 0,
-            branch_code = request.POST.get("branch_code"),
-            department_code = request.POST.get("department_code"),
-            line_no = request.POST.get("line_no"),
-           
-            done_by = request.user
+            debit_ledger_account=debit_account,
+            credit_ledger_account=credit_account,
+            posting_date=request.POST.get("posting_date") or None,
+            document_date=request.POST.get("Document_date") or None,
+            document_type=request.POST.get("Document_type"),
+            document_no=request.POST.get("Document_no"),
+            external_document_no=request.POST.get("External_document_no"),
+            acc_type=request.POST.get("Acc_type"),
+            acc_no=request.POST.get("Acc_no"),
+            balance_acc_type=request.POST.get("balance_acc_type"),
+            balance_acc_no=request.POST.get("balance_acc_no"),
+            description=request.POST.get("description"),
+            debit_amount=request.POST.get("debit_amount") or 0,
+            credit_amount=request.POST.get("credit_amount") or 0,
+            branch_code=request.POST.get("branch_code"),
+            department_code=request.POST.get("department_code"),
+            line_no=request.POST.get("line_no"),
+            done_by=request.user
         )
         entry.save()
         return redirect('petty_cash')
@@ -424,18 +436,14 @@ def balance_sheet(request):
     return render(request, 'finance/financial_management/balance_sheet.html')
 
 def trial_balance(request):
-    
-
     accounts_summary = CashAccount.objects.annotate(
-        total_debit=Sum('petty_ledger_entry__amount', filter=Q(petty_ledger_entry__entry_type='debit')),
-        total_credit=Sum('petty_ledger_entry__amount', filter=Q(petty_ledger_entry__entry_type='credit')),
-            ).annotate(
-                computed_balance=F('total_debit') - F('total_credit')
-            )
+        total_debit=Sum('debit_entries__debit_amount'),
+        total_credit=Sum('credit_entries__credit_amount'),
+    ).annotate(
+        computed_balance=F('total_debit') - F('total_credit')
+    )
 
-
-
-    return render(request, 'finance/financial_management/trial_balance.html',  {'accounts': accounts_summary})
+    return render(request, 'finance/financial_management/trial_balance.html', {'accounts': accounts_summary})
 
 
 def receivables(request):
