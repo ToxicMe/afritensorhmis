@@ -11,6 +11,7 @@ from .models import *
 from django.core.paginator import Paginator
 from billing.models import Bill, PaymentReceipt
 from .utils import *
+from collections import defaultdict
 
 User = get_user_model()
 
@@ -432,8 +433,81 @@ def general_ledger(request):
     
     return render(request, 'finance/financial_management/general_ledger.html',{'entries':entries})
 
+
+
+
 def balance_sheet(request):
-    return render(request, 'finance/financial_management/balance_sheet.html')
+
+    accounts = CashAccount.objects.filter(
+        is_active=True,
+        financial_statement_category__iexact="Balance Sheet"
+    )
+
+    categories = {
+        "Assets": [],
+        "Liabilities": [],
+        "Equity": [],
+    }
+
+    subtotals = {
+        "Assets": Decimal("0.00"),
+        "Liabilities": Decimal("0.00"),
+        "Equity": Decimal("0.00"),
+    }
+
+    for acc in accounts:
+        total_debit = acc.debit_entries.aggregate(
+            total=Sum("debit_amount")
+        )["total"] or Decimal("0.00")
+
+        total_credit = acc.credit_entries.aggregate(
+            total=Sum("credit_amount")
+        )["total"] or Decimal("0.00")
+
+        computed_balance = total_debit - total_credit
+
+        acc.total_debit = total_debit
+        acc.total_credit = total_credit
+        acc.computed_balance = computed_balance
+
+        # 👇 CATEGORY VIA ACCOUNT CODE
+        code = str(acc.category).strip()
+
+        print(
+            f"ACCOUNT → {acc.name} | "
+            f"CODE → {code} | "
+            f"BAL → {computed_balance}"
+        )
+
+        if code.startswith("1"):
+            categories["Assets"].append(acc)
+            subtotals["Assets"] += computed_balance
+
+        elif code.startswith("2"):
+            categories["Liabilities"].append(acc)
+            subtotals["Liabilities"] += computed_balance
+
+        elif code.startswith("3"):
+            categories["Equity"].append(acc)
+            subtotals["Equity"] += computed_balance
+
+    context = {
+        "categories": categories,
+        "subtotals": subtotals,
+        "total_assets": subtotals["Assets"],
+        "total_liabilities": subtotals["Liabilities"],
+        "total_equity": subtotals["Equity"],
+    }
+
+    return render(
+        request,
+        "finance/financial_management/balance_sheet.html",
+        context
+    )
+
+
+ 
+
 
 def trial_balance(request):
     accounts_summary = CashAccount.objects.annotate(
